@@ -10,7 +10,12 @@ public class Program
         var services = new ServiceCollection();
         services.AddSingleton<Application, Application>();
         services.AddSingleton<IWebSocketCore, WebSocketCore>();
+        services.AddSingleton<IPlayerService, PlayerService>();
+        
         services.AddSingleton<IMapComponent, MapComponent>();
+        services.AddSingleton<IMovementComponent, MovementComponent>();
+        services.AddSingleton<IChatComponent, ChatComponent>();
+        services.AddSingleton<IShopComponent, ShopComponent>();
         Container = services.BuildServiceProvider();
 
         var app = Container.GetService<Application>();

@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using Rebronx.Server.Models;
 
 public interface IWebSocketCore
 {
-	void HandleNewConnections();
+	List<SocketConnection> GetNewConnections();
 	List<WebSocketMessage> GetMessages(string component);
 	void PollMessages();
 }

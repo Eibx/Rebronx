@@ -5,7 +5,7 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Microsoft.Extensions.DependencyInjection": "1.1.0-preview1-final",
+    "Microsoft.Extensions.DependencyInjection": "1.0.0",
     "Newtonsoft.Json": "9.0.2-beta1"
   },
   "frameworks": {

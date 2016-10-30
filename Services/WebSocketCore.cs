@@ -12,7 +12,7 @@ public class WebSocketCore : IWebSocketCore
 {
     private const int TEXT_FRAME = 129;
     private const int BINARY_FRAME = 64;
-    List<Socket> connectingSockets;
+    List<PendingSocket> connectingSockets;
     List<SocketConnection> sockets;
     List<WebSocketMessage> pendingMessages;
     TcpListener server;
@@ -23,11 +23,11 @@ public class WebSocketCore : IWebSocketCore
         server.Start();
 
         pendingMessages = new List<WebSocketMessage>();
-        connectingSockets = new List<Socket>();
+        connectingSockets = new List<PendingSocket>();
         sockets = new List<SocketConnection>();
     }
 
-    public void HandleNewConnections()
+    public List<SocketConnection> GetNewConnections()
     {
         while (server.Pending())
         {
@@ -35,11 +35,11 @@ public class WebSocketCore : IWebSocketCore
             task.Wait();
             Socket socket = task.Result;
 
-            Console.WriteLine("A client connected.");
-            connectingSockets.Add(socket);
+            Console.WriteLine("A socket connected.");
+            connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
         }
 
-        HandleConnectingSockets();
+        return HandleConnectingSockets();
     }
 
     public List<WebSocketMessage> GetMessages(string component)
@@ -109,24 +109,32 @@ public class WebSocketCore : IWebSocketCore
         pendingMessages = output;
     }
 
-    private void HandleConnectingSockets()
+    private List<SocketConnection> HandleConnectingSockets()
     {
+        var outputSockets = new List<SocketConnection>();
+
         for (int i = 0; i < connectingSockets.Count; i++)
         {
             var s = connectingSockets[i];
 
+            if (DateTime.Now.AddMinutes(-5) > s.Connected) 
+            {
+                connectingSockets.RemoveAt(i);
+                i--;
+            }
+
             string fullmessage = "";
 
-            while (s.Poll(1000, SelectMode.SelectRead))
+            while (s.Socket.Poll(1000, SelectMode.SelectRead))
             {
-                if (!s.Connected)
+                if (!s.Socket.Connected)
                 {
                     connectingSockets.RemoveAt(i);
                     i--;
                 }
 
                 byte[] buffer = new byte[1024];
-                var received = s.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+                var received = s.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
 
                 if (received == 0)
                     break;
@@ -135,7 +143,7 @@ public class WebSocketCore : IWebSocketCore
                 fullmessage += message;
             }
 
-            if (fullmessage != string.Empty)
+            if (!string.IsNullOrEmpty(fullmessage))
             {
                 var headers = GetHeaders(fullmessage);
 
@@ -151,10 +159,13 @@ public class WebSocketCore : IWebSocketCore
                         "Connection: Upgrade\r\n" +
                         "Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
                     var responseBytes = Encoding.ASCII.GetBytes(response);
-                    var sent = s.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
+                    var sent = s.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
                     Console.WriteLine(sent + " bytes sent");
 
-                    sockets.Add(new SocketConnection(Guid.NewGuid(), s));
+                    var socket = new SocketConnection(Guid.NewGuid(), s.Socket);
+                    sockets.Add(socket);
+                    outputSockets.Add(socket);
+
                     if (i <= connectingSockets.Count - 1)
                     {
                         connectingSockets.RemoveAt(i);
@@ -163,6 +174,8 @@ public class WebSocketCore : IWebSocketCore
                 }
             }
         }
+
+        return sockets;
     }
 
     private Dictionary<string, string> GetHeaders(string data)
@@ -197,6 +210,11 @@ public class WebSocketCore : IWebSocketCore
             return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
         }
     }
+}
+
+public class PendingSocket {
+    public Socket Socket { get; set; }
+    public DateTime Connected { get; set; }
 }
 
 public class WebSocketMessage

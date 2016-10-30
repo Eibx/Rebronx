@@ -1,0 +1,4 @@
+public interface IShopComponent : IComponent
+{
+	
+}
