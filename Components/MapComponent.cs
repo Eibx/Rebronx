@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 public class MapComponent : IMapComponent
 {
     private const string Component = "map";
@@ -8,19 +12,17 @@ public class MapComponent : IMapComponent
         this.webSocketCore = webSocketCore;
     }
 
-    public void Run()
+    public void Run(IList<Message> messages)
     {
-        var messages = webSocketCore.GetMessages(Component);
-
-        foreach (var message in messages)
+        foreach (var message in messages.Where(m => m.Component == Component))
         {
             if (message.Type == "data")
-                MessageData();
+                MessageData(message);
         }
     }
 
-    public void MessageData()
+    public void MessageData(Message message)
     {
-        
+        Console.WriteLine(message.Data);
     }
 }

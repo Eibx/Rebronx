@@ -30,8 +30,10 @@ public class Application
         {
             var connections = webSocketCore.GetNewConnections();
             playerService.HandleNewPlayers(connections);
+            
             var socketMessages = webSocketCore.PollMessages();
-            var playerMessages = playerService.ConvertToPlayerMessages(socketMessages);
+            var playerMessages = playerService.ConvertToMessages(socketMessages);
+
 
             mapComponent.Run(playerMessages);
             movementComponent.Run(playerMessages);

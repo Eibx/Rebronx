@@ -1,4 +1,6 @@
+using System.Collections.Generic;
+
 public interface IComponent
 {
-	void Run();
+	void Run(IList<Message> messages);
 }

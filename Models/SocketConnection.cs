@@ -6,11 +6,12 @@ namespace Rebronx.Server.Models
 	public class SocketConnection {
         public Guid Id { get; set; }
         public Socket Socket { get; set; }
+        public string Token { get; set; }
 
-        public SocketConnection(Guid id, Socket socket)
+        public DateTime LastMessage { get; set; }
+
+        public SocketConnection() 
         {
-            Id = id;
-            Socket = socket;
         }
     }
 }

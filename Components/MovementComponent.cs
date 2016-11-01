@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class MovementComponent : IMovementComponent
 {
@@ -10,19 +12,17 @@ public class MovementComponent : IMovementComponent
 		this.webSocketCore = webSocketCore; 
 	}
 
-    public void Run()
+    public void Run(IList<Message> messages)
     {
-		var messages = webSocketCore.GetMessages(Component);
-
-		foreach (var message in messages)
+		foreach (var message in messages.Where(m => m.Component == Component))
 		{
 			if (message.Type == "move")
 				MessageMove(message);
 		}
     }
 
-	public void MessageMove(WebSocketMessage message) 
+	public void MessageMove(Message message) 
 	{
-		
+		Console.WriteLine(message.Data);
 	}
 }

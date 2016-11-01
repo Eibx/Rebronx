@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class ChatComponent : IChatComponent
 {
@@ -10,19 +12,17 @@ public class ChatComponent : IChatComponent
 		this.webSocketCore = webSocketCore;
 	}
 
-    public void Run()
+    public void Run(IList<Message> messages)
     {
-		var messages = webSocketCore.GetMessages(Component);
-
-		foreach (var message in messages)
+		foreach (var message in messages.Where(m => m.Component == Component))
 		{
 			if (message.Type == "say")
-				MessageSay();
+				MessageSay(message);
 		}
     }
 
-	public void MessageSay()
+	public void MessageSay(Message message)
 	{
-		
+		Console.WriteLine(message.Data);
 	}
 }

@@ -39,15 +39,10 @@ public class WebSocketCore : IWebSocketCore
             connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
         }
 
-        return HandleConnectingSockets();
+        return HandleHttpConnection();
     }
 
-    public List<WebSocketMessage> GetMessages(string component)
-    {
-        return pendingMessages.Where(m => m.Component.Equals(component, StringComparison.OrdinalIgnoreCase)).ToList();
-    }
-
-    public void PollMessages()
+    public List<WebSocketMessage> PollMessages()
     {
         List<WebSocketMessage> output = new List<WebSocketMessage>();
 
@@ -61,11 +56,24 @@ public class WebSocketCore : IWebSocketCore
             {
                 byte[] buffer = new byte[1024];
                 var received = s.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+
+                if (received == 0)
+                    break;
+
                 data.AddRange(buffer.Take(received));
+            }
+
+            if (s.LastMessage.AddSeconds(15) < DateTime.Now) {
+                Console.WriteLine("Dead connection (" + s.Token + ")");
+                sockets.RemoveAt(i);
+                i--;
+                continue;
             }
 
             if (!data.Any())
                 continue;
+
+            s.LastMessage = DateTime.Now;
 
             if (data[0] == TEXT_FRAME)
             {
@@ -99,86 +107,114 @@ public class WebSocketCore : IWebSocketCore
                 }
 
                 var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
-                var wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
+                WebSocketMessage wsMessage = null;
 
-                if (wsMessage != null && wsMessage.HasData())                
+                if (jsondata == "ping")
+                    continue;
+
+                try 
+                {
+                    wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
+                } 
+                catch(Exception) { }
+
+                if (wsMessage != null && wsMessage.HasData()) {
+                    wsMessage.Socket = s;
                     output.Add(wsMessage);
+                }
             }
         }
 
-        pendingMessages = output;
+        return output;
     }
 
-    private List<SocketConnection> HandleConnectingSockets()
+    private List<SocketConnection> HandleHttpConnection()
     {
         var outputSockets = new List<SocketConnection>();
 
         for (int i = 0; i < connectingSockets.Count; i++)
         {
-            var s = connectingSockets[i];
+            var connection = connectingSockets[i];
 
-            if (DateTime.Now.AddMinutes(-5) > s.Connected) 
+            string httpRequest = GetHttpRequest(connection);
+
+            if (connection.IsTimeout() || !connection.Socket.Connected || httpRequest == null)
             {
                 connectingSockets.RemoveAt(i);
                 i--;
+                continue;
             }
 
-            string fullmessage = "";
+            var httpHeaders = GetHttpHeaders(httpRequest);
 
-            while (s.Socket.Poll(1000, SelectMode.SelectRead))
+            if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
             {
-                if (!s.Socket.Connected)
+                var token = string.Empty;
+                httpHeaders.TryGetValue("UserToken", out token);
+
+                byte[] responseBytes = CreateConnectionResponse(httpHeaders);
+                var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
+                Console.WriteLine(sent + " bytes sent to token " + token);
+
+                var socketConnection = new SocketConnection()
+                {
+                    Id = Guid.NewGuid(),
+                    Socket = connection.Socket,
+                    Token = token,
+                    LastMessage = DateTime.Now
+                };
+                sockets.Add(socketConnection);
+                outputSockets.Add(socketConnection);
+
+                if (i <= connectingSockets.Count - 1)
                 {
                     connectingSockets.RemoveAt(i);
                     i--;
                 }
-
-                byte[] buffer = new byte[1024];
-                var received = s.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
-
-                if (received == 0)
-                    break;
-
-                var message = Encoding.ASCII.GetString(buffer, 0, received);
-                fullmessage += message;
-            }
-
-            if (!string.IsNullOrEmpty(fullmessage))
-            {
-                var headers = GetHeaders(fullmessage);
-
-                if (headers.ContainsKey("Sec-WebSocket-Key"))
-                {
-                    var wskey = headers["Sec-WebSocket-Key"];
-
-                    var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-                    var wskeyResult = Convert.ToBase64String(keyhash);
-
-                    var response = "HTTP/1.1 101 Switching Protocols\r\n" +
-                        "Upgrade: websocket\r\n" +
-                        "Connection: Upgrade\r\n" +
-                        "Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
-                    var responseBytes = Encoding.ASCII.GetBytes(response);
-                    var sent = s.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
-                    Console.WriteLine(sent + " bytes sent");
-
-                    var socket = new SocketConnection(Guid.NewGuid(), s.Socket);
-                    sockets.Add(socket);
-                    outputSockets.Add(socket);
-
-                    if (i <= connectingSockets.Count - 1)
-                    {
-                        connectingSockets.RemoveAt(i);
-                        i--;
-                    }
-                }
             }
         }
 
-        return sockets;
+        return outputSockets;
     }
 
-    private Dictionary<string, string> GetHeaders(string data)
+    private string GetHttpRequest(PendingSocket socket)
+    {
+        string output = string.Empty;
+
+        while (socket.Socket.Poll(1000, SelectMode.SelectRead))
+        {
+            if (!socket.Socket.Connected)
+                return null;
+
+            byte[] buffer = new byte[1024];
+            var received = socket.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+
+            if (received == 0)
+                break;
+
+            var message = Encoding.ASCII.GetString(buffer, 0, received);
+            output += message;
+        }
+
+        return output;
+    }
+
+    private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
+    {
+        var wskey = headers["Sec-WebSocket-Key"];
+
+        var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+        var wskeyResult = Convert.ToBase64String(keyhash);
+
+        var response = "HTTP/1.1 101 Switching Protocols\r\n" +
+            "Upgrade: websocket\r\n" +
+            "Connection: Upgrade\r\n" +
+            "Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
+        var responseBytes = Encoding.ASCII.GetBytes(response);
+        return responseBytes;
+    }
+
+    private Dictionary<string, string> GetHttpHeaders(string data)
     {
         var headers = new Dictionary<string, string>();
 
@@ -188,8 +224,15 @@ public class WebSocketCore : IWebSocketCore
         var lines = data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
         foreach (var line in lines)
         {
-            if (line.StartsWith("GET"))
+            if (line.StartsWith("GET /"))
+            {
+                var token = GetQueryString(line, "TOKEN");
+                
+                if (token != null)
+                    headers.Add("UserToken", token);
+
                 continue;
+            }
 
             int split = line.IndexOf(":");
             if (split > -1)
@@ -210,11 +253,22 @@ public class WebSocketCore : IWebSocketCore
             return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
         }
     }
+
+    private string GetQueryString(string line, string name)
+    {
+        return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
+    }
 }
 
-public class PendingSocket {
+public class PendingSocket
+{
     public Socket Socket { get; set; }
     public DateTime Connected { get; set; }
+
+    public bool IsTimeout() 
+    { 
+        return (Connected.AddSeconds(5) < DateTime.Now); 
+    }
 }
 
 public class WebSocketMessage
@@ -224,7 +278,8 @@ public class WebSocketMessage
     public string Type { get; set; }
     public string Data { get; set; }
 
-    public bool HasData() {
+    public bool HasData()
+    {
         return !string.IsNullOrEmpty(Component) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Data);
     }
 }
