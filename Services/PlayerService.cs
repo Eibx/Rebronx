@@ -38,7 +38,7 @@ public class PlayerService : IPlayerService
 		foreach (var connection in connections)
 		{
 			Player player;
-			if (players.TryGetValue(connection.Token, out player))
+			if (connection.Token != null && players.TryGetValue(connection.Token, out player))
 				continue;
 
 			player = new Player();
@@ -50,9 +50,9 @@ public class PlayerService : IPlayerService
 			players.Add(connection.Token, player);
 		}
 
-		foreach(var dead in players.Where(x => x.Value.Socket == null).ToList()) {
-			players.Remove(dead.Key);
+		foreach(var dead in players.Where(x => x.Value.Socket == null || x.Value.Socket.IsTimedout()).ToList()) {
 			Console.WriteLine("Deleted player - " + players[dead.Key].Name);
+			players.Remove(dead.Key);
 		}
     }
 }

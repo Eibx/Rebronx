@@ -63,7 +63,7 @@ public class WebSocketCore : IWebSocketCore
                 data.AddRange(buffer.Take(received));
             }
 
-            if (s.LastMessage.AddSeconds(15) < DateTime.Now) {
+            if (s.IsTimedout()) {
                 Console.WriteLine("Dead connection (" + s.Token + ")");
                 sockets.RemoveAt(i);
                 i--;

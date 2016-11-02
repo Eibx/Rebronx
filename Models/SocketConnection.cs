@@ -10,6 +10,10 @@ namespace Rebronx.Server.Models
 
         public DateTime LastMessage { get; set; }
 
+        public bool IsTimedout() {
+            return LastMessage.AddSeconds(15) < DateTime.Now;
+        }
+
         public SocketConnection() 
         {
         }
