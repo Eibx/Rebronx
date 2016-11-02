@@ -19,8 +19,14 @@ public class WebSocketCore : IWebSocketCore
 
     public WebSocketCore()
     {
+        try {
         server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31337);
         server.Start();
+        } catch(SocketException) {
+            server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31338);
+            server.Start();
+        }
+
 
         pendingMessages = new List<WebSocketMessage>();
         connectingSockets = new List<PendingSocket>();
@@ -63,7 +69,8 @@ public class WebSocketCore : IWebSocketCore
                 data.AddRange(buffer.Take(received));
             }
 
-            if (s.IsTimedout()) {
+            if (s.IsTimedout())
+            {
                 Console.WriteLine("Dead connection (" + s.Token + ")");
                 sockets.RemoveAt(i);
                 i--;
@@ -110,15 +117,21 @@ public class WebSocketCore : IWebSocketCore
                 WebSocketMessage wsMessage = null;
 
                 if (jsondata == "ping")
+                {
+                    Console.WriteLine("Ping from " + s.Token);
+                    Send(s.Socket, "pong");
                     continue;
+                }
 
-                try 
+
+                try
                 {
                     wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
-                } 
-                catch(Exception) { }
+                }
+                catch (Exception) { }
 
-                if (wsMessage != null && wsMessage.HasData()) {
+                if (wsMessage != null && wsMessage.HasData())
+                {
                     wsMessage.Socket = s;
                     output.Add(wsMessage);
                 }
@@ -126,6 +139,44 @@ public class WebSocketCore : IWebSocketCore
         }
 
         return output;
+    }
+
+    public void Send(Socket socket, string data)
+    {
+        List<byte> bytes = new List<byte>();
+
+        //text frame
+        bytes.Add(129);
+
+        var databytes = Encoding.UTF8.GetBytes(data).ToList();
+
+        if (databytes.Count <= 159)
+        {
+            bytes.Add((byte)databytes.Count);
+            bytes.AddRange(databytes);
+        }
+        else if (databytes.Count <= 65535)
+        {
+            bytes.Add(126);
+            bytes.Add((byte)((databytes.Count() >> 8) & 255));
+            bytes.Add((byte)((databytes.Count()) & 255));
+            bytes.AddRange(databytes);
+        }
+        else
+        {
+            bytes.Add(127);
+            bytes.Add((byte)((databytes.Count() >> 56) & 255));
+            bytes.Add((byte)((databytes.Count() >> 48) & 255));
+            bytes.Add((byte)((databytes.Count() >> 40) & 255));
+            bytes.Add((byte)((databytes.Count() >> 32) & 255));
+            bytes.Add((byte)((databytes.Count() >> 24) & 255));
+            bytes.Add((byte)((databytes.Count() >> 16) & 255));
+            bytes.Add((byte)((databytes.Count() >>  8) & 255));
+            bytes.Add((byte)((databytes.Count()) & 255));
+            bytes.AddRange(databytes);
+        }
+
+        socket.Send(bytes.ToArray());
     }
 
     private List<SocketConnection> HandleHttpConnection()
@@ -227,7 +278,7 @@ public class WebSocketCore : IWebSocketCore
             if (line.StartsWith("GET /"))
             {
                 var token = GetQueryString(line, "TOKEN");
-                
+
                 if (token != null)
                     headers.Add("UserToken", token);
 
@@ -265,9 +316,9 @@ public class PendingSocket
     public Socket Socket { get; set; }
     public DateTime Connected { get; set; }
 
-    public bool IsTimeout() 
-    { 
-        return (Connected.AddSeconds(5) < DateTime.Now); 
+    public bool IsTimeout()
+    {
+        return (Connected.AddSeconds(5) < DateTime.Now);
     }
 }
 
