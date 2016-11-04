@@ -19,14 +19,9 @@ public class WebSocketCore : IWebSocketCore
 
     public WebSocketCore()
     {
-        try {
         server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31337);
+        server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
         server.Start();
-        } catch(SocketException) {
-            server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31338);
-            server.Start();
-        }
-
 
         pendingMessages = new List<WebSocketMessage>();
         connectingSockets = new List<PendingSocket>();
