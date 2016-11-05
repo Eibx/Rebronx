@@ -196,22 +196,23 @@ public class WebSocketCore : IWebSocketCore
             if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
             {
                 var token = string.Empty;
-                httpHeaders.TryGetValue("UserToken", out token);
-
-                byte[] responseBytes = CreateConnectionResponse(httpHeaders);
-                var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
-                Console.WriteLine(sent + " bytes sent to token " + token);
-
-                var socketConnection = new SocketConnection()
+                if (httpHeaders.TryGetValue("UserToken", out token)) 
                 {
-                    Id = Guid.NewGuid(),
-                    Socket = connection.Socket,
-                    Token = token,
-                    LastMessage = DateTime.Now
-                };
-                sockets.Add(socketConnection);
-                outputSockets.Add(socketConnection);
+                    byte[] responseBytes = CreateConnectionResponse(httpHeaders);
+                    var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
+                    Console.WriteLine(sent + " bytes sent to token " + token);
 
+                    var socketConnection = new SocketConnection()
+                    {
+                        Id = Guid.NewGuid(),
+                        Socket = connection.Socket,
+                        Token = token,
+                        LastMessage = DateTime.Now
+                    };
+                    sockets.Add(socketConnection);
+                    outputSockets.Add(socketConnection);
+                }
+                
                 if (i <= connectingSockets.Count - 1)
                 {
                     connectingSockets.RemoveAt(i);
