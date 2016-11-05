@@ -113,11 +113,9 @@ public class WebSocketCore : IWebSocketCore
 
                 if (jsondata == "ping")
                 {
-                    Console.WriteLine("Ping from " + s.Token);
                     Send(s.Socket, "pong");
                     continue;
                 }
-
 
                 try
                 {
