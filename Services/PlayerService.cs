@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using Rebronx.Server.Models;
 
 public class PlayerService : IPlayerService
 {
+	private IWebSocketCore webSocketCore;
 	private Dictionary<string, Player> players;
 
-	public PlayerService()
+	public PlayerService(IWebSocketCore webSocketCore)
 	{
+		this.webSocketCore = webSocketCore;
+
 		players = new Dictionary<string, Player>();
 	}
 
@@ -62,4 +66,62 @@ public class PlayerService : IPlayerService
 			players.Remove(dead.Key);
 		}
     }
+
+	public void Send(Player player, string component, string type, string data) 
+	{
+		string json = string.Empty;
+		
+		try
+		{
+			json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data });	
+		} 
+		catch {}
+				
+		var socket = player?.Socket?.Socket;
+
+		if (socket != null)
+        	webSocketCore.Send(socket, json);
+	}
+
+	public void SendPosition<T>(Position position, string component, string type, T data) 
+	{
+		string json = string.Empty;
+		
+		try
+		{
+			var settings = new JsonSerializerSettings();
+			settings.ContractResolver = new LowercaseContractResolver();
+			json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);	
+		} 
+		catch {}
+
+		foreach(var player in players.Select(x => x.Value).Where(x => x.Position.Equals(position))) 
+		{
+			var socket = player?.Socket?.Socket;
+
+			if (socket != null)
+				webSocketCore.Send(socket, json);
+		}
+	}
+
+	public void SendAll<T>(string component, string type, T data) 
+	{
+		string json = string.Empty;
+		
+		try
+		{
+			var settings = new JsonSerializerSettings();
+			settings.ContractResolver = new LowercaseContractResolver();
+			json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);	
+		} 
+		catch {}
+
+		foreach(var player in players.Select(x => x.Value)) 
+		{
+			var socket = player?.Socket?.Socket;
+
+			if (socket != null)
+				webSocketCore.Send(socket, json);
+		}
+	}
 }
