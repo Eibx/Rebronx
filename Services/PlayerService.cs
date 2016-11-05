@@ -37,17 +37,24 @@ public class PlayerService : IPlayerService
     {
 		foreach (var connection in connections)
 		{
-			Player player;
-			if (connection.Token != null && players.TryGetValue(connection.Token, out player))
+			if (connection.Token == null)
 				continue;
 
-			player = new Player();
+			Player player;
+			if (!players.TryGetValue(connection.Token, out player)) {
+				player = new Player();
+			}
+
 			player.Health = 1000;
 			player.Name = connection.Token;
 			player.Position = new Position() { X = 0, Y = 0, Z = 0 };
 			player.Socket = connection;
 
-			players.Add(connection.Token, player);
+			if (players.ContainsKey(connection.Token)) {
+				players[connection.Token] = player;
+			} else {
+				players.Add(connection.Token, player);
+			}
 		}
 
 		foreach(var dead in players.Where(x => x.Value.Socket == null || x.Value.Socket.IsTimedout()).ToList()) {
