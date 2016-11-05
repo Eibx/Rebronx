@@ -73,7 +73,9 @@ public class PlayerService : IPlayerService
 		
 		try
 		{
-			json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data });	
+			var settings = new JsonSerializerSettings();
+			settings.ContractResolver = new LowercaseContractResolver();
+			json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);	
 		} 
 		catch {}
 				
