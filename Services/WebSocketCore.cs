@@ -10,321 +10,321 @@ using Newtonsoft.Json;
 
 public class WebSocketCore : IWebSocketCore
 {
-    private const int TEXT_FRAME = 129;
-    private const int BINARY_FRAME = 64;
-    List<PendingSocket> connectingSockets;
-    List<SocketConnection> sockets;
-    List<WebSocketMessage> pendingMessages;
-    TcpListener server;
+	private const int TEXT_FRAME = 129;
+	private const int BINARY_FRAME = 64;
+	List<PendingSocket> connectingSockets;
+	List<SocketConnection> sockets;
+	List<WebSocketMessage> pendingMessages;
+	TcpListener server;
 
-    public WebSocketCore()
-    {
-        server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31337);
-        server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
-        server.Start();
+	public WebSocketCore()
+	{
+		server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31337);
+		server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+		server.Start();
 
-        pendingMessages = new List<WebSocketMessage>();
-        connectingSockets = new List<PendingSocket>();
-        sockets = new List<SocketConnection>();
-    }
+		pendingMessages = new List<WebSocketMessage>();
+		connectingSockets = new List<PendingSocket>();
+		sockets = new List<SocketConnection>();
+	}
 
-    public List<SocketConnection> GetNewConnections()
-    {
-        while (server.Pending())
-        {
-            var task = server.AcceptSocketAsync();
-            task.Wait();
-            Socket socket = task.Result;
+	public List<SocketConnection> GetNewConnections()
+	{
+		while (server.Pending())
+		{
+			var task = server.AcceptSocketAsync();
+			task.Wait();
+			Socket socket = task.Result;
 
-            Console.WriteLine("A socket connected.");
-            connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
-        }
+			Console.WriteLine("A socket connected.");
+			connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
+		}
 
-        return HandleHttpConnection();
-    }
+		return HandleHttpConnection();
+	}
 
-    public List<WebSocketMessage> PollMessages()
-    {
-        List<WebSocketMessage> output = new List<WebSocketMessage>();
+	public List<WebSocketMessage> PollMessages()
+	{
+		List<WebSocketMessage> output = new List<WebSocketMessage>();
 
-        for (int i = 0; i < sockets.Count; i++)
-        {
-            var s = sockets[i];
+		for (int i = 0; i < sockets.Count; i++)
+		{
+			var s = sockets[i];
 
-            List<byte> data = new List<byte>();
+			List<byte> data = new List<byte>();
 
-            while (s.Socket.Poll(1000, SelectMode.SelectRead))
-            {
-                byte[] buffer = new byte[1024];
-                var received = s.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+			while (s.Socket.Poll(1000, SelectMode.SelectRead))
+			{
+				byte[] buffer = new byte[1024];
+				var received = s.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
 
-                if (received == 0)
-                    break;
+				if (received == 0)
+					break;
 
-                data.AddRange(buffer.Take(received));
-            }
+				data.AddRange(buffer.Take(received));
+			}
 
-            if (s.IsTimedout())
-            {
-                Console.WriteLine("Dead connection (" + s.Token + ")");
-                sockets.RemoveAt(i);
-                i--;
-                continue;
-            }
+			if (s.IsTimedout())
+			{
+				Console.WriteLine("Dead connection (" + s.Token + ")");
+				sockets.RemoveAt(i);
+				i--;
+				continue;
+			}
 
-            if (!data.Any())
-                continue;
+			if (!data.Any())
+				continue;
 
-            s.LastMessage = DateTime.Now;
+			s.LastMessage = DateTime.Now;
 
-            if (data[0] == TEXT_FRAME)
-            {
-                ulong size = 0;
-                int payloadIndex = 0;
-                byte[] mask = new byte[4];
+			if (data[0] == TEXT_FRAME)
+			{
+				ulong size = 0;
+				int payloadIndex = 0;
+				byte[] mask = new byte[4];
 
-                if (data[1] <= 253)
-                {
-                    size = (data[1] - 128u);
-                    mask = data.Skip(2).Take(4).ToArray();
-                    payloadIndex = 6;
-                }
-                else if (data[1] == 254)
-                {
-                    size = BitConverter.ToUInt16(data.ToArray(), 2);
-                    mask = data.Skip(4).Take(4).ToArray();
-                    payloadIndex = 8;
-                }
-                else if (data[1] == 255)
-                {
-                    size = BitConverter.ToUInt64(data.ToArray(), 2);
-                    mask = data.Skip(10).Take(4).ToArray();
-                    payloadIndex = 14;
-                }
+				if (data[1] <= 253)
+				{
+					size = (data[1] - 128u);
+					mask = data.Skip(2).Take(4).ToArray();
+					payloadIndex = 6;
+				}
+				else if (data[1] == 254)
+				{
+					size = BitConverter.ToUInt16(data.ToArray(), 2);
+					mask = data.Skip(4).Take(4).ToArray();
+					payloadIndex = 8;
+				}
+				else if (data[1] == 255)
+				{
+					size = BitConverter.ToUInt64(data.ToArray(), 2);
+					mask = data.Skip(10).Take(4).ToArray();
+					payloadIndex = 14;
+				}
 
-                var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
-                for (int j = 0; j < payload.Length; j++)
-                {
-                    payload[j] = (byte)((int)payload[j] ^ (int)mask[j % 4]);
-                }
+				var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
+				for (int j = 0; j < payload.Length; j++)
+				{
+					payload[j] = (byte)((int)payload[j] ^ (int)mask[j % 4]);
+				}
 
-                var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
-                WebSocketMessage wsMessage = null;
+				var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
+				WebSocketMessage wsMessage = null;
 
-                if (jsondata == "ping")
-                {
-                    Send(s.Socket, "pong");
-                    continue;
-                }
+				if (jsondata == "ping")
+				{
+					Send(s.Socket, "pong");
+					continue;
+				}
 
-                try
-                {
-                    wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
-                }
-                catch (Exception) { }
+				try
+				{
+					wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
+				}
+				catch (Exception) { }
 
-                if (wsMessage != null && wsMessage.HasData())
-                {
-                    wsMessage.Socket = s;
-                    output.Add(wsMessage);
-                }
-            }
-        }
+				if (wsMessage != null && wsMessage.HasData())
+				{
+					wsMessage.Socket = s;
+					output.Add(wsMessage);
+				}
+			}
+		}
 
-        return output;
-    }
+		return output;
+	}
 
-    public void Send(Socket socket, string data)
-    {
-        List<byte> bytes = new List<byte>();
+	public void Send(Socket socket, string data)
+	{
+		List<byte> bytes = new List<byte>();
 
-        //text frame
-        bytes.Add(129);
+		//text frame
+		bytes.Add(129);
 
-        var databytes = Encoding.UTF8.GetBytes(data).ToList();
+		var databytes = Encoding.UTF8.GetBytes(data).ToList();
 
-        if (databytes.Count <= 159)
-        {
-            bytes.Add((byte)databytes.Count);
-            bytes.AddRange(databytes);
-        }
-        else if (databytes.Count <= 65535)
-        {
-            bytes.Add(126);
-            bytes.Add((byte)((databytes.Count() >> 8) & 255));
-            bytes.Add((byte)((databytes.Count()) & 255));
-            bytes.AddRange(databytes);
-        }
-        else
-        {
-            bytes.Add(127);
-            bytes.Add((byte)((databytes.Count() >> 56) & 255));
-            bytes.Add((byte)((databytes.Count() >> 48) & 255));
-            bytes.Add((byte)((databytes.Count() >> 40) & 255));
-            bytes.Add((byte)((databytes.Count() >> 32) & 255));
-            bytes.Add((byte)((databytes.Count() >> 24) & 255));
-            bytes.Add((byte)((databytes.Count() >> 16) & 255));
-            bytes.Add((byte)((databytes.Count() >>  8) & 255));
-            bytes.Add((byte)((databytes.Count()) & 255));
-            bytes.AddRange(databytes);
-        }
+		if (databytes.Count <= 125)
+		{
+			bytes.Add((byte)databytes.Count);
+			bytes.AddRange(databytes);
+		}
+		else if (databytes.Count <= 65535)
+		{
+			bytes.Add(126);
+			bytes.Add((byte)((databytes.Count() >> 8) & 255));
+			bytes.Add((byte)((databytes.Count()) & 255));
+			bytes.AddRange(databytes);
+		}
+		else
+		{
+			bytes.Add(127);
+			bytes.Add((byte)((databytes.Count() >> 56) & 255));
+			bytes.Add((byte)((databytes.Count() >> 48) & 255));
+			bytes.Add((byte)((databytes.Count() >> 40) & 255));
+			bytes.Add((byte)((databytes.Count() >> 32) & 255));
+			bytes.Add((byte)((databytes.Count() >> 24) & 255));
+			bytes.Add((byte)((databytes.Count() >> 16) & 255));
+			bytes.Add((byte)((databytes.Count() >> 8) & 255));
+			bytes.Add((byte)((databytes.Count()) & 255));
+			bytes.AddRange(databytes);
+		}
 
-        socket.Send(bytes.ToArray());
-    }
+		socket.Send(bytes.ToArray());
+	}
 
-    private List<SocketConnection> HandleHttpConnection()
-    {
-        var outputSockets = new List<SocketConnection>();
+	private List<SocketConnection> HandleHttpConnection()
+	{
+		var outputSockets = new List<SocketConnection>();
 
-        for (int i = 0; i < connectingSockets.Count; i++)
-        {
-            var connection = connectingSockets[i];
+		for (int i = 0; i < connectingSockets.Count; i++)
+		{
+			var connection = connectingSockets[i];
 
-            string httpRequest = GetHttpRequest(connection);
+			string httpRequest = GetHttpRequest(connection);
 
-            if (connection.IsTimeout() || !connection.Socket.Connected || httpRequest == null)
-            {
-                connectingSockets.RemoveAt(i);
-                i--;
-                continue;
-            }
+			if (connection.IsTimeout() || !connection.Socket.Connected || httpRequest == null)
+			{
+				connectingSockets.RemoveAt(i);
+				i--;
+				continue;
+			}
 
-            var httpHeaders = GetHttpHeaders(httpRequest);
+			var httpHeaders = GetHttpHeaders(httpRequest);
 
-            if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
-            {
-                var token = string.Empty;
-                if (httpHeaders.TryGetValue("UserToken", out token)) 
-                {
-                    byte[] responseBytes = CreateConnectionResponse(httpHeaders);
-                    var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
-                    Console.WriteLine(sent + " bytes sent to token " + token);
+			if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
+			{
+				var token = string.Empty;
+				if (httpHeaders.TryGetValue("UserToken", out token))
+				{
+					byte[] responseBytes = CreateConnectionResponse(httpHeaders);
+					var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
+					Console.WriteLine(sent + " bytes sent to token " + token);
 
-                    var socketConnection = new SocketConnection()
-                    {
-                        Id = Guid.NewGuid(),
-                        Socket = connection.Socket,
-                        Token = token,
-                        LastMessage = DateTime.Now
-                    };
-                    sockets.Add(socketConnection);
-                    outputSockets.Add(socketConnection);
-                }
-                
-                if (i <= connectingSockets.Count - 1)
-                {
-                    connectingSockets.RemoveAt(i);
-                    i--;
-                }
-            }
-        }
+					var socketConnection = new SocketConnection()
+					{
+						Id = Guid.NewGuid(),
+						Socket = connection.Socket,
+						Token = token,
+						LastMessage = DateTime.Now
+					};
+					sockets.Add(socketConnection);
+					outputSockets.Add(socketConnection);
+				}
 
-        return outputSockets;
-    }
+				if (i <= connectingSockets.Count - 1)
+				{
+					connectingSockets.RemoveAt(i);
+					i--;
+				}
+			}
+		}
 
-    private string GetHttpRequest(PendingSocket socket)
-    {
-        string output = string.Empty;
+		return outputSockets;
+	}
 
-        while (socket.Socket.Poll(1000, SelectMode.SelectRead))
-        {
-            if (!socket.Socket.Connected)
-                return null;
+	private string GetHttpRequest(PendingSocket socket)
+	{
+		string output = string.Empty;
 
-            byte[] buffer = new byte[1024];
-            var received = socket.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+		while (socket.Socket.Poll(1000, SelectMode.SelectRead))
+		{
+			if (!socket.Socket.Connected)
+				return null;
 
-            if (received == 0)
-                break;
+			byte[] buffer = new byte[1024];
+			var received = socket.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
 
-            var message = Encoding.ASCII.GetString(buffer, 0, received);
-            output += message;
-        }
+			if (received == 0)
+				break;
 
-        return output;
-    }
+			var message = Encoding.ASCII.GetString(buffer, 0, received);
+			output += message;
+		}
 
-    private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
-    {
-        var wskey = headers["Sec-WebSocket-Key"];
+		return output;
+	}
 
-        var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-        var wskeyResult = Convert.ToBase64String(keyhash);
+	private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
+	{
+		var wskey = headers["Sec-WebSocket-Key"];
 
-        var response = "HTTP/1.1 101 Switching Protocols\r\n" +
-            "Upgrade: websocket\r\n" +
-            "Connection: Upgrade\r\n" +
-            "Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
-        var responseBytes = Encoding.ASCII.GetBytes(response);
-        return responseBytes;
-    }
+		var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+		var wskeyResult = Convert.ToBase64String(keyhash);
 
-    private Dictionary<string, string> GetHttpHeaders(string data)
-    {
-        var headers = new Dictionary<string, string>();
+		var response = "HTTP/1.1 101 Switching Protocols\r\n" +
+			"Upgrade: websocket\r\n" +
+			"Connection: Upgrade\r\n" +
+			"Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
+		var responseBytes = Encoding.ASCII.GetBytes(response);
+		return responseBytes;
+	}
 
-        if (!data.StartsWith("GET"))
-            return headers;
+	private Dictionary<string, string> GetHttpHeaders(string data)
+	{
+		var headers = new Dictionary<string, string>();
 
-        var lines = data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        foreach (var line in lines)
-        {
-            if (line.StartsWith("GET /"))
-            {
-                var token = GetQueryString(line, "TOKEN");
+		if (!data.StartsWith("GET"))
+			return headers;
 
-                if (token != null)
-                    headers.Add("UserToken", token);
+		var lines = data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+		foreach (var line in lines)
+		{
+			if (line.StartsWith("GET /"))
+			{
+				var token = GetQueryString(line, "TOKEN");
 
-                continue;
-            }
+				if (token != null)
+					headers.Add("UserToken", token);
 
-            int split = line.IndexOf(":");
-            if (split > -1)
-            {
-                string propertykey = line.Substring(0, split);
-                string propertyValue = line.Substring(split + 1);
-                headers.Add(propertykey, propertyValue.Trim());
-            }
-        }
+				continue;
+			}
 
-        return headers;
-    }
+			int split = line.IndexOf(":");
+			if (split > -1)
+			{
+				string propertykey = line.Substring(0, split);
+				string propertyValue = line.Substring(split + 1);
+				headers.Add(propertykey, propertyValue.Trim());
+			}
+		}
 
-    private byte[] Hash(string input)
-    {
-        using (var sha1 = SHA1.Create())
-        {
-            return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
-        }
-    }
+		return headers;
+	}
 
-    private string GetQueryString(string line, string name)
-    {
-        return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
-    }
+	private byte[] Hash(string input)
+	{
+		using (var sha1 = SHA1.Create())
+		{
+			return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
+		}
+	}
+
+	private string GetQueryString(string line, string name)
+	{
+		return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
+	}
 }
 
 public class PendingSocket
 {
-    public Socket Socket { get; set; }
-    public DateTime Connected { get; set; }
+	public Socket Socket { get; set; }
+	public DateTime Connected { get; set; }
 
-    public bool IsTimeout()
-    {
-        return (Connected.AddSeconds(5) < DateTime.Now);
-    }
+	public bool IsTimeout()
+	{
+		return (Connected.AddSeconds(5) < DateTime.Now);
+	}
 }
 
 public class WebSocketMessage
 {
-    public SocketConnection Socket { get; set; }
-    public string Component { get; set; }
-    public string Type { get; set; }
-    public string Data { get; set; }
+	public SocketConnection Socket { get; set; }
+	public string Component { get; set; }
+	public string Type { get; set; }
+	public string Data { get; set; }
 
-    public bool HasData()
-    {
-        return !string.IsNullOrEmpty(Component) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Data);
-    }
+	public bool HasData()
+	{
+		return !string.IsNullOrEmpty(Component) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Data);
+	}
 }

@@ -1,45 +1,49 @@
+using System.Threading;
+using Rebronx.Server.Services.Interfaces;
+
 public class Application
 {
-    private readonly IWebSocketCore webSocketCore;
-    private readonly IPlayerService playerService;
+	private readonly IWebSocketCore webSocketCore;
+	private readonly IConnectionService connectionService;
 
-    private readonly IMapComponent mapComponent;
-    private readonly IMovementComponent movementComponent;
-    private readonly IChatComponent chatComponent;
-    private readonly IShopComponent shopComponent;
-    public Application(
-        IWebSocketCore webSocketCore,
-        IPlayerService playerService, 
-        IMapComponent mapComponent,
-        IMovementComponent movementComponent,
-        IChatComponent chatComponent,
-        IShopComponent shopComponent)
-    {
-        this.webSocketCore = webSocketCore;
-        this.playerService = playerService;
+	private readonly IMapComponent mapComponent;
+	private readonly IMovementComponent movementComponent;
+	private readonly IChatComponent chatComponent;
+	private readonly IShopComponent shopComponent;
+	public Application(
+		IWebSocketCore webSocketCore,
+		IConnectionService connectionService,
 
-        this.mapComponent = mapComponent;
-        this.movementComponent = movementComponent;
-        this.chatComponent = chatComponent;
-        this.shopComponent = shopComponent;
-    }
+		IMapComponent mapComponent,
+		IMovementComponent movementComponent,
+		IChatComponent chatComponent,
+		IShopComponent shopComponent)
+	{
+		this.webSocketCore = webSocketCore;
+		this.connectionService = connectionService;
 
-    public void Run()
-    {
-        while (true)
-        {
-            var connections = webSocketCore.GetNewConnections();
-            playerService.HandleNewPlayers(connections);
-            
-            var socketMessages = webSocketCore.PollMessages();
-            var playerMessages = playerService.ConvertToMessages(socketMessages);
+		this.mapComponent = mapComponent;
+		this.movementComponent = movementComponent;
+		this.chatComponent = chatComponent;
+		this.shopComponent = shopComponent;
+	}
 
+	public void Run()
+	{
+		while (true)
+		{
+			var connections = webSocketCore.GetNewConnections();
 
-            mapComponent.Run(playerMessages);
-            movementComponent.Run(playerMessages);
-            chatComponent.Run(playerMessages);
-            shopComponent.Run(playerMessages);
-            
-        }
-    }
+			connectionService.HandleNewPlayers(connections);
+			connectionService.HandleDeadPlayers();
+			
+			var socketMessages = webSocketCore.PollMessages();
+			var playerMessages = connectionService.ConvertToMessages(socketMessages);
+
+			mapComponent.Run(playerMessages);
+			movementComponent.Run(playerMessages);
+			chatComponent.Run(playerMessages);
+			shopComponent.Run(playerMessages);
+		}
+	}
 }

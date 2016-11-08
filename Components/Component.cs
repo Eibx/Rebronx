@@ -1,7 +1,7 @@
 public class Component
 {
-    public T GetData<T>(Message message) where T : class
-    {
+	public T GetData<T>(Message message) where T : class
+	{
 			if (message == null || string.IsNullOrEmpty(message.Data))
 				return null;
 
@@ -10,5 +10,5 @@ public class Component
 			} catch {
 				return null;
 			}
-    }
+	}
 }
