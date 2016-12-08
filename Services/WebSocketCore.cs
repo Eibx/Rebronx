@@ -172,6 +172,22 @@ public class WebSocketCore : IWebSocketCore
 		socket.Send(bytes.ToArray());
 	}
 
+	private void SendClose(Socket socket, int reason) {
+		List<byte> bytes = new List<byte>();
+
+		//close frame
+		bytes.Add(136);
+
+		//length
+		bytes.Add(2);
+
+		//code/reason 4001
+		bytes.Add(15);
+		bytes.Add(161);
+		
+		socket.Send(bytes.ToArray());
+	}
+
 	private List<SocketConnection> HandleHttpConnection()
 	{
 		var outputSockets = new List<SocketConnection>();
@@ -193,23 +209,35 @@ public class WebSocketCore : IWebSocketCore
 
 			if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
 			{
-				var token = string.Empty;
-				if (httpHeaders.TryGetValue("UserToken", out token))
+				var username = string.Empty;
+				var password = string.Empty;
+				httpHeaders.TryGetValue("Username", out username);
+				httpHeaders.TryGetValue("Password", out password);
+
+				byte[] responseBytes = CreateConnectionResponse(httpHeaders);
+				var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
+				
+				if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
 				{
-					byte[] responseBytes = CreateConnectionResponse(httpHeaders);
-					var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
-					Console.WriteLine(sent + " bytes sent to token " + token);
+					Console.WriteLine(sent + " bytes sent to token " + username);
 
 					var socketConnection = new SocketConnection()
 					{
 						Id = Guid.NewGuid(),
 						Socket = connection.Socket,
-						Token = token,
+						Token = username,
 						LastMessage = DateTime.Now
 					};
 					sockets.Add(socketConnection);
 					outputSockets.Add(socketConnection);
+					
+				} else {
+					SendClose(connection.Socket, 4001);
+
+					connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
+					connection.Socket.Shutdown(SocketShutdown.Send);
 				}
+
 
 				if (i <= connectingSockets.Count - 1)
 				{
@@ -271,10 +299,10 @@ public class WebSocketCore : IWebSocketCore
 		{
 			if (line.StartsWith("GET /"))
 			{
-				var token = GetQueryString(line, "TOKEN");
+				var token = GetQueryString(line, "u");
 
 				if (token != null)
-					headers.Add("UserToken", token);
+					headers.Add("Username", token);
 
 				continue;
 			}
