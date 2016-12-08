@@ -44,6 +44,8 @@ public class Application
 			movementComponent.Run(playerMessages);
 			chatComponent.Run(playerMessages);
 			shopComponent.Run(playerMessages);
+
+			Thread.Sleep(1);
 		}
 	}
 }
