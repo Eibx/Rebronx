@@ -1,5 +1,6 @@
 using System.Linq;
 using Newtonsoft.Json;
+using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
@@ -10,10 +11,13 @@ namespace Rebronx.Server.Services
 		private readonly IWebSocketCore webSocketCore;
 		private readonly IPlayerRepository playerRepository;
 
-		public MessageService(IWebSocketCore webSocketCore, IPlayerRepository playerRepository)
+		private readonly ISocketRepository socketRepository;
+
+		public MessageService(IWebSocketCore webSocketCore, IPlayerRepository playerRepository, ISocketRepository socketRepository)
 		{
 			this.webSocketCore = webSocketCore;
 			this.playerRepository = playerRepository;
+			this.socketRepository = socketRepository;
 		}
 
 		public void Send<T>(SocketConnection connection, string component, string type, T data) 
@@ -65,7 +69,7 @@ namespace Rebronx.Server.Services
 			catch {}
 
 
-			foreach(var player in playerRepository.GetPlayers().Select(x => x.Value).Where(x => x.Position.Equals(position))) 
+			foreach(var player in playerRepository.GetPlayersByPosition(position)) 
 			{
 				var socket = player?.Socket?.Socket;
 
@@ -86,9 +90,9 @@ namespace Rebronx.Server.Services
 			} 
 			catch {}
 
-			foreach(var player in playerRepository.GetPlayers().Select(x => x.Value)) 
+			foreach(var connection in socketRepository.GetAllConnections()) 
 			{
-				var socket = player?.Socket?.Socket;
+				var socket = connection?.Socket;
 
 				if (socket != null)
 					webSocketCore.Send(socket, json);

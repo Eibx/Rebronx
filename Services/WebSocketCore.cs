@@ -7,28 +7,30 @@ using System.Security.Cryptography;
 using System.Linq;
 using Rebronx.Server.Models;
 using Newtonsoft.Json;
+using Rebronx.Server.Repositories.Interfaces;
 
 public class WebSocketCore : IWebSocketCore
 {
+	private readonly ISocketRepository socketRepository;
 	private const int TEXT_FRAME = 129;
 	private const int BINARY_FRAME = 64;
 	List<PendingSocket> connectingSockets;
-	List<SocketConnection> sockets;
 	List<WebSocketMessage> pendingMessages;
 	TcpListener server;
 
-	public WebSocketCore()
+	public WebSocketCore(ISocketRepository socketRepository)
 	{
+		this.socketRepository = socketRepository;
+
 		server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31337);
 		server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
 		server.Start();
 
 		pendingMessages = new List<WebSocketMessage>();
 		connectingSockets = new List<PendingSocket>();
-		sockets = new List<SocketConnection>();
 	}
 
-	public List<SocketConnection> GetNewConnections()
+	public void GetNewConnections()
 	{
 		while (server.Pending())
 		{
@@ -40,12 +42,14 @@ public class WebSocketCore : IWebSocketCore
 			connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
 		}
 
-		return HandleHttpConnection();
+		HandleHttpConnection();
 	}
 
 	public List<WebSocketMessage> PollMessages()
 	{
 		List<WebSocketMessage> output = new List<WebSocketMessage>();
+
+		var sockets = socketRepository.GetAllConnections();
 
 		for (int i = 0; i < sockets.Count; i++)
 		{
@@ -66,7 +70,7 @@ public class WebSocketCore : IWebSocketCore
 
 			if (s.IsTimedout())
 			{
-				Console.WriteLine("Dead connection (" + s.Token + ")");
+				Console.WriteLine("Dead connection (" + s.Id + ")");
 				sockets.RemoveAt(i);
 				i--;
 				continue;
@@ -74,8 +78,6 @@ public class WebSocketCore : IWebSocketCore
 
 			if (!data.Any())
 				continue;
-
-			s.LastMessage = DateTime.Now;
 
 			if (data[0] == TEXT_FRAME)
 			{
@@ -113,6 +115,7 @@ public class WebSocketCore : IWebSocketCore
 
 				if (jsondata == "ping")
 				{
+					s.LastMessage = DateTime.Now;
 					Send(s.Socket, "pong");
 					continue;
 				}
@@ -125,7 +128,7 @@ public class WebSocketCore : IWebSocketCore
 
 				if (wsMessage != null && wsMessage.HasData())
 				{
-					wsMessage.Socket = s;
+					wsMessage.Connection = s;
 					output.Add(wsMessage);
 				}
 			}
@@ -188,10 +191,8 @@ public class WebSocketCore : IWebSocketCore
 		socket.Send(bytes.ToArray());
 	}
 
-	private List<SocketConnection> HandleHttpConnection()
+	private void HandleHttpConnection()
 	{
-		var outputSockets = new List<SocketConnection>();
-
 		for (int i = 0; i < connectingSockets.Count; i++)
 		{
 			var connection = connectingSockets[i];
@@ -209,45 +210,25 @@ public class WebSocketCore : IWebSocketCore
 
 			if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
 			{
-				var username = string.Empty;
-				var password = string.Empty;
-				httpHeaders.TryGetValue("Username", out username);
-				httpHeaders.TryGetValue("Password", out password);
-
 				byte[] responseBytes = CreateConnectionResponse(httpHeaders);
 				var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
 				
-				if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+				var socketConnection = new SocketConnection()
 				{
-					Console.WriteLine(sent + " bytes sent to token " + username);
+					Id = Guid.NewGuid(),
+					Socket = connection.Socket,
+					LastMessage = DateTime.Now
+				};
 
-					var socketConnection = new SocketConnection()
-					{
-						Id = Guid.NewGuid(),
-						Socket = connection.Socket,
-						Token = username,
-						LastMessage = DateTime.Now
-					};
-					sockets.Add(socketConnection);
-					outputSockets.Add(socketConnection);
-					
-				} else {
-					SendClose(connection.Socket, 4001);
+				socketRepository.AddUnauthorizedConnection(socketConnection);
+			}
 
-					connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
-					connection.Socket.Shutdown(SocketShutdown.Send);
-				}
-
-
-				if (i <= connectingSockets.Count - 1)
-				{
-					connectingSockets.RemoveAt(i);
-					i--;
-				}
+			if (i <= connectingSockets.Count - 1)
+			{
+				connectingSockets.RemoveAt(i);
+				i--;
 			}
 		}
-
-		return outputSockets;
 	}
 
 	private string GetHttpRequest(PendingSocket socket)
@@ -346,7 +327,7 @@ public class PendingSocket
 
 public class WebSocketMessage
 {
-	public SocketConnection Socket { get; set; }
+	public SocketConnection Connection { get; set; }
 	public string Component { get; set; }
 	public string Type { get; set; }
 	public string Data { get; set; }

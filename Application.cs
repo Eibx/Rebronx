@@ -32,9 +32,8 @@ public class Application
 	{
 		while (true)
 		{
-			var connections = webSocketCore.GetNewConnections();
+			webSocketCore.GetNewConnections();
 
-			connectionService.HandleNewPlayers(connections);
 			connectionService.HandleDeadPlayers();
 			
 			var socketMessages = webSocketCore.PollMessages();

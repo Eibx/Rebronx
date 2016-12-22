@@ -3,10 +3,10 @@ using Rebronx.Server.Models;
 
 namespace Rebronx.Server.Services.Interfaces
 {
-    public interface IConnectionService
-    {
-        void HandleNewPlayers(List<SocketConnection> connections);
+	public interface IConnectionService
+	{
+		void HandleLoginMessage(WebSocketMessage loginMessage);
 		void HandleDeadPlayers();
-        List<Message> ConvertToMessages(List<WebSocketMessage> messages);
-    }
+		List<Message> ConvertToMessages(List<WebSocketMessage> messages);
+	}
 }
