@@ -6,6 +6,7 @@ using Rebronx.Server.Services;
 using Rebronx.Server.Services.Interfaces;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Repositories;
+using StackExchange.Redis;
 
 public class Program
 {
@@ -20,6 +21,7 @@ public class Program
 		services.AddSingleton<IWebSocketCore, WebSocketCore>();
 		services.AddSingleton<IConnectionService, ConnectionService>();
 		services.AddSingleton<IMessageService, MessageService>();
+		services.AddSingleton<IDatabaseService, DatabaseService>();
 		
 		//Components
 		services.AddSingleton<IMapComponent, MapComponent>();
@@ -31,12 +33,14 @@ public class Program
 		services.AddSingleton<IChatSender, ChatSender>();
 		services.AddSingleton<IInventorySender, InventorySender>();
 		services.AddSingleton<IJoinSender, JoinSender>();
+		services.AddSingleton<ILoginSender, LoginSender>();
 		services.AddSingleton<ILobbySender, LobbySender>();
 		services.AddSingleton<IMapSender, MapSender>();
 		services.AddSingleton<IMovementSender, MovementSender>();
 
 		//Repositories
 		services.AddSingleton<IPlayerRepository, PlayerRepository>();
+		services.AddSingleton<ISocketRepository, SocketRepository>();
 
 
         Container = services.BuildServiceProvider();
