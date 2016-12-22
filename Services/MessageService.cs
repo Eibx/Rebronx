@@ -16,6 +16,24 @@ namespace Rebronx.Server.Services
 			this.playerRepository = playerRepository;
 		}
 
+		public void Send<T>(SocketConnection connection, string component, string type, T data) 
+		{
+			string json = string.Empty;
+			
+			try
+			{
+				var settings = new JsonSerializerSettings();
+				settings.ContractResolver = new LowercaseContractResolver();
+				json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);	
+			} 
+			catch {}
+					
+			var socket = connection.Socket;
+
+			if (socket != null)
+				webSocketCore.Send(socket, json);
+		}
+
 		public void Send<T>(Player player, string component, string type, T data) 
 		{
 			string json = string.Empty;
