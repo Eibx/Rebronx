@@ -14,6 +14,7 @@ namespace Rebronx.Server.Repositories
 		public SocketRepository()
 		{
 			sockets = new Dictionary<Guid, SocketConnection>();
+			playerSocketDictionary = new BiDictionary<int, Guid>();
 		}
 
 		public SocketConnection GetConnection(Guid connectionId) 
@@ -32,6 +33,15 @@ namespace Rebronx.Server.Repositories
 			return GetConnection(connectionId);
 		}
 
+		public int? GetPlayerId(Guid connectionId) {
+			int playerId = 0;
+			if (playerSocketDictionary.TryGetBySecond(connectionId, out playerId)) {
+				return playerId;
+			} else {
+				return null;	
+			}
+		}
+
 		public List<SocketConnection> GetAllConnections()
 		{
 			return sockets.Select(x => x.Value).ToList();
@@ -39,7 +49,14 @@ namespace Rebronx.Server.Repositories
 
 		public void AddConnection(int playerId, SocketConnection connection) 
 		{
-			playerSocketDictionary.Add(playerId, connection.Id);
+			if (!playerSocketDictionary.ContainsByFirst(playerId)) 
+			{
+				playerSocketDictionary.Add(playerId, connection.Id);
+			} 
+			else
+			{
+				playerSocketDictionary.RemoveByFirst(playerId);
+			}
 
 			if (!sockets.ContainsKey(connection.Id))
 				sockets.Add(connection.Id, connection);
@@ -52,8 +69,11 @@ namespace Rebronx.Server.Repositories
 
 		public void RemoveConnection(Guid connectionId) 
 		{
-			sockets.Remove(connectionId);
-			playerSocketDictionary.RemoveBySecond(connectionId);
+			if (sockets.ContainsKey(connectionId))
+				sockets.Remove(connectionId);
+				
+			if (playerSocketDictionary.ContainsBySecond(connectionId))
+				playerSocketDictionary.RemoveBySecond(connectionId);
 		}
 
 		public void RemoveConnection(int playerId) 

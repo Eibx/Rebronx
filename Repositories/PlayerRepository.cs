@@ -36,22 +36,52 @@ namespace Rebronx.Server.Repositories
 			//NOTE only used for new players - right?
 		}
 
-		public Player GetPlayerByConnection(Guid connectionId)
-		{
-			var id = connectionId.ToString("N");
-			var playerId = database.StringGet("connection:" + id);
-
-			if (!playerId.IsNull && !playerId.IsInteger) {
-				//TODO: Log error with playerid
-				Console.WriteLine($"playerId was null or not and integer: {id}");
-				return null;
-			}
-
-			return GetPlayerById(int.Parse(playerId));				
-		}
 		public Player GetPlayerByUsername(string username)
 		{
-			return new Player();
+			Player player = null;
+			if (string.IsNullOrEmpty(username)) 
+			{
+				return player;
+			}
+
+			var key = $"player-name:{username.ToLower()}";
+			var playerId = database.StringGet(key);
+
+			if (playerId.HasValue && playerId.IsInteger)
+				return GetPlayerById(int.Parse(playerId));
+
+			return player;
+		}
+
+		public Player GetPlayerByLogin(string username, string password)
+		{
+			Player player = null;
+
+			if (string.IsNullOrEmpty(username))
+				return player;
+
+			var key = $"login-password:{username.ToLower()}-{password}";
+			var playerId = (int?)database.StringGet(key);
+
+			if (playerId.HasValue)
+				return GetPlayerById(playerId.Value);
+
+			return player;
+		}
+
+		public Player GetPlayerByToken(string token)
+		{
+			Player player = null;
+
+			var key = $"login-token:{token}";
+			var playerId = (int?)database.StringGet(key);
+
+			if (playerId.HasValue)
+				return GetPlayerById(playerId.Value);
+
+			throw new NotImplementedException();
+
+			return player;
 		}
 
 		public List<Player> GetPlayersByPosition(Position position)
@@ -64,7 +94,7 @@ namespace Rebronx.Server.Repositories
 		public Player GetPlayerById(int playerId) 
 		{
 			Player player = null;
-			var values = database.HashGet("user:" + playerId, playerFields);
+			var values = database.HashGet("player:" + playerId, playerFields);
 
 			if (!values.FirstOrDefault().IsNull) 
 			{

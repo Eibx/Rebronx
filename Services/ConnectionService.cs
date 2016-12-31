@@ -37,7 +37,14 @@ namespace Rebronx.Server.Services
 					continue;
 				}
 
-				var player = playerRepository.GetPlayerByConnection(message.Connection.Id);
+				Player player = null;
+				var playerId = socketRepository.GetPlayerId(message.Connection.Id);
+
+				if (playerId != null)
+					player = playerRepository.GetPlayerById(playerId.Value);
+
+				if (player == null)
+					return output;
 
 				output.Add(new Message()
 				{
@@ -61,18 +68,31 @@ namespace Rebronx.Server.Services
 			if (loginData == null)
 				return;
 			
-			if (!string.IsNullOrEmpty(loginData.Username) && loginData.Password == "1") 
+			Player player = null;
+			
+			if (!string.IsNullOrEmpty(loginData.Token)) 
 			{
-				var player = playerRepository.GetPlayerByUsername(loginData.Username);
+				player = playerRepository.GetPlayerByToken(loginData.Token);
+			}
+			else
+			{
+				player = playerRepository.GetPlayerByLogin(loginData.Username, loginData.Password);
+			}
+
+			if (player != null) 
+			{
+				Console.WriteLine($"{player.Name} connected ({loginMessage.Connection.Id})");
+
+				socketRepository.AddConnection(player.Id, loginMessage.Connection);
 
 				//TODO
-				//Send informatino about player
+				//Send information about player
 				//Send map information
 				//Send lobby information
 				//Maybe just make a "JoinSender" that does all that.
 				loginSender.Login(loginMessage.Connection, true);
 				joinSender.Join(player);
-			} 
+			}
 			else 
 			{
 				loginSender.Login(loginMessage.Connection, false);
@@ -86,17 +106,7 @@ namespace Rebronx.Server.Services
 			var timeouts = connections.Where(x => x.Socket == null || x.IsTimedout()).ToList();
 			foreach (var timeout in timeouts)
 			{
-				var player = playerRepository.GetPlayerByConnection(timeout.Id);
-
-				if (player != null) {
-					Console.WriteLine("Removing player (dead) - " + player.Name);
-					playerRepository.RemovePlayer(player.Id);
-
-					lobbySender.Update(player.Position);
-				} else {
-					//TODO: add logging
-					Console.WriteLine($"Socket was timed out but player was null - ID:{timeout.Id}");
-				}
+				socketRepository.RemoveConnection(timeout.Id);
 			}
 		}
 	}
@@ -106,4 +116,5 @@ public class LoginMessage
 {
 	public string Username { get; set; }
 	public string Password { get; set; }
+	public string Token { get; set; }
 }

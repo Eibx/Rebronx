@@ -38,7 +38,6 @@ public class WebSocketCore : IWebSocketCore
 			task.Wait();
 			Socket socket = task.Result;
 
-			Console.WriteLine("A socket connected.");
 			connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
 		}
 
