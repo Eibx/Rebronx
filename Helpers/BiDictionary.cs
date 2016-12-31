@@ -169,6 +169,16 @@ public class BiDictionary<TFirst, TSecond>
         return true;
     }
 
+	public Boolean ContainsByFirst(TFirst first) 
+	{
+		return firstToSecond.ContainsKey(first);
+	}
+
+	public Boolean ContainsBySecond(TSecond second) 
+	{
+		return secondToFirst.ContainsKey(second);
+	}
+
     #endregion
 
     /// <summary>
