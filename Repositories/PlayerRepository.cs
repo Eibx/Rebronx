@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using Rebronx.Server.Helpers;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 using StackExchange.Redis;
@@ -60,10 +61,18 @@ namespace Rebronx.Server.Repositories
 			if (string.IsNullOrEmpty(username))
 				return player;
 
-			var key = $"login-password:{username.ToLower()}-{password}";
-			var playerId = (int?)database.StringGet(key);
+			var key = $"login:{username.ToLower()}";
+			var hash = database.HashGet(key, "hash");
+			
+			if (hash == "TEST")
+			{
+				var newHash = PBKDF2.HashPassword(password);
+				database.HashSet(key, "hash", newHash);
+			}
 
-			if (playerId.HasValue)
+			var playerId = (int?)database.HashGet(key, "id");
+
+			if (playerId.HasValue && PBKDF2.ValidatePassword(password, hash))
 				return GetPlayerById(playerId.Value);
 
 			return player;
@@ -73,20 +82,18 @@ namespace Rebronx.Server.Repositories
 		{
 			Player player = null;
 
-			var key = $"login-token:{token}";
+			var key = $"token:{token}";
 			var playerId = (int?)database.StringGet(key);
 
 			if (playerId.HasValue)
 				return GetPlayerById(playerId.Value);
-
-			throw new NotImplementedException();
 
 			return player;
 		}
 
 		public List<Player> GetPlayersByPosition(Position position)
 		{
-			var playerIds = database.ListRange($"players:position:{position.X}.{position.Y}.{position.Y}");
+			var playerIds = database.ListRange($"position:{position.X}.{position.Y}.{position.Y}");
 
 			return playerIds.Select(id => GetPlayerById(int.Parse(id))).Where(p => p != null).ToList();
 		}

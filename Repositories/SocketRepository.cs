@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
+using System.Net.Sockets;
 
 namespace Rebronx.Server.Repositories
 {
@@ -49,15 +50,13 @@ namespace Rebronx.Server.Repositories
 
 		public void AddConnection(int playerId, SocketConnection connection) 
 		{
-			if (!playerSocketDictionary.ContainsByFirst(playerId)) 
-			{
-				playerSocketDictionary.Add(playerId, connection.Id);
-			} 
-			else
+			if (playerSocketDictionary.ContainsByFirst(playerId)) 
 			{
 				playerSocketDictionary.RemoveByFirst(playerId);
 			}
-
+			
+			playerSocketDictionary.Add(playerId, connection.Id);
+			
 			if (!sockets.ContainsKey(connection.Id))
 				sockets.Add(connection.Id, connection);
 		}
@@ -79,9 +78,13 @@ namespace Rebronx.Server.Repositories
 		public void RemoveConnection(int playerId) 
 		{
 			Guid connectionId = Guid.Empty;
-			
-			if (playerSocketDictionary.TryGetByFirst(playerId, out connectionId))
-				sockets.Remove(connectionId);
+
+			if (playerSocketDictionary.TryGetByFirst(playerId, out connectionId)) {
+				if (sockets.ContainsKey(connectionId)) {
+					sockets[connectionId].Socket.Shutdown(SocketShutdown.Both);
+					sockets.Remove(connectionId);
+				}
+			}
 		}
 	}
 }

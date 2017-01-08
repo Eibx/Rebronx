@@ -50,10 +50,10 @@ namespace Rebronx.Server.Services
 			} 
 			catch {}
 					
-			var socket = player?.Socket?.Socket;
+			var connection = socketRepository.GetConnection(player.Id);
 
-			if (socket != null)
-				webSocketCore.Send(socket, json);
+			if (connection?.Socket != null)
+				webSocketCore.Send(connection.Socket, json);
 		}
 
 		public void SendPosition<T>(Position position, string component, string type, T data) 
@@ -71,10 +71,10 @@ namespace Rebronx.Server.Services
 
 			foreach(var player in playerRepository.GetPlayersByPosition(position)) 
 			{
-				var socket = player?.Socket?.Socket;
+				var connection = socketRepository.GetConnection(player.Id);
 
-				if (socket != null)
-					webSocketCore.Send(socket, json);
+				if (connection?.Socket != null)
+					webSocketCore.Send(connection.Socket, json);
 			}
 		}
 

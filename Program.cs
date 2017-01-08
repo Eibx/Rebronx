@@ -41,9 +41,11 @@ public class Program
 		//Repositories
 		services.AddSingleton<IPlayerRepository, PlayerRepository>();
 		services.AddSingleton<ISocketRepository, SocketRepository>();
+		services.AddSingleton<IMovementRepository, MovementRepository>();
+		services.AddSingleton<ITokenRepository, TokenRepository>();
 
 
-        Container = services.BuildServiceProvider();
+		Container = services.BuildServiceProvider();
 
 		var app = Container.GetService<Application>();
 		app.Run();

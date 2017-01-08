@@ -24,10 +24,15 @@ namespace Rebronx.Server.DataSenders
 				Z = toPosition.Z,
 			};
 
+			var cooldownMessage = new SendCooldownMessage() {
+				Cooldown = DateTimeOffset.UtcNow.AddSeconds(2).ToUnixTimeMilliseconds()
+			};
+
 			lobbySender.Update(fromPosition);
 			lobbySender.Update(toPosition);
 			
 			messageService.Send(player, "player", "position", positionMessage);
+			messageService.Send(player, "movement", "cooldown", cooldownMessage);
 		}
 	}
 
@@ -36,5 +41,10 @@ namespace Rebronx.Server.DataSenders
 		public int X { get; set; }
 		public int Y { get; set; }
 		public int Z { get; set; }
+	}
+
+	public class SendCooldownMessage
+	{
+		public long Cooldown { get; set; }
 	}
 }

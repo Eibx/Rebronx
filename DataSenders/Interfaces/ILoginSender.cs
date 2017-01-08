@@ -4,6 +4,8 @@ namespace Rebronx.Server.DataSenders.Interfaces
 {
 	public interface ILoginSender
 	{
-		 void Login(SocketConnection connection, bool loginSuccess);
+		 void Success(Player player, string token);
+		 void Fail(SocketConnection connection, int reason);
+		 void Fail(Player player, int reason);
 	}
 }

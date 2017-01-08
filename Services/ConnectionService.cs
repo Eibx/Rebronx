@@ -12,15 +12,16 @@ namespace Rebronx.Server.Services
 	{
 		private readonly IPlayerRepository playerRepository;
 		private readonly ISocketRepository socketRepository;
+		private readonly ITokenRepository tokenRepository;
 		private readonly IJoinSender joinSender;
 		private readonly ILoginSender loginSender;
 		private readonly ILobbySender lobbySender;
 
-		public ConnectionService(IPlayerRepository playerRepository, ISocketRepository socketRepository, IJoinSender joinSender, ILoginSender loginSender, ILobbySender lobbySender)
+		public ConnectionService(IPlayerRepository playerRepository, ISocketRepository socketRepository, ITokenRepository tokenRepository, IJoinSender joinSender, ILoginSender loginSender, ILobbySender lobbySender)
 		{
 			this.socketRepository = socketRepository;
-
 			this.playerRepository = playerRepository;
+			this.tokenRepository = tokenRepository;
 			this.joinSender = joinSender;
 			this.loginSender = loginSender;
 			this.lobbySender = lobbySender;
@@ -69,35 +70,42 @@ namespace Rebronx.Server.Services
 				return;
 			
 			Player player = null;
+			string token;
 			
 			if (!string.IsNullOrEmpty(loginData.Token)) 
 			{
 				player = playerRepository.GetPlayerByToken(loginData.Token);
+
+				if (player == null) {
+					loginSender.Fail(loginMessage.Connection, 4002);
+					return;
+				}
+
+				token = loginData.Token;
 			}
 			else
 			{
 				player = playerRepository.GetPlayerByLogin(loginData.Username, loginData.Password);
+
+				if (player == null) {
+					loginSender.Fail(loginMessage.Connection, 4001);
+					return;
+				}
+
+				token = Guid.NewGuid().ToString("N");
+				tokenRepository.SetPlayerToken(player, token);
 			}
 
-			if (player != null) 
-			{
-				Console.WriteLine($"{player.Name} connected ({loginMessage.Connection.Id})");
+			//TODO
+			//Send information about player
+			//Send map information
+			//Send lobby information
+			//Maybe just make a "JoinSender" that does all that.
 
-				socketRepository.AddConnection(player.Id, loginMessage.Connection);
+			socketRepository.AddConnection(player.Id, loginMessage.Connection);
 
-				//TODO
-				//Send information about player
-				//Send map information
-				//Send lobby information
-				//Maybe just make a "JoinSender" that does all that.
-				loginSender.Login(loginMessage.Connection, true);
-				joinSender.Join(player);
-			}
-			else 
-			{
-				loginSender.Login(loginMessage.Connection, false);
-				return;
-			}
+			loginSender.Success(player, token);
+			joinSender.Join(player);
 		}
 
 		public void HandleDeadPlayers()
@@ -106,6 +114,7 @@ namespace Rebronx.Server.Services
 			var timeouts = connections.Where(x => x.Socket == null || x.IsTimedout()).ToList();
 			foreach (var timeout in timeouts)
 			{
+				Console.WriteLine($"Socket removed: {timeout.Id} - {timeout.LastMessage}");
 				socketRepository.RemoveConnection(timeout.Id);
 			}
 		}
