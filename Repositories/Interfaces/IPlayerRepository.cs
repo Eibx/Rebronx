@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rebronx.Server.Repositories.Interfaces
 {
-	public interface IPlayerRepository
+	public interface IUserRepository
 	{
 		void AddPlayer(Player player);
 		Player GetPlayerById(int playerId);

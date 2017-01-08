@@ -10,14 +10,14 @@ namespace Rebronx.Server.Services
 {
 	public class ConnectionService : IConnectionService
 	{
-		private readonly IPlayerRepository playerRepository;
+		private readonly IUserRepository playerRepository;
 		private readonly ISocketRepository socketRepository;
 		private readonly ITokenRepository tokenRepository;
 		private readonly IJoinSender joinSender;
 		private readonly ILoginSender loginSender;
 		private readonly ILobbySender lobbySender;
 
-		public ConnectionService(IPlayerRepository playerRepository, ISocketRepository socketRepository, ITokenRepository tokenRepository, IJoinSender joinSender, ILoginSender loginSender, ILobbySender lobbySender)
+		public ConnectionService(IUserRepository playerRepository, ISocketRepository socketRepository, ITokenRepository tokenRepository, IJoinSender joinSender, ILoginSender loginSender, ILobbySender lobbySender)
 		{
 			this.socketRepository = socketRepository;
 			this.playerRepository = playerRepository;

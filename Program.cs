@@ -39,7 +39,7 @@ public class Program
 		services.AddSingleton<IMovementSender, MovementSender>();
 
 		//Repositories
-		services.AddSingleton<IPlayerRepository, PlayerRepository>();
+		services.AddSingleton<IUserRepository, UserRepository>();
 		services.AddSingleton<ISocketRepository, SocketRepository>();
 		services.AddSingleton<IMovementRepository, MovementRepository>();
 		services.AddSingleton<ITokenRepository, TokenRepository>();

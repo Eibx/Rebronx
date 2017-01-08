@@ -9,7 +9,7 @@ using StackExchange.Redis;
 
 namespace Rebronx.Server.Repositories
 {
-	public class PlayerRepository : IPlayerRepository
+	public class UserRepository : IUserRepository
 	{
 		private readonly RedisValue[] playerFields;
 
@@ -17,7 +17,7 @@ namespace Rebronx.Server.Repositories
 		private readonly IDatabase database;
 		private readonly ISocketRepository socketRepository;
 
-		public PlayerRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
+		public UserRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
 		{
 			this.databaseService = databaseService;
 			this.socketRepository = socketRepository;

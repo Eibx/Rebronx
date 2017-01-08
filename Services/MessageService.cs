@@ -9,11 +9,11 @@ namespace Rebronx.Server.Services
 	public class MessageService : IMessageService
 	{
 		private readonly IWebSocketCore webSocketCore;
-		private readonly IPlayerRepository playerRepository;
+		private readonly IUserRepository playerRepository;
 
 		private readonly ISocketRepository socketRepository;
 
-		public MessageService(IWebSocketCore webSocketCore, IPlayerRepository playerRepository, ISocketRepository socketRepository)
+		public MessageService(IWebSocketCore webSocketCore, IUserRepository playerRepository, ISocketRepository socketRepository)
 		{
 			this.webSocketCore = webSocketCore;
 			this.playerRepository = playerRepository;

@@ -9,10 +9,10 @@ namespace Rebronx.Server.DataSenders
 {
 	public class LobbySender : ILobbySender
 	{
-		private readonly IPlayerRepository playerRepository;
+		private readonly IUserRepository playerRepository;
 		private readonly IMessageService messageService;
 
-		public LobbySender(IPlayerRepository playerRepository, IMessageService messageService)
+		public LobbySender(IUserRepository playerRepository, IMessageService messageService)
 		{
 			this.playerRepository = playerRepository;
 			this.messageService = messageService;
