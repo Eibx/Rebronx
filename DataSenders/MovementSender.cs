@@ -16,7 +16,7 @@ namespace Rebronx.Server.DataSenders
 			this.lobbySender = lobbySender;
 		}
 
-		public void Move(Player player, Position fromPosition, Position toPosition)
+		public void Move(Player player, Position fromPosition, Position toPosition, long cooldown)
 		{
 			var positionMessage = new SendPositionMessage() {
 				X = toPosition.X,
@@ -25,7 +25,7 @@ namespace Rebronx.Server.DataSenders
 			};
 
 			var cooldownMessage = new SendCooldownMessage() {
-				Cooldown = DateTimeOffset.UtcNow.AddSeconds(2).ToUnixTimeMilliseconds()
+				Cooldown = cooldown
 			};
 
 			lobbySender.Update(fromPosition);

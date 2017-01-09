@@ -17,8 +17,6 @@ namespace Rebronx.Server.Repositories
 		{
 			var database = databaseService.GetDatabase();
 
-			
-
 			database.HashSet($"player:{player.Id}", "pos.x", position.X);
 			database.HashSet($"player:{player.Id}", "pos.y", position.Y);
 			database.HashSet($"player:{player.Id}", "pos.z", position.Z);

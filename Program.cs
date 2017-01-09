@@ -43,6 +43,7 @@ public class Program
 		services.AddSingleton<ISocketRepository, SocketRepository>();
 		services.AddSingleton<IMovementRepository, MovementRepository>();
 		services.AddSingleton<ITokenRepository, TokenRepository>();
+		services.AddSingleton<ICooldownRepository, CooldownRepository>();
 
 
 		Container = services.BuildServiceProvider();
