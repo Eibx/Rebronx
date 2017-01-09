@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using Rebronx.Server.DataSenders.Interfaces;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
@@ -92,7 +93,10 @@ namespace Rebronx.Server.Services
 					return;
 				}
 
-				token = Guid.NewGuid().ToString("N");
+				var bytes = new byte[32];
+				var rnd = RandomNumberGenerator.Create();
+				rnd.GetBytes(bytes);
+				token = Convert.ToBase64String(bytes);
 				tokenRepository.SetPlayerToken(player, token);
 			}
 
