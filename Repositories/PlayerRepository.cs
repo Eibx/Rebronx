@@ -32,9 +32,28 @@ namespace Rebronx.Server.Repositories
 			};
 		}
 
-		public void AddPlayer(Player player)
+		public void CreateNewPlayer(string username, string hash, string token)
 		{
-			//NOTE only used for new players - right?
+			var database = databaseService.GetDatabase();
+			var id = NextUserId();
+			
+			database.HashSet($"player:{id}", "name", username);
+			database.HashSet($"player:{id}", "health", 100);
+			database.HashSet($"player:{id}", "credits", 0);
+			database.HashSet($"player:{id}", "token", token);
+			database.HashSet($"login:{username.ToLower()}", "hash", hash);
+			database.HashSet($"login:{username.ToLower()}", "id", id);
+			database.StringSet($"token:{token}", id);
+		}
+
+		public void RemovePlayer(int playerId) 
+		{
+			var token = (string)database.HashGet($"player:{playerId}", "token");
+			var username = (string)database.HashGet($"player:{playerId}", "name");
+			database.KeyDelete($"player:{playerId}");
+			database.KeyDelete($"cooldown:{playerId}");
+			database.KeyDelete($"login:{username.ToLower()}");
+			database.KeyDelete($"token:{token}");
 		}
 
 		public Player GetPlayerByUsername(string username)
@@ -45,11 +64,11 @@ namespace Rebronx.Server.Repositories
 				return player;
 			}
 
-			var key = $"player-name:{username.ToLower()}";
-			var playerId = database.StringGet(key);
+			var key = $"login:{username.ToLower()}";
+			var playerId = (int?)database.HashGet(key, "id");
 
-			if (playerId.HasValue && playerId.IsInteger)
-				return GetPlayerById(int.Parse(playerId));
+			if (playerId.HasValue)
+				return GetPlayerById(playerId.Value);
 
 			return player;
 		}
@@ -108,8 +127,8 @@ namespace Rebronx.Server.Repositories
 				player = new Player();
 				player.Id = playerId;
 				player.Name = values[0];
-				player.Health = int.Parse(values[1]);
-				player.Position = new Position() { X = int.Parse(values[2]), Y = int.Parse(values[3]), Z = int.Parse(values[4]) };
+				player.Health = (int)values[1];
+				player.Position = new Position() { X = (int)values[2], Y = (int)values[3], Z = (int)values[4] };
 			}
 
 			return player;
@@ -120,9 +139,15 @@ namespace Rebronx.Server.Repositories
 			return new List<Player>();//players.Where(p => p.Value.Position.Equals(position)).Select(p => p.Value).ToList();
 		}
 
-		public void RemovePlayer(int playerId) 
-		{
-			
+		private int NextUserId() {
+			var database = databaseService.GetDatabase();
+
+			var id = (int?)database.StringIncrement("topid");
+
+			if (!id.HasValue)
+				throw new NullReferenceException("NextUserId topid returned a null id");
+
+			return id.Value;
 		}
 
 	}

@@ -46,9 +46,36 @@ namespace Rebronx.Server.DataSenders
 
 			messageService.Send(connection, "login", "login", loginMessage);
 		}
+
+		public void SignupSuccess(SocketConnection connection, string token) 
+		{
+			var signupMessage = new SendSignupMessage();
+			signupMessage.Success = true;
+			signupMessage.Token = token;
+			signupMessage.Reason = 0;
+
+			messageService.Send(connection, "login", "signup", signupMessage);
+		}
+
+		public void SignupFail(SocketConnection connection, int reason) 
+		{
+			var signupMessage = new SendSignupMessage();
+			signupMessage.Success = true;
+			signupMessage.Token = null;
+			signupMessage.Reason = reason;
+
+			messageService.Send(connection, "login", "signup", signupMessage);
+		}
 	}
 
 	public class SendLoginMessage
+	{
+		public bool Success { get; set; }
+		public int Reason { get; set; }
+		public string Token { get; set; }
+	}
+
+	public class SendSignupMessage
 	{
 		public bool Success { get; set; }
 		public int Reason { get; set; }

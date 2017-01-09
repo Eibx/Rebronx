@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using Rebronx.Server.DataSenders.Interfaces;
+using Rebronx.Server.Helpers;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
@@ -36,6 +37,9 @@ namespace Rebronx.Server.Services
 			{
 				if (message.Type == "login") {
 					HandleLoginMessage(message);
+					continue;
+				} else if (message.Type == "signup") {
+					HandleSignupMessage(message);
 					continue;
 				}
 
@@ -93,10 +97,7 @@ namespace Rebronx.Server.Services
 					return;
 				}
 
-				var bytes = new byte[32];
-				var rnd = RandomNumberGenerator.Create();
-				rnd.GetBytes(bytes);
-				token = Convert.ToBase64String(bytes);
+				token = GenerateToken();
 				tokenRepository.SetPlayerToken(player, token);
 			}
 
@@ -112,6 +113,62 @@ namespace Rebronx.Server.Services
 			joinSender.Join(player);
 		}
 
+		public void HandleSignupMessage(WebSocketMessage signupMessage)
+		{
+			SignupMessage signupData = null;
+			try {
+				signupData = Newtonsoft.Json.JsonConvert.DeserializeObject<SignupMessage>(signupMessage.Data);
+			} catch { }
+
+			if (signupData == null)
+				return;
+
+			int reason = 0;
+
+			if (!string.IsNullOrEmpty(signupData.Username) && !string.IsNullOrEmpty(signupData.Password)) 
+			{
+				if (signupData.Username.Length > 3) 
+				{
+					var username = signupData.Username;
+
+					if (playerRepository.GetPlayerByUsername(username) == null) 
+					{
+						var hash = PBKDF2.HashPassword(signupData.Password);
+						var previousToken = string.Empty;
+						var token = string.Empty;
+
+						// TODO: Handle if it still - for some reason - hasn't found an available token
+						do 
+						{
+							previousToken = token;
+							token = GenerateToken();
+
+							if (token == previousToken)
+								throw new Exception("Same Token generated twice! Shouldn't statistically happen");
+						} 
+						while (playerRepository.GetPlayerByToken(token) != null);
+						
+						playerRepository.CreateNewPlayer(username, hash, token);
+						loginSender.SignupSuccess(signupMessage.Connection, token);
+					} 
+					else 
+					{
+						reason = 1003;
+					}
+				} 
+				else 
+				{
+					reason = 1002;
+				}
+			} 
+			else
+			{
+				reason = 1001;
+			}
+			
+			loginSender.SignupFail(signupMessage.Connection, reason);
+		}
+
 		public void HandleDeadPlayers()
 		{
 			var connections = socketRepository.GetAllConnections();
@@ -122,6 +179,13 @@ namespace Rebronx.Server.Services
 				socketRepository.RemoveConnection(timeout.Id);
 			}
 		}
+
+		private string GenerateToken() {
+			var bytes = new byte[32];
+			var rnd = RandomNumberGenerator.Create();
+			rnd.GetBytes(bytes);
+			return Convert.ToBase64String(bytes);
+		}
 	}
 }
 
@@ -130,4 +194,10 @@ public class LoginMessage
 	public string Username { get; set; }
 	public string Password { get; set; }
 	public string Token { get; set; }
+}
+
+public class SignupMessage 
+{
+	public string Username { get; set; }
+	public string Password { get; set; }
 }

@@ -5,7 +5,7 @@ namespace Rebronx.Server.Repositories.Interfaces
 {
 	public interface IUserRepository
 	{
-		void AddPlayer(Player player);
+		void CreateNewPlayer(string username, string hash, string token);
 		Player GetPlayerById(int playerId);
 		Player GetPlayerByUsername(string username);
 		Player GetPlayerByLogin(string username, string password);
