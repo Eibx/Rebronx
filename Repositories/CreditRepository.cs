@@ -1,0 +1,41 @@
+using System;
+using Rebronx.Server.Repositories.Interfaces;
+using Rebronx.Server.Services.Interfaces;
+
+namespace Rebronx.Server.Repositories
+{
+    public class CreditRepository : ICreditRepository
+    {
+		private readonly IDatabaseService databaseService;
+
+		public CreditRepository(IDatabaseService databaseService)
+		{
+			this.databaseService = databaseService;
+		}
+
+        public long GetCredits(Player player)
+        {
+            var database = databaseService.GetDatabase();
+			return (int)database.HashGet($"player:{player.Id}", "credits");
+        }
+
+        public void GiveCredit(Player player, int credits)
+        {
+            var database = databaseService.GetDatabase();
+			database.HashIncrement($"player:{player.Id}", "credits", credits);
+        }
+
+        public void TakeCredit(Player player, int credits)
+        {
+            var database = databaseService.GetDatabase();
+			database.HashDecrement($"player:{player.Id}", "credits", credits);
+        }
+
+        public void TransferCredit(Player fromPlayer, Player toPlayer, int credits)
+        {
+            var database = databaseService.GetDatabase();
+			database.HashDecrement($"player:{fromPlayer.Id}", "credits", credits);			
+			database.HashIncrement($"player:{toPlayer.Id}", "credits", credits);
+        }
+    }
+}
