@@ -18,20 +18,24 @@ namespace Rebronx.Server.DataSenders
 
 		public void Join(Player player)
 		{
-			var position = player?.Position;
-			if (position != null)
-			{
+			if (player != null) {
+				var position = player.Position;
 				var joinMessage = new SendJoinMessage();
 				joinMessage.Position = position;
+				joinMessage.Name = player.Name;
+				//TODO: Send credits - CreditRepository?
+				joinMessage.Credits = 0;
 
-				Console.WriteLine($"JoinSender: {position.X} {position.Y} {position.Z}");
 				messageService.Send(player, "join", "join", joinMessage);
 				lobbySender.Update(position);
 			}
+			
 		}
 	}
 
 	public class SendJoinMessage {
+		public string Name { get; set; }
+		public int Credits { get; set; }
 		public Position Position { get; set; }
 	}
 }
