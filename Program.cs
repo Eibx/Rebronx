@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Rebronx.Server.Components.Interfaces;
 using Rebronx.Server.DataSenders;
 using Rebronx.Server.DataSenders.Interfaces;
 using Rebronx.Server.Services;
@@ -28,6 +29,7 @@ public class Program
 		services.AddSingleton<IMovementComponent, MovementComponent>();
 		services.AddSingleton<IChatComponent, ChatComponent>();
 		services.AddSingleton<IShopComponent, ShopComponent>();
+		services.AddSingleton<ICombatComponent, CombatComponent>();
 
 		//Senders
 		services.AddSingleton<IChatSender, ChatSender>();
@@ -37,6 +39,7 @@ public class Program
 		services.AddSingleton<ILobbySender, LobbySender>();
 		services.AddSingleton<IMapSender, MapSender>();
 		services.AddSingleton<IMovementSender, MovementSender>();
+		services.AddSingleton<ICombatSender, CombatSender>();
 
 		//Repositories
 		services.AddSingleton<IUserRepository, UserRepository>();
@@ -44,6 +47,7 @@ public class Program
 		services.AddSingleton<IMovementRepository, MovementRepository>();
 		services.AddSingleton<ITokenRepository, TokenRepository>();
 		services.AddSingleton<ICooldownRepository, CooldownRepository>();
+		services.AddSingleton<ICombatRepository, CombatRepository>();
 
 
 		Container = services.BuildServiceProvider();
