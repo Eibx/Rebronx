@@ -20,7 +20,7 @@ namespace Rebronx.Server.DataSenders
 
 		public void Update(Position position)
 		{
-			var players = playerRepository.GetPlayers(position);
+			var players = playerRepository.GetPlayersByPosition(position);
 
 			var sendLobbyMessage = new SendLobbyMessage() {
 				Players = players.Select(p => new LobbyPlayer(p)).ToList()
