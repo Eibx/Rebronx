@@ -171,7 +171,15 @@ public class WebSocketCore : IWebSocketCore
 			bytes.AddRange(databytes);
 		}
 
-		socket.Send(bytes.ToArray());
+		try 
+		{
+			socket.Send(bytes.ToArray());
+		} 
+		catch(System.Net.Sockets.SocketException e) 
+		{
+			// Broken pipe exception can happen here
+			Console.WriteLine(e.ToString());
+		}
 	}
 
 	private void SendClose(Socket socket, int reason) {
