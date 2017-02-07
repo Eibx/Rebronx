@@ -13,13 +13,16 @@ namespace Rebronx.Server.Repositories
 			this.databaseService = databaseService;
 		}
 
-        public void SetPlayerPositon(Player player, Position position) 
+        public void SetPlayerPositon(Player player, Position oldPosition, Position newPosition) 
 		{
 			var database = databaseService.GetDatabase();
 
-			database.HashSet($"player:{player.Id}", "pos.x", position.X);
-			database.HashSet($"player:{player.Id}", "pos.y", position.Y);
-			database.HashSet($"player:{player.Id}", "pos.z", position.Z);
+			database.HashSet($"player:{player.Id}", "pos.x", newPosition.X);
+			database.HashSet($"player:{player.Id}", "pos.y", newPosition.Y);
+			database.HashSet($"player:{player.Id}", "pos.z", newPosition.Z);
+
+			database.SetRemove($"position:{oldPosition.X}.{oldPosition.Y}.{oldPosition.Z}", player.Id);
+			database.SetAdd($"position:{newPosition.X}.{newPosition.Y}.{newPosition.Z}", player.Id);
 		}
     }
 }

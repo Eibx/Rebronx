@@ -57,7 +57,7 @@ public class MovementComponent : Component, IMovementComponent
 				{
 					var newCooldown = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + 2000;
 					cooldownRepository.SetAbsoluteCooldown(player, "movement", newCooldown);
-					movementRepository.SetPlayerPositon(message.Player, newPosition);
+					movementRepository.SetPlayerPositon(message.Player, oldPosition, newPosition);
 					movementSender.Move(message.Player, oldPosition, newPosition, newCooldown);
 				}
 			}
