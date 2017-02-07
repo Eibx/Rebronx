@@ -44,6 +44,7 @@ namespace Rebronx.Server.Repositories
 			database.HashSet($"login:{username.ToLower()}", "hash", hash);
 			database.HashSet($"login:{username.ToLower()}", "id", id);
 			database.StringSet($"token:{token}", id);
+			database.SetAdd($"position:0.0.0", id);
 		}
 
 		public void RemovePlayer(int playerId) 
@@ -112,7 +113,7 @@ namespace Rebronx.Server.Repositories
 
 		public List<Player> GetPlayersByPosition(Position position)
 		{
-			var playerIds = database.ListRange($"position:{position.X}.{position.Y}.{position.Y}");
+			var playerIds = database.SetMembers($"position:{position.X}.{position.Y}.{position.Z}");
 
 			return playerIds.Select(id => GetPlayerById(int.Parse(id))).Where(p => p != null).ToList();
 		}
