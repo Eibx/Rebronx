@@ -55,8 +55,6 @@ public class CombatComponent : Component, ICombatComponent
 
 			combatSender.AttackerReport(attacker, damage);
 			combatSender.VictimReport(victim, damage);
-
-			Console.WriteLine($"{message.Player.Name} attacks {victim.Name} (hit={hit})");
 		}
 	}
 }

@@ -41,6 +41,9 @@ namespace Rebronx.Server.Repositories
 			database.HashSet($"player:{id}", "health", 100);
 			database.HashSet($"player:{id}", "credits", 0);
 			database.HashSet($"player:{id}", "token", token);
+			database.HashSet($"player:{id}", "accuracy", 100);
+			database.HashSet($"player:{id}", "agility", 100);
+			
 			database.HashSet($"login:{username.ToLower()}", "hash", hash);
 			database.HashSet($"login:{username.ToLower()}", "id", id);
 			database.StringSet($"token:{token}", id);
