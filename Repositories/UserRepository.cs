@@ -1,158 +1,124 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net.Sockets;
 using Rebronx.Server.Helpers;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
-using StackExchange.Redis;
 
 namespace Rebronx.Server.Repositories
 {
 	public class UserRepository : IUserRepository
 	{
-		private readonly RedisValue[] playerFields;
-
 		private readonly IDatabaseService databaseService;
-		private readonly IDatabase database;
-		private readonly ISocketRepository socketRepository;
 
-		public UserRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
+		public UserRepository(IDatabaseService databaseService)
 		{
 			this.databaseService = databaseService;
-			this.socketRepository = socketRepository;
-			this.database = databaseService.GetDatabase();
-
-			this.playerFields = new RedisValue[] {
-				"name",
-				"health",
-				"pos.x",
-				"pos.y",
-				"pos.z",
-			};
 		}
 
-		public void CreateNewPlayer(string username, string hash, string token)
+		public void CreateNewPlayer(string name, string hash, string token)
 		{
-			var database = databaseService.GetDatabase();
-			var id = NextUserId();
-			
-			database.HashSet($"player:{id}", "name", username);
-			database.HashSet($"player:{id}", "health", 100);
-			database.HashSet($"player:{id}", "credits", 0);
-			database.HashSet($"player:{id}", "token", token);
-			database.HashSet($"player:{id}", "accuracy", 100);
-			database.HashSet($"player:{id}", "agility", 100);
-			
-			database.HashSet($"login:{username.ToLower()}", "hash", hash);
-			database.HashSet($"login:{username.ToLower()}", "id", id);
-			database.StringSet($"token:{token}", id);
-			database.SetAdd($"position:0.0.0", id);
+			databaseService.ExecuteNonQuery(
+				"INSERT INTO players (name, hash, token) VALUES (@name, @hash, @token)", 
+				new Dictionary<string, object> () {
+					{ "name", name },
+					{ "hash", hash },
+					{ "token", token }
+				});
 		}
 
 		public void RemovePlayer(int playerId) 
 		{
-			var token = (string)database.HashGet($"player:{playerId}", "token");
-			var username = (string)database.HashGet($"player:{playerId}", "name");
-			database.KeyDelete($"player:{playerId}");
-			database.KeyDelete($"cooldown:{playerId}");
-			database.KeyDelete($"login:{username.ToLower()}");
-			database.KeyDelete($"token:{token}");
+			databaseService.ExecuteNonQuery(
+				"DELETE FROM players WHERE id = @id", 
+				new Dictionary<string, object> () {
+					{ "id", playerId }
+				});
 		}
 
-		public Player GetPlayerByUsername(string username)
+		public Player GetPlayerByName(string name)
 		{
-			Player player = null;
-			if (string.IsNullOrEmpty(username)) 
-			{
-				return player;
+			var data = databaseService.ExecuteReader(
+				"SELECT * FROM players WHERE name = @name",
+				new Dictionary<string, object>() {
+					{ "name", name }
+				});
+
+			if (!data.Read()) {
+				return null;
 			}
 
-			var key = $"login:{username.ToLower()}";
-			var playerId = (int?)database.HashGet(key, "id");
+			var output = TransformPlayer(data);
 
-			if (playerId.HasValue)
-				return GetPlayerById(playerId.Value);
-
-			return player;
+			return output;
 		}
 
-		public Player GetPlayerByLogin(string username, string password)
+		public Player GetPlayerByLogin(string name, string password)
 		{
-			Player player = null;
+			var data = databaseService.ExecuteReader(
+				"SELECT id, hash FROM players WHERE name = @name",
+				new Dictionary<string, object>() {
+					{ "name", name }
+				});
 
-			if (string.IsNullOrEmpty(username))
-				return player;
+			if (!data.Read()) {
+				return null;
+			}				
 
-			var key = $"login:{username.ToLower()}";
-			var hash = database.HashGet(key, "hash");
-			
-			if (hash == "TEST")
-			{
-				var newHash = PBKDF2.HashPassword(password);
-				database.HashSet(key, "hash", newHash);
-			}
+			var playerId = data.GetInt32(0);
+			var playerHash = data.GetString(1);
 
-			var playerId = (int?)database.HashGet(key, "id");
+			if (!PBKDF2.ValidatePassword(password, playerHash))
+				return null;
+				
+			var output = GetPlayerById(playerId);
 
-			if (playerId.HasValue && PBKDF2.ValidatePassword(password, hash))
-				return GetPlayerById(playerId.Value);
-
-			return player;
+			return output;
 		}
 
 		public Player GetPlayerByToken(string token)
 		{
-			Player player = null;
+			var data = databaseService.ExecuteReader(
+				"SELECT Id FROM players WHERE token = @token",
+				new Dictionary<string, object>() {
+					{ "token", token }
+				});
+			
+			if (!data.Read()) {
+				return null;
+			}
 
-			var key = $"token:{token}";
-			var playerId = (int?)database.StringGet(key);
+			var output = GetPlayerById(data.GetInt32(0));
 
-			if (playerId.HasValue)
-				return GetPlayerById(playerId.Value);
-
-			return player;
-		}
-
-		public List<Player> GetPlayersByPosition(Position position)
-		{
-			var playerIds = database.SetMembers($"position:{position.X}.{position.Y}.{position.Z}");
-
-			return playerIds.Select(id => GetPlayerById(int.Parse(id))).Where(p => p != null).ToList();
+			return output;
 		}
 
 		public Player GetPlayerById(int playerId) 
 		{
-			Player player = null;
-			var values = database.HashGet("player:" + playerId, playerFields);
+			var data = databaseService.ExecuteReader(
+				"SELECT * FROM players WHERE id = @id",
+				new Dictionary<string, object>() {
+					{ "id", playerId }
+				});
 
-			if (!values.FirstOrDefault().IsNull) 
-			{
-				player = new Player();
-				player.Id = playerId;
-				player.Name = values[0];
-				player.Health = (int)values[1];
-				player.Position = new Position() { X = (int)values[2], Y = (int)values[3], Z = (int)values[4] };
+			if (!data.Read()) {
+				return null;
 			}
 
-			return player;
+			var output = TransformPlayer(data);
+
+			return output;
 		}
 
-		public List<Player> GetPlayers(Position position)
-		{
-			return new List<Player>();//players.Where(p => p.Value.Position.Equals(position)).Select(p => p.Value).ToList();
+		private Player TransformPlayer(IDataRecord record) {
+			return new Player() {
+				Id = record.GetInt32(record.GetOrdinal("id")),
+				Name = record.GetString(record.GetOrdinal("name")),
+				Position = record.GetInt32(record.GetOrdinal("position")),
+				Health = record.GetInt32(record.GetOrdinal("health")),
+			};
 		}
-
-		private int NextUserId() {
-			var database = databaseService.GetDatabase();
-
-			var id = (int?)database.StringIncrement("topid");
-
-			if (!id.HasValue)
-				throw new NullReferenceException("NextUserId topid returned a null id");
-
-			return id.Value;
-		}
-
 	}
 }

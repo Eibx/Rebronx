@@ -10,13 +10,15 @@ namespace Rebronx.Server.Services
 	{
 		private readonly IWebSocketCore webSocketCore;
 		private readonly IUserRepository playerRepository;
+		private readonly IPositionRepository positionRepository;
 
 		private readonly ISocketRepository socketRepository;
 
-		public MessageService(IWebSocketCore webSocketCore, IUserRepository playerRepository, ISocketRepository socketRepository)
+		public MessageService(IWebSocketCore webSocketCore, IUserRepository playerRepository, IPositionRepository positionRepository, ISocketRepository socketRepository)
 		{
 			this.webSocketCore = webSocketCore;
 			this.playerRepository = playerRepository;
+			this.positionRepository = positionRepository;
 			this.socketRepository = socketRepository;
 		}
 
@@ -56,7 +58,7 @@ namespace Rebronx.Server.Services
 				webSocketCore.Send(connection.Socket, json);
 		}
 
-		public void SendPosition<T>(Position position, string component, string type, T data) 
+		public void SendPosition<T>(int position, string component, string type, T data) 
 		{
 			string json = string.Empty;
 			
@@ -69,7 +71,7 @@ namespace Rebronx.Server.Services
 			catch {}
 
 
-			foreach(var player in playerRepository.GetPlayersByPosition(position)) 
+			foreach(var player in positionRepository.GetPlayersByPosition(position)) 
 			{
 				var connection = socketRepository.GetConnection(player.Id);
 

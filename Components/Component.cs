@@ -1,19 +1,22 @@
-public class Component
+namespace Rebronx.Server.Components
 {
-	public T GetData<T>(Message message) where T : class
+	public class Component
 	{
-		if (message == null || string.IsNullOrEmpty(message.Data))
+		public T GetData<T>(Message message) where T : class
 		{
-			return null;
-		}
-		
-		try 
-		{
-			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(message.Data);
-		} 
-		catch 
-		{
-			return null;
+			if (message == null || string.IsNullOrEmpty(message.Data))
+			{
+				return null;
+			}
+
+			try
+			{
+				return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(message.Data);
+			}
+			catch
+			{
+				return null;
+			}
 		}
 	}
 }

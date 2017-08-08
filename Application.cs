@@ -1,5 +1,9 @@
 using System.Threading;
-using Rebronx.Server.Components.Interfaces;
+using Rebronx.Server.Components.Chat;
+using Rebronx.Server.Components.Combat;
+using Rebronx.Server.Components.Map;
+using Rebronx.Server.Components.Movement;
+using Rebronx.Server.Components.Shop;
 using Rebronx.Server.Services.Interfaces;
 
 public class Application

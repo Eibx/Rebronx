@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Repositories
 {
-    public class TokenRepository : ITokenRepository
-    {
+	public class TokenRepository : ITokenRepository
+	{
 		private readonly IDatabaseService databaseService;
 
 		public TokenRepository(IDatabaseService databaseService)
@@ -13,44 +14,34 @@ namespace Rebronx.Server.Repositories
 			this.databaseService = databaseService;
 		}
 
-        public int? GetPlayerId(string token)
-        {
-			var database = databaseService.GetDatabase();
-			var playerId = (int?)database.StringGet($"token:{token}");
+		public string GetToken(Player player)
+		{
+			var token = databaseService.ExecuteScalar<String>(
+				"SELECT token FROM players WHERE id = @id",
+				new Dictionary<string, object>() {
+					{ "id", player.Id }
+				});
 
-			return playerId;
-        }
+			return token;
+		}
 
-        public string GetToken(Player player)
-        {
-			var database = databaseService.GetDatabase();
-			var token = database.HashGet($"player:{player.Id}", "token");
-
-			return token.ToString();
-        }
-
-        public void SetPlayerToken(Player player, string token)
-        {
-            var database = databaseService.GetDatabase();
-			var oldToken = GetToken(player);
-
-			database.KeyDelete($"token:{oldToken}");
-			
-			database.HashSet($"player:{player.Id}", "token", token);
-			database.StringSet($"token:{token}", player.Id);
-        }
+		public void SetPlayerToken(Player player, string token)
+		{
+			databaseService.ExecuteNonQuery(
+				"UPDATE players SET token = @token WHERE id = @id",
+				new Dictionary<string, object>() {
+					{ "id", player.Id },
+					{ "token", token }
+				});
+		}
 
 		public void RemovePlayerToken(Player player)
-        {
-            var database = databaseService.GetDatabase();
-			var token = GetToken(player);
-
-			if (token != null) 
-			{
-				database.HashDelete($"player:{player.Id}", "token");	
-			}
-
-			database.KeyDelete($"token:{token}");
-        }
-    }
+		{
+			databaseService.ExecuteNonQuery(
+				"UPDATE players SET token = NULL WHERE id = @id",
+				new Dictionary<string, object>() {
+					{ "id", player.Id }
+				});
+		}
+	}
 }

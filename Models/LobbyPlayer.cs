@@ -1,3 +1,4 @@
+using System;
 using Rebronx.Server.Models;
 
 public class LobbyPlayer
@@ -8,6 +9,8 @@ public class LobbyPlayer
 
 	public LobbyPlayer(Player player)
 	{
+		Random rand = new Random();
+
 		Id = player.Id;
 		Name = player.Name;
 		Health = player.Health;

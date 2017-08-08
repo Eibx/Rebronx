@@ -1,13 +1,18 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Rebronx.Server.Components.Interfaces;
-using Rebronx.Server.DataSenders;
-using Rebronx.Server.DataSenders.Interfaces;
 using Rebronx.Server.Services;
 using Rebronx.Server.Services.Interfaces;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Repositories;
-using StackExchange.Redis;
+using Rebronx.Server.Components.Chat;
+using Rebronx.Server.Components.Map;
+using Rebronx.Server.Components.Movement;
+using Rebronx.Server.Components.Inventory;
+using Rebronx.Server.Components.Join;
+using Rebronx.Server.Components.Login;
+using Rebronx.Server.Components.Lobby;
+using Rebronx.Server.Components.Combat;
+using Rebronx.Server.Components.Shop;
 
 public class Program
 {
@@ -44,7 +49,7 @@ public class Program
 		//Repositories
 		services.AddSingleton<IUserRepository, UserRepository>();
 		services.AddSingleton<ISocketRepository, SocketRepository>();
-		services.AddSingleton<IMovementRepository, MovementRepository>();
+		services.AddSingleton<IPositionRepository, PositionRepository>();
 		services.AddSingleton<ITokenRepository, TokenRepository>();
 		services.AddSingleton<ICooldownRepository, CooldownRepository>();
 		services.AddSingleton<ICombatRepository, CombatRepository>();

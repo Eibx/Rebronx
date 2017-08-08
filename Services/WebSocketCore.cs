@@ -119,6 +119,8 @@ public class WebSocketCore : IWebSocketCore
 					continue;
 				}
 
+				Console.WriteLine(jsondata);
+
 				try
 				{
 					wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
@@ -129,6 +131,7 @@ public class WebSocketCore : IWebSocketCore
 				{
 					wsMessage.Connection = s;
 					output.Add(wsMessage);
+			
 				}
 			}
 		}

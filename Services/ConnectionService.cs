@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
-using Rebronx.Server.DataSenders.Interfaces;
+using Rebronx.Server.Components.Join;
+using Rebronx.Server.Components.Lobby;
+using Rebronx.Server.Components.Login;
 using Rebronx.Server.Helpers;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
@@ -15,15 +17,24 @@ namespace Rebronx.Server.Services
 		private readonly IUserRepository playerRepository;
 		private readonly ISocketRepository socketRepository;
 		private readonly ITokenRepository tokenRepository;
+		private readonly IPositionRepository movementRepository;
 		private readonly IJoinSender joinSender;
 		private readonly ILoginSender loginSender;
 		private readonly ILobbySender lobbySender;
 
-		public ConnectionService(IUserRepository playerRepository, ISocketRepository socketRepository, ITokenRepository tokenRepository, IJoinSender joinSender, ILoginSender loginSender, ILobbySender lobbySender)
+		public ConnectionService(
+			IUserRepository playerRepository, 
+			ISocketRepository socketRepository, 
+			ITokenRepository tokenRepository, 
+			IPositionRepository movementRepository,
+			IJoinSender joinSender, 
+			ILoginSender loginSender, 
+			ILobbySender lobbySender)
 		{
 			this.socketRepository = socketRepository;
 			this.playerRepository = playerRepository;
 			this.tokenRepository = tokenRepository;
+			this.movementRepository = movementRepository;
 			this.joinSender = joinSender;
 			this.loginSender = loginSender;
 			this.lobbySender = lobbySender;
@@ -108,6 +119,7 @@ namespace Rebronx.Server.Services
 			//Maybe just make a "JoinSender" that does all that.
 
 			socketRepository.AddConnection(player.Id, loginMessage.Connection);
+			movementRepository.SetPlayerPositon(player, player.Position);
 
 			loginSender.Success(player, token);
 			joinSender.Join(player);
@@ -129,9 +141,9 @@ namespace Rebronx.Server.Services
 			{
 				if (signupData.Username.Length > 3) 
 				{
-					var username = signupData.Username;
+					var name = signupData.Username;
 
-					if (playerRepository.GetPlayerByUsername(username) == null) 
+					if (playerRepository.GetPlayerByName(name) == null) 
 					{
 						var hash = PBKDF2.HashPassword(signupData.Password);
 						var previousToken = string.Empty;
@@ -148,7 +160,7 @@ namespace Rebronx.Server.Services
 						} 
 						while (playerRepository.GetPlayerByToken(token) != null);
 						
-						playerRepository.CreateNewPlayer(username, hash, token);
+						playerRepository.CreateNewPlayer(name, hash, token);
 						loginSender.SignupSuccess(signupMessage.Connection, token);
 					} 
 					else 
@@ -175,7 +187,16 @@ namespace Rebronx.Server.Services
 			var timeouts = connections.Where(x => x.Socket == null || x.IsTimedout()).ToList();
 			foreach (var timeout in timeouts)
 			{
-				Console.WriteLine($"Socket removed: {timeout.Id} - {timeout.LastMessage}");
+				//TODO: This shouldn't be done here. Maybe create a CleanupService?
+				var playerId = socketRepository.GetPlayerId(timeout.Id);
+				if (playerId.HasValue)
+				{
+					var player = playerRepository.GetPlayerById(playerId.Value);
+					//TODO: how to remove offline players from their position?
+					//movementRepository.LeavePlayerPosition(player);
+				}
+
+				Console.WriteLine($"Connection removed:{timeout.Id} - {timeout.LastMessage}");
 				socketRepository.RemoveConnection(timeout.Id);
 			}
 		}
