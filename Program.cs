@@ -45,6 +45,7 @@ public class Program
 		services.AddSingleton<IMapSender, MapSender>();
 		services.AddSingleton<IMovementSender, MovementSender>();
 		services.AddSingleton<ICombatSender, CombatSender>();
+		services.AddSingleton<IMapService, MapService>();
 
 		//Repositories
 		services.AddSingleton<IUserRepository, UserRepository>();
