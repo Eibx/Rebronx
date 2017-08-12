@@ -108,9 +108,10 @@
 			<g id="layer7">
 				<template v-for="node in mapLines">
 					<line v-bind:x1="node.sx * 10" v-bind:y1="node.sy * 10" v-bind:x2="node.ex * 10" v-bind:y2="node.ey * 10" stroke-width="2" stroke="#666" />
+					<line v-bind:x1="node.sx * 10" v-bind:y1="node.sy * 10" v-bind:x2="((node.ex-node.sx)*movePercentage+node.sx)*10" v-bind:y2="((node.ey-node.sy)*movePercentage+node.sy)*10" stroke-width="2" stroke="#fff" />
 				</template>
 				<template v-for="node in mapData">
-					<rect class="map__node" height="6" width="6" v-bind:x="node.posX*10-3" v-bind:y="node.posY*10-3" v-bind:class="{ 'map__node-current': node.isCurrent }" v-on:click="move(node.id)" />
+					<circle class="map__node" r="6" v-bind:cx="node.posX*10" v-bind:cy="node.posY*10" v-bind:class="{ 'map__node-current': node.isCurrent }" v-on:click="move(node.id)" />
 				</template>
 			</g>
 			<g id="layer6" display="none">
@@ -135,6 +136,7 @@ export default {
 			startY: 0,
 			offsetX: 0,
 			offsetY: 0,
+			movePercentage: 0.5,
 			moveX: 0,
 			moveY: 0,
 			zoomW: 500,
@@ -154,18 +156,10 @@ export default {
 			{ id: 7, posX: 15, posY: 31, connections: [6, 8], isCurrent: false },
 			{ id: 8, posX: 20, posY: 36, connections: [7, 9], isCurrent: false },
 			{ id: 9, posX: 27, posY: 36, connections: [8, 10], isCurrent: false },
-			{ id: 10, posX: 34, posY: 36, connections: [9, 5], isCurrent: false }
+			{ id: 10, posX: 34, posY: 36, connections: [9, 5, 11], isCurrent: false },
+			{ id: 11, posX: 42, posY: 36, connections: [10, 12], isCurrent: false },
+			{ id: 12, posX: 42, posY: 30, connections: [11], isCurrent: false }
 		];
-
-		var s = this.mapData[1];
-
-		for (var j = 0; j < s.connections.length; j++) {
-			var	e = getPointPosition(this.mapData, s.connections[j]);
-
-			if (e) {
-				this.mapLines.push({ sx: s.posX, sy: s.posY, ex: e.x, ey: e.y });
-			}
-		}
 
 		function getPointPosition(mapData, id) {
 			for (var i = 0; i < mapData.length; i++) {
@@ -182,9 +176,26 @@ export default {
 			}
 		}
 
-		dataService.subscribe('player', function(type, data) {
+		var movementTimeout;
+		var movementCount;
+		dataService.subscribe('player', (type, data) => {
 			if (type == "position") {
 				setCurrentPosition(data.position);
+				clearInterval(movementTimeout);
+
+				self.movePercentage = 0;
+				self.mapLines = [];
+			}
+			else if (type == "movement") {
+				var curpos = getPointPosition(self.mapData, playerService.position);
+				var newpos = getPointPosition(self.mapData, data.position);
+
+				self.mapLines = [];
+				self.mapLines.push({ sx: curpos.x, sy: curpos.y, ex: newpos.x, ey: newpos.y });
+
+				self.movePercentage = 0;
+				clearInterval(movementTimeout);
+				movementTimeout = setInterval(() => { self.movePercentage += 1 /(data.movetime / 100); }, 100)
 			}
 		});
 		dataService.subscribe('join', function(type, data) {
@@ -233,7 +244,7 @@ export default {
 
 			var perX = (evt.clientX - this.offsetX) / this.zoomW;
 			var perY = (evt.clientY - this.offsetY) / this.zoomW;
-
+5
 			this.zoomW += (zoomAmount * direction * (1 - perY)) + ((zoomAmount * direction) * (1 - perX));
 			this.offsetX -= (zoomAmount * direction) * perX;
 			this.offsetY -= (zoomAmount * direction) * perY;
@@ -256,7 +267,10 @@ export default {
 .map img {
 	position: absolute;
 }
-
+.map__node {
+	stroke:transparent;
+	stroke-width:20px;
+}
 .map__node:hover {
 	fill:yellowgreen;
 }

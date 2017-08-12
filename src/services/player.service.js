@@ -3,12 +3,10 @@ var instance = null;
 export default class PlayerService {
 	constructor() {
 		if (!instance) {
-			instance = this;
-
 			this.player = {
 				name: "0",
 				credits:0,
-				position: { x:0, y:0, z:0, isonground: true }
+				position: 0
 			};
 
 			dataService.subscribe('join', function(type, data) {
@@ -22,6 +20,8 @@ export default class PlayerService {
 					instance.position = data.position;
 				}				
 			});
+
+			instance = this;
 		}
 
 		return instance;
