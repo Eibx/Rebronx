@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rebronx.Server.Repositories.Interfaces;
+using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Components.Movement
 {
@@ -12,13 +13,16 @@ namespace Rebronx.Server.Components.Movement
 		private readonly IPositionRepository movementRepository;
 		private readonly ICooldownRepository cooldownRepository;
 
+		private readonly IMapService mapService;
+
 		private readonly Dictionary<int, MovementDistination> movements; 
 
-		public MovementComponent(IMovementSender movementSender, IPositionRepository movementRepository, ICooldownRepository cooldownRepository)
+		public MovementComponent(IMovementSender movementSender, IPositionRepository movementRepository, ICooldownRepository cooldownRepository, IMapService mapService)
 		{
 			this.movementSender = movementSender;
 			this.movementRepository = movementRepository;
 			this.cooldownRepository = cooldownRepository;
+			this.mapService = mapService;
 
 			this.movements = new Dictionary<int, MovementDistination>();
 		}
@@ -47,20 +51,31 @@ namespace Rebronx.Server.Components.Movement
 			var moveMessage = GetData<InputMoveMessage>(message);
 			var player = message.Player;
 
-			if (moveMessage != null)
-			{
-				//TODO: check if there's a link between the two nodes.
-				long travelTime = 1500; // calculate distance between points
+			if (moveMessage == null)
+				return;
 
-				movements[message.Player.Id] = new MovementDistination() {
-					Position = moveMessage.Position,
-					TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTime,
-					Player = player
-				};
+			//TODO: check if there's a link between the two nodes.
+			var currentNode = mapService.GetNode(message.Player.Position);
+			var nextNode = mapService.GetNode(moveMessage.Position);
 
-				// Start move and actual move
-				movementSender.StartMove(message.Player, moveMessage.Position, travelTime);
-			}
+			if (!currentNode.Connections.Contains(nextNode.Id))
+				return;
+
+			//TODO: make cleaner
+			var distanceX = Math.Pow(Math.Abs(nextNode.X-currentNode.X), 2);
+			var distanceY = Math.Pow(Math.Abs(nextNode.Y-currentNode.Y), 2);
+			var distance = Math.Sqrt(distanceX + distanceY);
+
+			long travelTime = (long)Math.Round(distance * 100d);
+
+			movements[message.Player.Id] = new MovementDistination() {
+				Position = moveMessage.Position,
+				TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTime,
+				Player = player
+			};
+
+			// Start move and actual move
+			movementSender.StartMove(message.Player, moveMessage.Position, travelTime);
 		}
 	}
 
