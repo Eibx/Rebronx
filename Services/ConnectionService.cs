@@ -187,17 +187,20 @@ namespace Rebronx.Server.Services
 			var timeouts = connections.Where(x => x.Socket == null || x.IsTimedout()).ToList();
 			foreach (var timeout in timeouts)
 			{
-				//TODO: This shouldn't be done here. Maybe create a CleanupService?
+				Player player = null;
 				var playerId = socketRepository.GetPlayerId(timeout.Id);
 				if (playerId.HasValue)
 				{
-					var player = playerRepository.GetPlayerById(playerId.Value);
-					//TODO: how to remove offline players from their position?
-					//movementRepository.LeavePlayerPosition(player);
+					player = playerRepository.GetPlayerById(playerId.Value);					
 				}
 
 				Console.WriteLine($"Connection removed:{timeout.Id} - {timeout.LastMessage}");
 				socketRepository.RemoveConnection(timeout.Id);
+
+				if (player != null) 
+				{
+					lobbySender.Update(player.Position);
+				}
 			}
 		}
 
