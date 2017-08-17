@@ -11,14 +11,14 @@ namespace Rebronx.Server.Repositories
 		private Dictionary<string, List<int>> positions;
 
 		private readonly IDatabaseService databaseService;
-		private readonly IUserRepository userRepository;
+		private readonly ISocketRepository socketRepository;
 
-		public PositionRepository(IDatabaseService databaseService, IUserRepository userRepository)
+		public PositionRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
 		{
 			positions = new Dictionary<string, List<int>>();
 
 			this.databaseService = databaseService;
-			this.userRepository = userRepository;
+			this.socketRepository = socketRepository;
 		}
 
 		public void SetPlayerPositon(Player player, int position)
@@ -46,7 +46,7 @@ namespace Rebronx.Server.Repositories
 
 			data.Close();
 
-			return output;
+			return output.Where(x => socketRepository.IsPlayerOnline(x.Id)).ToList();
 		}
 
 		private Player TransformPlayer(IDataRecord record) {
