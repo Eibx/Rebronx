@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Components.Lobby;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
@@ -10,6 +11,7 @@ namespace Rebronx.Server.Components.Movement
 	{
 		private const string Component = "movement";
 		private readonly IMovementSender movementSender;
+		private readonly ILobbySender lobbySender;
 		private readonly IPositionRepository movementRepository;
 		private readonly ICooldownRepository cooldownRepository;
 
@@ -17,9 +19,15 @@ namespace Rebronx.Server.Components.Movement
 
 		private readonly Dictionary<int, MovementDistination> movements; 
 
-		public MovementComponent(IMovementSender movementSender, IPositionRepository movementRepository, ICooldownRepository cooldownRepository, IMapService mapService)
+		public MovementComponent(
+			IMovementSender movementSender,
+			ILobbySender lobbySender,
+			IPositionRepository movementRepository,
+			ICooldownRepository cooldownRepository,
+			IMapService mapService)
 		{
 			this.movementSender = movementSender;
+			this.lobbySender = lobbySender;
 			this.movementRepository = movementRepository;
 			this.cooldownRepository = cooldownRepository;
 			this.mapService = mapService;
@@ -42,6 +50,9 @@ namespace Rebronx.Server.Components.Movement
 					movementRepository.SetPlayerPositon(item.Value.Player, item.Value.Position);
 					movementSender.SetPosition(item.Value.Player, item.Value.Position);
 					movements.Remove(item.Key);
+
+					lobbySender.Update(item.Value.Player.Position);
+					lobbySender.Update(item.Value.Position);
 				}
 			}
 		}
