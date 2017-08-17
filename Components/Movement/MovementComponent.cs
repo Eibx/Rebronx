@@ -54,7 +54,6 @@ namespace Rebronx.Server.Components.Movement
 			if (moveMessage == null)
 				return;
 
-			//TODO: check if there's a link between the two nodes.
 			var currentNode = mapService.GetNode(message.Player.Position);
 			var nextNode = mapService.GetNode(moveMessage.Position);
 
