@@ -247,6 +247,8 @@ export default {
 			this.moveX = 0;
 			this.moveY = 0;
 			this.isDown = true;
+
+			window.dispatchEvent(new Event('hide-player-card'));
 		},
 		mouseup: function (evt) {
 			evt.preventDefault();
