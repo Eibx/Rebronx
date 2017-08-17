@@ -8,6 +8,7 @@ namespace Rebronx.Server.Repositories.Interfaces
 	{
 		SocketConnection GetConnection(Guid connectionId);
 		SocketConnection GetConnection(int playerId);
+		bool IsPlayerOnline(int playerId);
 		int? GetPlayerId(Guid connectionId);
 		List<SocketConnection> GetAllConnections();
 		void AddConnection(int playerId, SocketConnection connection);

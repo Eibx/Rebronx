@@ -34,6 +34,11 @@ namespace Rebronx.Server.Repositories
 			return GetConnection(connectionId);
 		}
 
+		public bool IsPlayerOnline(int playerId) 
+		{
+			return playerSocketDictionary.ContainsByFirst(playerId);
+		}
+
 		public int? GetPlayerId(Guid connectionId) {
 			int playerId = 0;
 			if (playerSocketDictionary.TryGetBySecond(connectionId, out playerId)) {
