@@ -123,6 +123,8 @@
 </template>
 
 <script>
+import Dijkstra from './helper/dijkstra.js'
+
 export default {
 	name: 'map',
 
@@ -130,6 +132,7 @@ export default {
 		return {
 			mapData: [],
 			mapLines: [],
+			movementPath: [],
 
 			isDown: false,
 			startX: 0,
@@ -161,6 +164,19 @@ export default {
 			{ id: 12, posX: 42, posY: 30, connections: [11], isCurrent: false }
 		];
 
+		var pathData = {};
+
+		for (var i = 0; i < this.mapData.length; i++) {
+			var element = this.mapData[i];
+			pathData[element.id] = {};
+
+			for (var j = 0; j < element.connections.length; j++) {
+				pathData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);				
+			}
+		}
+
+		this.dijkstra = new Dijkstra(pathData);
+
 		function getPointPosition(mapData, id) {
 			for (var i = 0; i < mapData.length; i++) {
 				var p = mapData[i];
@@ -176,6 +192,16 @@ export default {
 			}
 		}
 
+		function getDistance(mapData, first, second) {
+			var a = getPointPosition(mapData, first);
+			var b = getPointPosition(mapData, second);
+
+			var aa = (b.x-a.x);
+			var bb = (b.y-a.y);
+
+			return Math.abs(Math.sqrt(aa*aa + bb*bb));
+		}
+
 		var movementTimeout;
 		var movementCount;
 		dataService.subscribe('player', (type, data) => {
@@ -185,6 +211,10 @@ export default {
 
 				self.movePercentage = 0;
 				self.mapLines = [];
+
+				if (this.movementPath.length > 0) {
+					dataService.send('movement', 'move', { position: this.movementPath.shift() });
+				}
 			}
 			else if (type == "movement") {
 				var curpos = getPointPosition(self.mapData, playerService.position);
@@ -195,7 +225,7 @@ export default {
 
 				self.movePercentage = 0;
 				clearInterval(movementTimeout);
-				movementTimeout = setInterval(() => { self.movePercentage += 1 /(data.movetime / 100); }, 100)
+				movementTimeout = setInterval(() => { self.movePercentage += 1 /(data.movetime / 10); }, 10)
 			}
 		});
 		dataService.subscribe('join', function(type, data) {
@@ -206,7 +236,9 @@ export default {
 	},
 	methods: {
 		move: function(id) {
-			dataService.send('movement', 'move', { position: id });
+			this.movementPath = this.dijkstra.findShortestPath(playerService.position, id);
+			this.movementPath.shift();
+			dataService.send('movement', 'move', { position: this.movementPath.shift() });
 		},
 		mousedown: function (evt) {
 			evt.preventDefault();
@@ -244,7 +276,7 @@ export default {
 
 			var perX = (evt.clientX - this.offsetX) / this.zoomW;
 			var perY = (evt.clientY - this.offsetY) / this.zoomW;
-5
+
 			this.zoomW += (zoomAmount * direction * (1 - perY)) + ((zoomAmount * direction) * (1 - perX));
 			this.offsetX -= (zoomAmount * direction) * perX;
 			this.offsetY -= (zoomAmount * direction) * perY;
