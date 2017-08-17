@@ -24,6 +24,7 @@ namespace Rebronx.Server.Repositories
 				"INSERT INTO players (name, hash, token) VALUES (@name, @hash, @token)", 
 				new Dictionary<string, object> () {
 					{ "name", name },
+					{ "position", 1 },
 					{ "hash", hash },
 					{ "token", token }
 				});
