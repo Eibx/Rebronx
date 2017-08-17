@@ -10,6 +10,7 @@
 			</div>
 			<div class="login__field">
 				<input type="button" v-on:click="login" value="login" />
+				<input type="button" v-on:click="register" value="register" />
 			</div>
 		</div>
 	</div>
@@ -59,6 +60,19 @@ export default {
 					alert('error connect to server');
 				} else if (data.type == 'open') {
 					dataService.send('login', 'login', { username: username, password: password });
+					dataService.startPing();
+				}
+			});
+		},
+		register: function () {
+			var username = this.username;
+			var password = this.password;
+
+			dataService.open(function (data) {
+				if (data.type == 'error') {
+					alert('error connect to server');
+				} else if (data.type == 'open') {
+					dataService.send('login', 'signup', { username: username, password: password });
 					dataService.startPing();
 				}
 			});
