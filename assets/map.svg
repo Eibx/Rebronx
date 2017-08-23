@@ -10,22 +10,13 @@
    </cc:Work>
   </rdf:RDF>
  </metadata>
- <g id="layer3" fill-rule="evenodd">
-  <path id="rect8078" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m-60-60h1120v1100h-1120z" fill="#43e5e2"/>
-  <path id="path8084" d="m-60 980 1e3 20 60-60l-20-700-1040-300z" fill="#1fdcd8"/>
- </g>
- <g id="layer2" fill-rule="evenodd">
-  <path id="path8073" d="m760 40 140 60 80 140v680l-60 60h-600-380v-1040h640v60z" fill="#00c800"/>
-  <path id="path8075" d="m980 240-20 680-40 40-920 20h920l60-60z" fill="#bd8629"/>
- </g>
- <g id="layer4" fill-rule="evenodd" fill="#767676">
-  <path id="path9592" d="m0 200v740h520v-41.664l-339.86-50.98-130.14-260.28v-387.08h-50z"/>
-  <path id="path10037" d="m0-20h560v100h-340l-120 40-20 60h-80z"/>
+ <g id="layer4" fill-rule="evenodd" fill="#171b1f">
   <path id="path8096" d="m340 80h220l160 40 100 60 60 80 20 100v100h-300l-120-100h-140z"/>
+  <rect id="rect4226" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" height="1e3" width="1e3" y="0" x="0"/>
  </g>
- <g id="layer8">
-  <path id="path5962" d="m365 335h40v-80h-40z" fill-rule="evenodd" stroke="#595959" stroke-width="1px" fill="#a9a9a9"/>
-  <g fill-rule="evenodd" stroke="#595959" stroke-width="1px" fill="#a9a9a9">
+ <g id="layer8" stroke="#171b1f" stroke-width="2" fill="#272b35" fill-rule="evenodd">
+  <path id="path5962" d="m365 335h40v-80h-40z"/>
+  <g>
    <path id="path5964" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m365 255h40l30-30h-70z"/>
    <path id="path5980" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m395 225h40l20-20h15v-25h-75z"/>
    <path id="path5982" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m365 180v15h30v-15z"/>
@@ -70,43 +61,20 @@
    <path id="path6117" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m620 245h5v-5h-5z"/>
    <path id="path6119" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m640 245h5v-5h-5z"/>
   </g>
-  <path id="path8174-7" d="m270 110v45l-34.441 28.179-20.56 16.82" stroke="#a59771" stroke-width="4" fill="none"/>
-  <circle id="path4176" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" cx="215" fill-rule="evenodd" cy="200" r="25" fill="#6e6233"/>
-  <circle id="path4176-3" stroke-linejoin="round" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" cx="215" stroke-linecap="round" stroke="#a59771" cy="200" r="25" stroke-width=".5" fill="none"/>
-  <path id="path8174" d="m270 110v45l-55 45" stroke="#6e6233" stroke-width="3" fill="none"/>
-  <rect id="rect4214-6-2" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" fill-rule="evenodd" height="5" width="5" y="197.5" x="212.5" fill="#fff"/>
-  <g id="g4329" fill="#836539" transform="translate(-7.5,11.125)">
-   <path id="path4293-9-1" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m220 170v-2h5v2" fill-rule="evenodd" fill="#8e8e8e"/>
-  </g>
-  <g fill="#8e8e8e">
-   <g id="g4329-2" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" fill-rule="evenodd" transform="matrix(0,-1,1,0,26.125,422.5)">
-    <path id="path4293-9-1-7" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m220 170v-2h5v2" fill-rule="evenodd" fill="#8e8e8e"/>
-   </g>
-   <g id="g4329-2-0" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" fill-rule="evenodd" transform="matrix(-1 0 0 -1 437.5 388.88)">
-    <path id="path4293-9-1-7-9" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m220 170v-2h5v2" fill-rule="evenodd" fill="#8e8e8e"/>
-   </g>
-   <g id="g4329-2-0-3" transform="matrix(0 1 -1 0 403.88 -22.5)">
-    <path id="path4293-9-1-7-9-6" d="m220 170v-2h5v2" fill-rule="evenodd" fill="#8e8e8e"/>
-   </g>
-  </g>
  </g>
- <g id="layer5" stroke="#595959" fill="none">
-  <path id="path8070-7" d="m900 860-300 20-400-60-120-240v-398l20-60 60-22 60-20h340l160 40 45.012 27.907 54.99 34.09 60 78 20 100z" stroke-width="60"/>
-  <path id="path9903" d="m340 80v760" stroke-width="40"/>
-  <path id="path10039" d="m80 240 120 120h280l120 100h300" stroke-width="40"/>
-  <path id="path10105" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m420 360v-100l40-40h200l40 40v200" stroke-width="20"/>
- </g>
- <g id="layer1" transform="translate(0 -52.362)" fill="none">
-  <g stroke="#323232">
-   <path id="path8070" d="m900 912.36-300 20-400-60-120-240v-398l19.171-57.514 0.82857-2.4857 60-22 60-20h340c53.333 13.333 106.67 26.667 160 40l100 62 60 78 20 100z" stroke-width="40"/>
-   <path id="path9903-3" d="m340 132.36v760" stroke-width="20"/>
-   <path id="path10039-6" d="m80 292.36 120 120h280l120 100h300" stroke-width="20"/>
-   <path id="path10105-3" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m420 412.36v-100l40-40h200l40 40v200" stroke-width="10"/>
+ <g id="layer5" fill="none">
+  <g stroke="#404656">
+   <path id="path8070-7" d="m900 860-300 20-400-60-120-240v-398l20-60 60-22 60-20h340l160 40 45.012 27.907 54.99 34.09 60 78 20 100z" stroke-width="60"/>
+   <path id="path9903" d="m340 80v760" stroke-width="40"/>
+   <path id="path10039" d="m80 240 120 120h280l120 100h300" stroke-width="40"/>
   </g>
-  <path id="path8172" stroke-linejoin="round" d="m125 222.36 5-15 95-35h30" stroke="#007d00" stroke-linecap="round" stroke-width="10"/>
+  <path id="path10105" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m420 360v-100l40-40h200l40 40v200" stroke="#404556" stroke-width="20"/>
  </g>
- <g id="layer7">
-  <rect id="rect4214" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" fill-rule="evenodd" height="5" width="5" y="245" x="75" fill="#fff"/>
+ <g id="layer1" transform="translate(0 -52.362)" stroke="#555d73" fill="none">
+  <path id="path8070" d="m900 912.36-300 20-400-60-120-240v-398l19.171-57.514 0.82857-2.4857 60-22 60-20h340c53.333 13.333 106.67 26.667 160 40l100 62 60 78 20 100z" stroke-width="40"/>
+  <path id="path9903-3" d="m340 132.36v760" stroke-width="20"/>
+  <path id="path10039-6" d="m80 292.36 120 120h280l120 100h300" stroke-width="20"/>
+  <path id="path10105-3" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" d="m420 412.36v-100l40-40h200l40 40v200" stroke-width="10"/>
  </g>
  <g id="layer6" display="none">
   <rect id="rect4229" style="color-rendering:auto;color:#000000;isolation:auto;mix-blend-mode:normal;shape-rendering:auto;solid-color:#000000;image-rendering:auto" display="inline" height="1e3" width="1e3" stroke="#ff0505" y="0" x="0" stroke-width="8" fill="none"/>
