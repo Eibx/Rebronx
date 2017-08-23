@@ -2,6 +2,6 @@ namespace Rebronx.Server.Components.Inventory
 {
     public interface IInventorySender
     {
-         void Update(Player player);
+         void GetInventory(Player player);
     }
 }
