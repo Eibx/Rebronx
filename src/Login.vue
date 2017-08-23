@@ -1,6 +1,5 @@
 <template>
 	<div class="login" v-if="isVisible">
-		{{isVisible}}
 		<div class="login__container">
 			<div class="login__field">
 				<input type="text" placeholder="username" v-model="username" v-on:keyup.enter="login" />
