@@ -74,7 +74,7 @@ export default {
 	position:relative;
 	display:block;
 
-	background:#333;
+	background:#171b1f;
 	color:#fff;
 	padding:5px;
 	border-bottom:1px solid #fff;
