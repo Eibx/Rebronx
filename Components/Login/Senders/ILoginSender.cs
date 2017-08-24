@@ -1,6 +1,6 @@
 using Rebronx.Server.Models;
 
-namespace Rebronx.Server.Components.Login
+namespace Rebronx.Server.Components.Login.Senders
 {
 	public interface ILoginSender
 	{

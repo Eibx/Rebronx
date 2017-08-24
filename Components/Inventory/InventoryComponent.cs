@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Rebronx.Server.Components.Inventory;
+using Rebronx.Server.Components.Inventory.Repositories;
+using Rebronx.Server.Components.Inventory.Senders;
 using Rebronx.Server.Repositories.Interfaces;
 
 namespace Rebronx.Server.Components.Inventory
@@ -29,30 +31,30 @@ namespace Rebronx.Server.Components.Inventory
 			}
 		}
 
-		public void GetInventory(Message message) 
+		public void GetInventory(Message message)
 		{
 			if (message?.Player != null)
 			{
-				
+
 			}
 		}
 
-		public void ReorderInventory(Message message) 
+		public void ReorderInventory(Message message)
 		{
 			var inputMessage = GetData<ReorderInventoryMessage>(message);
-			
+
 			if (inputMessage != null && message?.Player != null)
 			{
 				//var inventory = inventoryRepository.GetInventory(message.Player.Id);
 
-				
+
 			}
 		}
 
 
 	}
 
-	public class ReorderInventoryMessage 
+	public class ReorderInventoryMessage
 	{
 		public List<int?> InventoryItems { get; set; }
 	}

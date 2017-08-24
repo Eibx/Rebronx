@@ -1,4 +1,4 @@
-namespace Rebronx.Server.Components.Map
+namespace Rebronx.Server.Components.Map.Senders
 {
 	public interface IMapSender
 	{

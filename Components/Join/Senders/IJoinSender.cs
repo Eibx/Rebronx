@@ -1,4 +1,4 @@
-namespace Rebronx.Server.Components.Join
+namespace Rebronx.Server.Components.Join.Senders
 {
 	public interface IJoinSender
 	{

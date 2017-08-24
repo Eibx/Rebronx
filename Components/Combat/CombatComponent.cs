@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Components.Combat.Repositories;
+using Rebronx.Server.Components.Combat.Senders;
 using Rebronx.Server.Repositories.Interfaces;
 
 namespace Rebronx.Server.Components.Combat 

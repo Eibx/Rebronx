@@ -13,6 +13,16 @@ using Rebronx.Server.Components.Login;
 using Rebronx.Server.Components.Lobby;
 using Rebronx.Server.Components.Combat;
 using Rebronx.Server.Components.Shop;
+using Rebronx.Server.Components.Chat.Senders;
+using Rebronx.Server.Components.Inventory.Senders;
+using Rebronx.Server.Components.Join.Senders;
+using Rebronx.Server.Components.Login.Senders;
+using Rebronx.Server.Components.Lobby.Senders;
+using Rebronx.Server.Components.Map.Senders;
+using Rebronx.Server.Components.Movement.Senders;
+using Rebronx.Server.Components.Combat.Senders;
+using Rebronx.Server.Components.Map.Services;
+using Rebronx.Server.Components.Combat.Repositories;
 
 public class Program
 {

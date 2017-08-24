@@ -1,4 +1,4 @@
-namespace Rebronx.Server.Components.Lobby
+namespace Rebronx.Server.Components.Lobby.Senders
 {
 	public interface ILobbySender
 	{

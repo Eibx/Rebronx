@@ -4,7 +4,7 @@ using System.Linq;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Components.Lobby
+namespace Rebronx.Server.Components.Lobby.Senders
 {
 	public class LobbySender : ILobbySender
 	{

@@ -1,4 +1,4 @@
-namespace Rebronx.Server.Components.Combat
+namespace Rebronx.Server.Components.Combat.Senders
 {
 	public interface ICombatSender
 	{

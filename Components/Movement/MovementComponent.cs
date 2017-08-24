@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rebronx.Server.Components.Lobby;
+using Rebronx.Server.Components.Lobby.Senders;
+using Rebronx.Server.Components.Map.Services;
+using Rebronx.Server.Components.Movement.Senders;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 

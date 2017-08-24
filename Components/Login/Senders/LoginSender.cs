@@ -3,7 +3,7 @@ using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Components.Login
+namespace Rebronx.Server.Components.Login.Senders
 {
 	public class LoginSender : ILoginSender
 	{

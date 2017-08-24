@@ -1,7 +1,8 @@
 using System;
+using Rebronx.Server.Components.Chat.Senders;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Components.Chat
+namespace Rebronx.Server.Components.Chat.Senders
 {
 	public class ChatSender : IChatSender
 	{

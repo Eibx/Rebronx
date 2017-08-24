@@ -1,6 +1,6 @@
 using System;
 
-namespace Rebronx.Server.Components.Inventory
+namespace Rebronx.Server.Components.Inventory.Senders
 {
 	public class InventorySender : IInventorySender
 	{

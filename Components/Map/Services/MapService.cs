@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Rebronx.Server.Models;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Services
+namespace Rebronx.Server.Components.Map.Services
 {
 	public class MapService : IMapService
 	{
@@ -10,7 +10,7 @@ namespace Rebronx.Server.Services
 
 		public MapService()
 		{
-			map = new Dictionary<int, MapNode> 
+			map = new Dictionary<int, MapNode>
 			{
 				{ 1, new MapNode { Id = 1, X = 10, Y = 12, Connections = new List<int>{ 2, 6 } } },
 				{ 2, new MapNode { Id = 2, X = 22, Y = 8, Connections = new List<int> { 1, 3 } } },
@@ -34,7 +34,8 @@ namespace Rebronx.Server.Services
 		}
 		public MapNode GetNode(int node)
 		{
-			if (!this.map.ContainsKey(node)) {
+			if (!this.map.ContainsKey(node))
+			{
 				return null;
 			}
 

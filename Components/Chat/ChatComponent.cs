@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rebronx.Server.Components.Chat;
+using Rebronx.Server.Components.Chat.Senders;
 
 namespace Rebronx.Server.Components.Chat
 {

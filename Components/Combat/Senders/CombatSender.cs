@@ -2,7 +2,7 @@ using System;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Components.Combat
+namespace Rebronx.Server.Components.Combat.Senders
 {
 	public class CombatSender : ICombatSender
 	{

@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using Rebronx.Server.Components.Lobby;
+using Rebronx.Server.Components.Lobby.Senders;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Components.Movement
+namespace Rebronx.Server.Components.Movement.Senders
 {
-	public class MovementSender : IMovementSender
+    public class MovementSender : IMovementSender
 	{
 		private readonly IMessageService messageService;
 		private readonly ILobbySender lobbySender;
@@ -18,7 +16,8 @@ namespace Rebronx.Server.Components.Movement
 
 		public void StartMove(Player player, int newPosition, long moveTime)
 		{
-			var movementMessage = new SendStartMoveMessage() {
+			var movementMessage = new SendStartMoveMessage()
+			{
 				Position = newPosition,
 				MoveTime = moveTime
 			};
@@ -26,8 +25,10 @@ namespace Rebronx.Server.Components.Movement
 			messageService.Send(player, "player", "movement", movementMessage);
 		}
 
-		public void SetPosition(Player player, int newPosition) {
-			var movementMessage = new SendPositionMessage() {
+		public void SetPosition(Player player, int newPosition)
+		{
+			var movementMessage = new SendPositionMessage()
+			{
 				Position = newPosition
 			};
 
@@ -41,7 +42,7 @@ namespace Rebronx.Server.Components.Movement
 		public int Position { get; set; }
 		public long MoveTime { get; set; }
 	}
-	
+
 	public class SendPositionMessage
 	{
 		public int Position { get; set; }

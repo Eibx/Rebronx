@@ -3,7 +3,7 @@ using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Services.Interfaces;
 
-namespace Rebronx.Server.Repositories
+namespace Rebronx.Server.Components.Combat.Repositories
 {
 	public class CombatRepository : ICombatRepository
 	{
