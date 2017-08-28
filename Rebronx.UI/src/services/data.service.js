@@ -66,7 +66,7 @@ export default class DataService {
 		try {
 			var jsonData = JSON.stringify(data);
 			var json = JSON.stringify({ component: component, type: type, data: jsonData });
-			console.log(json);
+			console.log("sent:    ", json);
 			this.websocket.send(json);
 		} catch (e) {
 			console.error(e);

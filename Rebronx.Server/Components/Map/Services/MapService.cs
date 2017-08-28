@@ -10,6 +10,8 @@ namespace Rebronx.Server.Components.Map.Services
 
 		public MapService()
 		{
+			
+
 			map = new Dictionary<int, MapNode>
 			{
 				{ 1, new MapNode { Id = 1, X = 10, Y = 12, Connections = new List<int>{ 2, 6 } } },
