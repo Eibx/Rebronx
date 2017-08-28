@@ -1,11 +1,25 @@
 <template>
 	<div class="inventory" v-show="isVisible">
 		<div class="inventory__container">
+			<div class="inventory__equipment">
+				<div class="inventory__equipment-armour">
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-head"></div>
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-body"></div>
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-legs"></div>
+				</div>
+				<div class="inventory__equipment-player">
+					<div class="inventory__equipment-player-character"></div>
+				</div>
+				<div class="inventory__equipment-weapons">
+					<div class="inventory__equipment-weapons-primary"></div>
+					<div class="inventory__equipment-weapons-secondary"></div>
+				</div>
+			</div>
 			<div class="inventory__slots">
 				<div class="inventory__slot" v-for="item in items">
 					<div class="inventory__item" v-if="item !== null">
-						<div class="inventory__item-name">{{item.id}}</div>
-						<div class="inventory__item-count">{{item.count}}</div>
+						<div class="inventory__item-name">{{item.name}}</div>
+						<div class="inventory__item-count" v-if="item.count > 1">{{item.count}}</div>
 						<svg class="inventory__item-image" viewBox="0 0 100 100">
 							<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
 							<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
@@ -24,22 +38,38 @@ export default {
 
 	data() {
 		return {
-			isVisible: false,
+			isVisible: true,
 			items: []
 		}
 	},
 	created() {
-		this.items = [
-			null,
-			{ id: 2, count: 1, image: 'pills' },
-			null,
-			{ id: 1, count: 1, image: 'pills' },
-			null, null, null, null,
-			null, null, null, null,
-			null, null, null, null,
-		];
+		var self = this;
+
+		processItems([[1,1,1],[10,2,4],[11,3,1]]);
+
+		function processItems(ids) {
+			var newItems = [];
+			for (var x = 0; x < 18; x++) {
+				newItems[x] = null;
+
+				for (var i = 0; i < ids.length; i++) {
+					if (x == ids[i][0]) {
+						ids[i].shift();
+						var item = window.itemData[ids[i][0].toString()];
+						if (item !== undefined) {
+							newItems[x] = { name: item.name, count: ids[i][1] };
+						} else {
+							newItems[x] = { name: "unknown " + ids[i][0], count: ids[i][1] };
+						}
+
+					}
+				}
+			}
+			self.items = newItems;
+		}
 	},
 	methods: {
+		
 	}
 }
 </script>
@@ -55,20 +85,63 @@ export default {
 	background: rgba(0, 0, 0, 0.6);
 
 	z-index: 100;
+
+	display:flex;
+	position: absolute;
+	align-items: center;
+	justify-content: center;
 }
 
 .inventory__container {
-	position: absolute;
 	width: 600px;
 	height: 600px;
-	left: 50%;
-	top: 50%;
-	margin-top: -300px;
-	margin-left: -300px;
-
+	
 	background: #fff;
 	padding: 20px;
+
+	display: flex;
+	flex-direction: column;
 }
+
+.inventory__equipment {
+	flex-grow: 1;
+
+	display: flex;
+	flex-direction: row;
+}
+
+.inventory__equipment-armour {
+	display: flex;
+	flex-direction: column;
+	width:12%;
+
+	margin-right: 5px;
+}
+.inventory__equipment-armour-slot {
+	width:100%;
+	border:1px solid #666;
+	margin-bottom:3px;
+}
+.inventory__equipment-armour-slot:after {
+	display:block;
+	content:'';
+	padding-top:100%;
+}
+
+
+.inventory__equipment-player {
+	display: flex;
+	flex-direction: column;
+
+	width:100%;
+	border:1px solid #666;
+	margin-bottom:3px;
+}
+.inventory__equipment-weapons {
+	display: flex;
+	flex-direction: column;
+}
+
 
 .inventory__slots {
 	display:flex;
@@ -78,7 +151,7 @@ export default {
 }
 
 .inventory__slot {
-	width:25%;
+	width:calc(100% / 6);
 	border:1px solid #666;
 	border-width:0px 1px 1px 0px;
 	margin:0;
