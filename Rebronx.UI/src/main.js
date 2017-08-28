@@ -8,6 +8,9 @@ import Inventory from './Inventory.vue'
 import DataService from './services/data.service.js'
 import PlayerService from './services/player.service.js'
 
+window.mapData = require("../../Rebronx.Data/map.json");
+window.itemData = require("../../Rebronx.Data/items.json");
+
 window.dataService = new DataService();
 window.playerService = new PlayerService();
 
