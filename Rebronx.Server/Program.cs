@@ -23,6 +23,7 @@ using Rebronx.Server.Components.Movement.Senders;
 using Rebronx.Server.Components.Combat.Senders;
 using Rebronx.Server.Components.Map.Services;
 using Rebronx.Server.Components.Combat.Repositories;
+using Rebronx.Server.Components.Inventory.Repositories;
 
 public class Program
 {
@@ -45,6 +46,7 @@ public class Program
 		services.AddSingleton<IChatComponent, ChatComponent>();
 		services.AddSingleton<IShopComponent, ShopComponent>();
 		services.AddSingleton<ICombatComponent, CombatComponent>();
+		services.AddSingleton<IInventoryComponent, InventoryComponent>();
 
 		//Senders
 		services.AddSingleton<IChatSender, ChatSender>();
@@ -56,7 +58,8 @@ public class Program
 		services.AddSingleton<IMovementSender, MovementSender>();
 		services.AddSingleton<ICombatSender, CombatSender>();
 		services.AddSingleton<IMapService, MapService>();
-
+		services.AddSingleton<IInventorySender, InventorySender>();
+		
 		//Repositories
 		services.AddSingleton<IUserRepository, UserRepository>();
 		services.AddSingleton<ISocketRepository, SocketRepository>();
@@ -64,6 +67,8 @@ public class Program
 		services.AddSingleton<ITokenRepository, TokenRepository>();
 		services.AddSingleton<ICooldownRepository, CooldownRepository>();
 		services.AddSingleton<ICombatRepository, CombatRepository>();
+		services.AddSingleton<IInventoryRepository, InventoryRepository>();
+		services.AddSingleton<IItemRepository, ItemRepository>();
 
 
 		Container = services.BuildServiceProvider();
