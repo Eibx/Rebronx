@@ -8,6 +8,10 @@
 		* {
 			box-sizing: border-box;
 		}
+		*:not(input) { 
+			-moz-user-select: none;
+			user-select: none;
+		}
 
 		html,
 		body {
@@ -51,8 +55,8 @@
 		input[type=text],
 		input[type=password] {
 			padding: 5px 10px;
-			background: rgba(220, 220, 220, 0.5);
-			color: #333;
+			background: #808080;
+			color: #fff;
 			border: 0;
 		}
 
@@ -60,8 +64,8 @@
 		input[type=submit],
 		button {
 			padding: 5px 10px;
-			background: rgba(220, 220, 220, 0.5);
-			color: #333;
+			background: #808080;
+			color: #fff;
 			border: 0;
 		}
 
