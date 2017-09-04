@@ -38,11 +38,9 @@ namespace Rebronx.Server.Components.Inventory.Repositories
 
 		private InventoryItem TransformItem(IDataRecord record) {
 
-			var item = itemRepository.GetItem(record.GetInt32(record.GetOrdinal("id")));
-
 			return new InventoryItem() {
-				Id = item.Id,
-				Name = item.Name,
+				Id = record.GetInt32(record.GetOrdinal("id")),
+				Position = record.GetInt32(record.GetOrdinal("position")),
 				Count = record.GetInt32(record.GetOrdinal("count"))
 			};
 		}

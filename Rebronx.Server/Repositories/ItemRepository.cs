@@ -12,7 +12,9 @@ namespace Rebronx.Server.Repositories
 
 		public ItemRepository()
 		{
-			DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("items.json"));
+			items = new Dictionary<int, Item>();
+			
+			DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../Rebronx.Data/items.json"));
 
 			foreach (var item in output.Data)
 			{

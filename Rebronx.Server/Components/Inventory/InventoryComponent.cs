@@ -24,18 +24,8 @@ namespace Rebronx.Server.Components.Inventory
 		{
 			foreach (var message in messages.Where(m => m.Component == Component))
 			{
-				if (message.Type == "get")
-					GetInventory(message);
-				else if (message.Type == "reorder")
+				if (message.Type == "reorder")
 					ReorderInventory(message);
-			}
-		}
-
-		public void GetInventory(Message message)
-		{
-			if (message?.Player != null)
-			{
-
 			}
 		}
 
@@ -45,9 +35,9 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
-				//var inventory = inventoryRepository.GetInventory(message.Player.Id);
+				var inventory = inventoryRepository.GetInventory(message.Player.Id);
 
-
+				inventorySender.SendInventory(message?.Player);
 			}
 		}
 
@@ -56,6 +46,7 @@ namespace Rebronx.Server.Components.Inventory
 
 	public class ReorderInventoryMessage
 	{
-		public List<int?> InventoryItems { get; set; }
+		public int Current { get; set; }
+		public int New { get; set; }
 	}
 }
