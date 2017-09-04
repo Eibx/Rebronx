@@ -14,11 +14,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="9.0.2-beta1" />
     <PackageReference Include="Npgsql" Version="3.2.4.1" />
-
-    <Content Include="../Rebronx.Data/**">
-      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 
 
