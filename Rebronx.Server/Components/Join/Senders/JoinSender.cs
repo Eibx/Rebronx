@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Rebronx.Server.Components.Inventory.Senders;
 using Rebronx.Server.Components.Lobby;
 using Rebronx.Server.Components.Lobby.Senders;
 using Rebronx.Server.Services.Interfaces;
@@ -10,11 +11,13 @@ namespace Rebronx.Server.Components.Join.Senders
 	{
 		private readonly IMessageService messageService;
 		private readonly ILobbySender lobbySender;
+		private readonly IInventorySender inventorySender;
 
-		public JoinSender(IMessageService messageService, ILobbySender lobbySender)
+		public JoinSender(IMessageService messageService, ILobbySender lobbySender, IInventorySender inventorySender)
 		{
 			this.messageService = messageService;
 			this.lobbySender = lobbySender;
+			this.inventorySender = inventorySender;
 		}
 
 		public void Join(Player player)
@@ -32,6 +35,7 @@ namespace Rebronx.Server.Components.Join.Senders
 
 				messageService.Send(player, "join", "join", joinMessage);
 				lobbySender.Update(position);
+				inventorySender.SendInventory(player);
 			}
 
 		}
