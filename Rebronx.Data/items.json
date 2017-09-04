@@ -1,12 +1,16 @@
 {
-    "1": {
-        "name": "Golden mouse",
-        "image": "goldenmouse",
-        "type": "valuable"
-    },
-    "2": {
-        "name": "Baked beans",
-        "image": "foodcan",
-        "type": "consumable"
-    }
+    "data": [
+		{
+			"id": 1,
+			"name": "Golden mouse",
+			"image": "goldenmouse",
+			"type": "valuable"
+		},
+		{
+			"id": 2,
+			"name": "Baked beans",
+			"image": "foodcan",
+			"type": "consumable"
+		}
+	]
 }
