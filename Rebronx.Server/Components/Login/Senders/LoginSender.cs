@@ -8,12 +8,10 @@ namespace Rebronx.Server.Components.Login.Senders
 	public class LoginSender : ILoginSender
 	{
 		private readonly IMessageService messageService;
-		private readonly ISocketRepository socketRepository;
 
-		public LoginSender(IMessageService messageService, ISocketRepository socketRepository)
+		public LoginSender(IMessageService messageService)
 		{
 			this.messageService = messageService;
-			this.socketRepository = socketRepository;
 		}
 
 		public void Success(Player player, string token)
