@@ -21,10 +21,9 @@ export default {
 		}
 	},
 	created() {
-		var self = this;
-		dataService.subscribe('lobby', function (type, data) {
+		dataService.subscribe('lobby', (type, data) => {
 			if (type == "chat") {
-				self.msgs.push(data.message);
+				this.msgs.push(data.message);
 			}
 		});
 	},

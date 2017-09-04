@@ -24,6 +24,7 @@ export default {
 			mapData: [],
 			mapLines: [],
 			movementPath: [],
+			dijkstra: null,
 
 			isDown: false,
 			startX: 0,
@@ -37,76 +38,50 @@ export default {
 		}
 	},
 	created() {
-		var self = this;
+		var movementTimeout;
+		var movementCount;
 
 		this.mapData = window.mapData.map;
-		
 		var pathData = {};
 		for (var i = 0; i < this.mapData.length; i++) {
 			var element = this.mapData[i];
 			pathData[element.id] = {};
 
 			for (var j = 0; j < element.connections.length; j++) {
-				pathData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);				
+				pathData[element.id.toString()][element.connections[j]] = this.getDistance(this.mapData, element.id, element.connections[j]);				
 			}
 		}
 
 		this.dijkstra = new Dijkstra(pathData);
 
-		function getPointPosition(mapData, id) {
-			for (var i = 0; i < mapData.length; i++) {
-				var p = mapData[i];
-				if (p.id == id) {
-					return { x: p.posX, y: p.posY };
-				}
-			}
-		}
-
-		function setCurrentPosition(position) {
-			for (var i = 0; i < self.mapData.length; i++) {
-				self.$set(self.mapData[i], 'isCurrent', (self.mapData[i].id == position));
-			}
-		}
-
-		function getDistance(mapData, first, second) {
-			var a = getPointPosition(mapData, first);
-			var b = getPointPosition(mapData, second);
-
-			var aa = (b.x-a.x);
-			var bb = (b.y-a.y);
-
-			return Math.abs(Math.sqrt(aa*aa + bb*bb));
-		}
-
-		var movementTimeout;
-		var movementCount;
 		dataService.subscribe('player', (type, data) => {
 			if (type == "position") {
-				setCurrentPosition(data.position);
+				this.setCurrentPosition(data.position);
 				clearInterval(movementTimeout);
 
-				self.movePercentage = 0;
-				self.mapLines = [];
+				this.movePercentage = 0;
+				this.mapLines = [];
 
 				if (this.movementPath.length > 0) {
 					dataService.send('movement', 'move', { position: this.movementPath.shift() });
 				}
 			}
 			else if (type == "movement") {
-				var curpos = getPointPosition(self.mapData, playerService.position);
-				var newpos = getPointPosition(self.mapData, data.position);
+				var curpos = this.getPointPosition(this.mapData, playerService.position);
+				var newpos = this.getPointPosition(this.mapData, data.position);
 
-				self.mapLines = [];
-				self.mapLines.push({ sx: curpos.x, sy: curpos.y, ex: newpos.x, ey: newpos.y });
+				this.mapLines = [];
+				this.mapLines.push({ sx: curpos.x, sy: curpos.y, ex: newpos.x, ey: newpos.y });
 
-				self.movePercentage = 0;
+				this.movePercentage = 0;
 				clearInterval(movementTimeout);
-				movementTimeout = setInterval(() => { self.movePercentage += 1 /(data.movetime / 10); }, 10)
+				movementTimeout = setInterval(() => { this.movePercentage += 1 /(data.movetime / 10); }, 10)
 			}
 		});
-		dataService.subscribe('join', function(type, data) {
+
+		dataService.subscribe('join', (type, data) => {
 			if (type == "join") {
-				setCurrentPosition(data.position);
+				this.setCurrentPosition(data.position);
 			}
 		});
 	},
@@ -158,6 +133,29 @@ export default {
 			this.zoomW += (zoomAmount * direction * (1 - perY)) + ((zoomAmount * direction) * (1 - perX));
 			this.offsetX -= (zoomAmount * direction) * perX;
 			this.offsetY -= (zoomAmount * direction) * perY;
+		},
+
+		getPointPosition(mapData, id) {
+			for (var i = 0; i < mapData.length; i++) {
+				var p = mapData[i];
+				if (p.id == id) {
+					return { x: p.posX, y: p.posY };
+				}
+			}
+		},
+		setCurrentPosition(position) {
+			for (var i = 0; i < this.mapData.length; i++) {
+				this.$set(this.mapData[i], 'isCurrent', (this.mapData[i].id == position));
+			}
+		},
+		getDistance(mapData, first, second) {
+			var a = this.getPointPosition(mapData, first);
+			var b = this.getPointPosition(mapData, second);
+
+			var aa = (b.x-a.x);
+			var bb = (b.y-a.y);
+
+			return Math.abs(Math.sqrt(aa*aa + bb*bb));
 		}
 	}
 }

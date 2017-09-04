@@ -43,33 +43,40 @@ export default {
 		}
 	},
 	created() {
-		var self = this;
-
-		processItems([[1,1,1],[10,2,4],[11,3,1]]);
-
-		function processItems(ids) {
+		dataService.subscribe('inventory', (type, data) => {
+			if (type == "update") {
+				this.processItems(data);
+			}
+		});
+	},
+	methods: {
+		processItems(ids) {
 			var newItems = [];
 			for (var x = 0; x < 18; x++) {
 				newItems[x] = null;
 
 				for (var i = 0; i < ids.length; i++) {
-					if (x == ids[i][0]) {
-						ids[i].shift();
-						var item = window.itemData[ids[i][0].toString()];
+					var invitem = ids[i];
+					if (x == invitem[0]) {
+						var item = this.getItem(invitem[1]);
 						if (item !== undefined) {
-							newItems[x] = { name: item.name, count: ids[i][1] };
+							newItems[x] = { name: item.name, count: invitem[2] };
 						} else {
-							newItems[x] = { name: "unknown " + ids[i][0], count: ids[i][1] };
+							newItems[x] = { name: "unknown " + invitem[1], count: invitem[2] };
 						}
 
 					}
 				}
 			}
-			self.items = newItems;
+			this.items = newItems;
+		},
+		getItem(id) {
+			for (var i = 0; i < window.itemData.data.length; i++) {
+				var element = window.itemData.data[i];
+				if (element.id == id)
+					return element;
+			}
 		}
-	},
-	methods: {
-		
 	}
 }
 </script>
