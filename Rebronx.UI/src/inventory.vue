@@ -38,11 +38,13 @@ export default {
 
 	data() {
 		return {
-			isVisible: true,
+			isVisible: false,
 			items: []
 		}
 	},
 	created() {
+		this.processItems([]);
+
 		dataService.subscribe('inventory', (type, data) => {
 			if (type == "update") {
 				this.processItems(data);
