@@ -24,7 +24,6 @@ export default {
 			mapData: [],
 			mapLines: [],
 			movementPath: [],
-			dijkstra: null,
 
 			isDown: false,
 			startX: 0,
@@ -38,50 +37,91 @@ export default {
 		}
 	},
 	created() {
-		var movementTimeout;
-		var movementCount;
+		var self = this;
 
-		this.mapData = window.mapData.map;
+		this.mapData = [
+			{ id: 1, posX: 10, posY: 12, connections: [2, 6], isCurrent: false },
+			{ id: 2, posX: 22, posY: 8, connections: [1, 3], isCurrent: false },
+			{ id: 3, posX: 34, posY: 8, connections: [2, 4, 5], isCurrent: false },
+			{ id: 4, posX: 56, posY: 8, connections: [3], isCurrent: false },
+			{ id: 5, posX: 34, posY: 22, connections: [3, 10], isCurrent: false },
+
+			{ id: 6, posX: 8, posY: 25, connections: [1, 7], isCurrent: false },
+			{ id: 7, posX: 15, posY: 31, connections: [6, 8], isCurrent: false },
+			{ id: 8, posX: 20, posY: 36, connections: [7, 9], isCurrent: false },
+			{ id: 9, posX: 27, posY: 36, connections: [8, 10], isCurrent: false },
+			{ id: 10, posX: 34, posY: 36, connections: [9, 5, 11], isCurrent: false },
+			{ id: 11, posX: 42, posY: 36, connections: [10, 12], isCurrent: false },
+			{ id: 12, posX: 42, posY: 30, connections: [11], isCurrent: false }
+		];
+
 		var pathData = {};
+
 		for (var i = 0; i < this.mapData.length; i++) {
 			var element = this.mapData[i];
 			pathData[element.id] = {};
 
 			for (var j = 0; j < element.connections.length; j++) {
-				pathData[element.id.toString()][element.connections[j]] = this.getDistance(this.mapData, element.id, element.connections[j]);				
+				pathData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);				
 			}
 		}
 
 		this.dijkstra = new Dijkstra(pathData);
 
+		function getPointPosition(mapData, id) {
+			for (var i = 0; i < mapData.length; i++) {
+				var p = mapData[i];
+				if (p.id == id) {
+					return { x: p.posX, y: p.posY };
+				}
+			}
+		}
+
+		function setCurrentPosition(position) {
+			for (var i = 0; i < self.mapData.length; i++) {
+				self.mapData[i].isCurrent = (self.mapData[i].id == position);
+			}
+		}
+
+		function getDistance(mapData, first, second) {
+			var a = getPointPosition(mapData, first);
+			var b = getPointPosition(mapData, second);
+
+			var aa = (b.x-a.x);
+			var bb = (b.y-a.y);
+
+			return Math.abs(Math.sqrt(aa*aa + bb*bb));
+		}
+
+		var movementTimeout;
+		var movementCount;
 		dataService.subscribe('player', (type, data) => {
 			if (type == "position") {
-				this.setCurrentPosition(data.position);
+				setCurrentPosition(data.position);
 				clearInterval(movementTimeout);
 
-				this.movePercentage = 0;
-				this.mapLines = [];
+				self.movePercentage = 0;
+				self.mapLines = [];
 
 				if (this.movementPath.length > 0) {
 					dataService.send('movement', 'move', { position: this.movementPath.shift() });
 				}
 			}
 			else if (type == "movement") {
-				var curpos = this.getPointPosition(this.mapData, playerService.position);
-				var newpos = this.getPointPosition(this.mapData, data.position);
+				var curpos = getPointPosition(self.mapData, playerService.position);
+				var newpos = getPointPosition(self.mapData, data.position);
 
-				this.mapLines = [];
-				this.mapLines.push({ sx: curpos.x, sy: curpos.y, ex: newpos.x, ey: newpos.y });
+				self.mapLines = [];
+				self.mapLines.push({ sx: curpos.x, sy: curpos.y, ex: newpos.x, ey: newpos.y });
 
-				this.movePercentage = 0;
+				self.movePercentage = 0;
 				clearInterval(movementTimeout);
-				movementTimeout = setInterval(() => { this.movePercentage += 1 /(data.movetime / 10); }, 10)
+				movementTimeout = setInterval(() => { self.movePercentage += 1 /(data.movetime / 10); }, 10)
 			}
 		});
-
-		dataService.subscribe('join', (type, data) => {
+		dataService.subscribe('join', function(type, data) {
 			if (type == "join") {
-				this.setCurrentPosition(data.position);
+				setCurrentPosition(data.position);
 			}
 		});
 	},
@@ -133,29 +173,6 @@ export default {
 			this.zoomW += (zoomAmount * direction * (1 - perY)) + ((zoomAmount * direction) * (1 - perX));
 			this.offsetX -= (zoomAmount * direction) * perX;
 			this.offsetY -= (zoomAmount * direction) * perY;
-		},
-
-		getPointPosition(mapData, id) {
-			for (var i = 0; i < mapData.length; i++) {
-				var p = mapData[i];
-				if (p.id == id) {
-					return { x: p.posX, y: p.posY };
-				}
-			}
-		},
-		setCurrentPosition(position) {
-			for (var i = 0; i < this.mapData.length; i++) {
-				this.$set(this.mapData[i], 'isCurrent', (this.mapData[i].id == position));
-			}
-		},
-		getDistance(mapData, first, second) {
-			var a = this.getPointPosition(mapData, first);
-			var b = this.getPointPosition(mapData, second);
-
-			var aa = (b.x-a.x);
-			var bb = (b.y-a.y);
-
-			return Math.abs(Math.sqrt(aa*aa + bb*bb));
 		}
 	}
 }
