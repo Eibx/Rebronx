@@ -71,6 +71,9 @@ namespace Rebronx.Server.Components.Movement
 			var currentNode = mapService.GetNode(message.Player.Position);
 			var nextNode = mapService.GetNode(moveMessage.Position);
 
+			if (currentNode == null || nextNode == null)
+				return;
+
 			if (!currentNode.Connections.Contains(nextNode.Id))
 				return;
 
