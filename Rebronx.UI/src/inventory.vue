@@ -16,7 +16,7 @@
 				</div>
 			</div>
 			<div class="inventory__slots">
-				<div class="inventory__slot" v-for="item in items">
+				<div class="inventory__slot" v-for="(item, index) in items" v-on:mousedown="beginMove(index)" v-on:mouseup="endMove(index)">
 					<div class="inventory__item" v-if="item !== null">
 						<div class="inventory__item-name">{{item.name}}</div>
 						<div class="inventory__item-count" v-if="item.count > 1">{{item.count}}</div>
@@ -34,12 +34,14 @@
 <script>
 import DataService from './services/data.service.js'
 export default {
+
 	name: 'inventory',
 
 	data() {
 		return {
 			isVisible: false,
-			items: []
+			items: [],
+			moveItem: null,
 		}
 	},
 	created() {
@@ -82,6 +84,25 @@ export default {
 				if (element.id == id)
 					return element;
 			}
+		},
+		beginMove(index) {
+			for (var i = 0; i < this.items.length; i++) {
+				if (this.items[index] === null) {
+					this.moveItem = null;
+					return;
+				} else {
+					this.moveItem = index;
+				}
+			}
+		},
+		endMove(index) {
+			if (this.moveItem === null) {
+				return;
+			}
+
+			dataService.send('inventory', 'reorder', { current: this.moveItem, new: index });
+
+			this.moveItem = null;
 		}
 	}
 }

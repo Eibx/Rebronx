@@ -36,6 +36,20 @@ namespace Rebronx.Server.Components.Inventory.Repositories
 			return output;
 		}
 
+		public void ReorderInventory(int playerId, int currentIndex, int newIndex) 
+		{
+			databaseService.ExecuteNonQuery(
+				@"UPDATE items SET position = @newIndex
+				WHERE player_id = @playerId AND
+				position = @currentIndex AND
+				(SELECT COUNT(1) FROM items WHERE player_id = @playerId AND position = @newIndex) = 0",
+				new Dictionary<string, object>() {
+					{ "playerId", playerId },
+					{ "currentIndex", currentIndex },
+					{ "newIndex", newIndex }
+				});
+		}
+
 		private InventoryItem TransformItem(IDataRecord record) 
 		{
 			return new InventoryItem() {

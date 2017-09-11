@@ -9,7 +9,7 @@ namespace Rebronx.Server.Components.Inventory
 {
 	public class InventoryComponent : Component, IInventoryComponent
 	{
-		private const string Component = "combat";
+		private const string Component = "inventory";
 
 		private readonly IInventoryRepository inventoryRepository;
 		private readonly IInventorySender inventorySender;
@@ -35,9 +35,13 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
-				var inventory = inventoryRepository.GetInventory(message.Player.Id);
+				if (inputMessage.Current < 0 || inputMessage.Current > 17 || inputMessage.New < 0 || inputMessage.New > 17) {
+					return;
+				}
 
-				inventorySender.SendInventory(message?.Player);
+				inventoryRepository.ReorderInventory(message.Player.Id, inputMessage.Current, inputMessage.New);
+
+				inventorySender.SendInventory(message.Player);
 			}
 		}
 

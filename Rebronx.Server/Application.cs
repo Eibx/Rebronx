@@ -1,6 +1,7 @@
 using System.Threading;
 using Rebronx.Server.Components.Chat;
 using Rebronx.Server.Components.Combat;
+using Rebronx.Server.Components.Inventory;
 using Rebronx.Server.Components.Map;
 using Rebronx.Server.Components.Movement;
 using Rebronx.Server.Components.Shop;
@@ -16,6 +17,7 @@ public class Application
 	private readonly IChatComponent chatComponent;
 	private readonly IShopComponent shopComponent;
 	private readonly ICombatComponent combatComponent;
+	private readonly IInventoryComponent inventoryComponent;
 	public Application(
 		IWebSocketCore webSocketCore,
 		IConnectionService connectionService,
@@ -24,7 +26,8 @@ public class Application
 		IMovementComponent movementComponent,
 		IChatComponent chatComponent,
 		IShopComponent shopComponent,
-		ICombatComponent combatComponent)
+		ICombatComponent combatComponent,
+		IInventoryComponent inventoryComponent)
 	{
 		this.webSocketCore = webSocketCore;
 		this.connectionService = connectionService;
@@ -34,6 +37,7 @@ public class Application
 		this.chatComponent = chatComponent;
 		this.shopComponent = shopComponent;
 		this.combatComponent = combatComponent;
+		this.inventoryComponent = inventoryComponent;
 	}
 
 	public void Run()
@@ -52,6 +56,7 @@ public class Application
 			chatComponent.Run(playerMessages);
 			shopComponent.Run(playerMessages);
 			combatComponent.Run(playerMessages);
+			inventoryComponent.Run(playerMessages);			
 
 			Thread.Sleep(1);
 		}
