@@ -4,7 +4,7 @@
 			<li v-for="msg in msgs">{{msg}}</li>
 		</ul>
 		<div class="chat__input">
-			<input type="text" v-on:keyup.enter="send" placeholder="type your message" v-model="message" />
+			<input type="text" v-on:keyup.enter="send" v-on:keyup.esc="blur" placeholder="type your message" v-model="message" />
 		</div>
 	</div>
 </template>
@@ -26,11 +26,18 @@ export default {
 				this.msgs.push(data.message);
 			}
 		});
+
+		window.addEventListener('chat-toggle', () => {
+			document.querySelector('.chat__input input').focus();
+		});
 	},
 	methods: {
 		send: function () {
 			dataService.send('chat', 'say', { message: this.message });
 			this.message = "";
+		},
+		blur: function () {
+			document.querySelector('.chat__input input').blur();
 		}
 	}
 }
