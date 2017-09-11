@@ -19,3 +19,17 @@ new Vue({ el: '#login', render: r => r(Login) });
 new Vue({ el: '#map', render: r => r(Map) });
 new Vue({ el: '#lobby', render: r => r(Lobby) });
 new Vue({ el: '#inventory', render: r => r(Inventory) });
+
+window.addEventListener('keydown', function(evt) {
+    var elm = evt.target.tagName.toLowerCase();
+    if (elm == 'input' || elm == 'textarea' || elm == 'select' || elm == 'button') {
+        return;
+    }
+
+    var event = null;
+    if (evt.which == 73)      { event = 'inventory-toggle'; }
+
+    if (event !== null) {
+        window.dispatchEvent(new Event(event));
+    }
+});

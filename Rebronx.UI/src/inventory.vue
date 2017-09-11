@@ -50,6 +50,10 @@ export default {
 				this.processItems(data);
 			}
 		});
+
+		window.addEventListener('inventory-toggle', () => {
+			this.isVisible = !this.isVisible;
+		});
 	},
 	methods: {
 		processItems(ids) {
