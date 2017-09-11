@@ -16,7 +16,6 @@ namespace Rebronx.Server.Components.Movement
 		private readonly IMovementSender movementSender;
 		private readonly ILobbySender lobbySender;
 		private readonly IPositionRepository movementRepository;
-		private readonly ICooldownRepository cooldownRepository;
 
 		private readonly IMapService mapService;
 
@@ -26,13 +25,11 @@ namespace Rebronx.Server.Components.Movement
 			IMovementSender movementSender,
 			ILobbySender lobbySender,
 			IPositionRepository movementRepository,
-			ICooldownRepository cooldownRepository,
 			IMapService mapService)
 		{
 			this.movementSender = movementSender;
 			this.lobbySender = lobbySender;
 			this.movementRepository = movementRepository;
-			this.cooldownRepository = cooldownRepository;
 			this.mapService = mapService;
 
 			this.movements = new Dictionary<int, MovementDistination>();

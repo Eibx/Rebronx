@@ -65,7 +65,7 @@ public class Program
 		services.AddSingleton<ISocketRepository, SocketRepository>();
 		services.AddSingleton<IPositionRepository, PositionRepository>();
 		services.AddSingleton<ITokenRepository, TokenRepository>();
-		services.AddSingleton<ICooldownRepository, CooldownRepository>();
+		//services.AddSingleton<ICooldownRepository, CooldownRepository>();
 		services.AddSingleton<ICombatRepository, CombatRepository>();
 		services.AddSingleton<IInventoryRepository, InventoryRepository>();
 		services.AddSingleton<IItemRepository, ItemRepository>();
