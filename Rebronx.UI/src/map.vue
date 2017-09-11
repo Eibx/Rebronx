@@ -39,26 +39,13 @@ export default {
 	created() {
 		var self = this;
 
-		this.mapData = [
-			{ id: 1, posX: 10, posY: 12, connections: [2, 6], isCurrent: false },
-			{ id: 2, posX: 22, posY: 8, connections: [1, 3], isCurrent: false },
-			{ id: 3, posX: 34, posY: 8, connections: [2, 4, 5], isCurrent: false },
-			{ id: 4, posX: 56, posY: 8, connections: [3], isCurrent: false },
-			{ id: 5, posX: 34, posY: 22, connections: [3, 10], isCurrent: false },
-
-			{ id: 6, posX: 8, posY: 25, connections: [1, 7], isCurrent: false },
-			{ id: 7, posX: 15, posY: 31, connections: [6, 8], isCurrent: false },
-			{ id: 8, posX: 20, posY: 36, connections: [7, 9], isCurrent: false },
-			{ id: 9, posX: 27, posY: 36, connections: [8, 10], isCurrent: false },
-			{ id: 10, posX: 34, posY: 36, connections: [9, 5, 11], isCurrent: false },
-			{ id: 11, posX: 42, posY: 36, connections: [10, 12], isCurrent: false },
-			{ id: 12, posX: 42, posY: 30, connections: [11], isCurrent: false }
-		];
-
 		var pathData = {};
+		
+		this.mapData = window.mapData.map;
 
 		for (var i = 0; i < this.mapData.length; i++) {
 			var element = this.mapData[i];
+			this.$set(element, "isCurrent", false);
 			pathData[element.id] = {};
 
 			for (var j = 0; j < element.connections.length; j++) {
