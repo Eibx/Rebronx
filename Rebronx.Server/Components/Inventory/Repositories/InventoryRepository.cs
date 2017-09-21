@@ -36,13 +36,52 @@ namespace Rebronx.Server.Components.Inventory.Repositories
 			return output;
 		}
 
+		public void UnequipItem(int playerId, int equipmentSlot, int inventoryIndex)
+		{
+			databaseService.ExecuteNonQuery(
+				@"UPDATE items 
+				SET 
+					inv_pos = @inventoryIndex,
+					equ_pos = NULL
+				WHERE 
+					player_id = @playerId AND
+					equ_pos = @equipmentSlot AND
+					(SELECT COUNT(1) FROM items WHERE player_id = @playerId AND inv_pos = @inventoryIndex) = 0",
+				new Dictionary<string, object>() {
+					{ "playerId", playerId },
+					{ "inventoryIndex", inventoryIndex },
+					{ "equipmentSlot", equipmentSlot }
+				});
+		}
+
+		public void EquipItem(int playerId, int inventoryIndex, int equipmentSlot) 
+		{
+			databaseService.ExecuteNonQuery(
+				@"UPDATE items 
+				SET 
+					inv_pos = NULL,
+					equ_pos = @equipmentSlot
+				WHERE 
+					player_id = @playerId AND
+					inv_pos = @inventoryIndex AND
+					(SELECT COUNT(1) FROM items WHERE player_id = @playerId AND equ_pos = @equipmentSlot) = 0",
+				new Dictionary<string, object>() {
+					{ "playerId", playerId },
+					{ "inventoryIndex", inventoryIndex },
+					{ "equipmentSlot", equipmentSlot }
+				});
+		}
+
 		public void ReorderInventory(int playerId, int currentIndex, int newIndex) 
 		{
 			databaseService.ExecuteNonQuery(
-				@"UPDATE items SET position = @newIndex
-				WHERE player_id = @playerId AND
-				position = @currentIndex AND
-				(SELECT COUNT(1) FROM items WHERE player_id = @playerId AND position = @newIndex) = 0",
+				@"UPDATE items 
+				SET 
+					inv_pos = @newIndex
+				WHERE 
+					player_id = @playerId AND
+					inv_pos = @currentIndex AND
+					(SELECT COUNT(1) FROM items WHERE player_id = @playerId AND inv_pos = @newIndex) = 0",
 				new Dictionary<string, object>() {
 					{ "playerId", playerId },
 					{ "currentIndex", currentIndex },
@@ -53,9 +92,10 @@ namespace Rebronx.Server.Components.Inventory.Repositories
 		private InventoryItem TransformItem(IDataRecord record) 
 		{
 			return new InventoryItem() {
-				Id = record.GetInt32(record.GetOrdinal("item_id")),
-				Position = record.GetInt32(record.GetOrdinal("position")),
-				Count = record.GetInt32(record.GetOrdinal("count"))
+				Id = record.GetValueOrDefault<int>("item_id"),
+				Count = record.GetValueOrDefault<int>("count"),
+				InventoryPosition = record.GetValueOrDefault<int?>("inv_pos"),
+				EquipmentPosition = record.GetValueOrDefault<int?>("equ_pos"),
 			};
 		}
 	}
