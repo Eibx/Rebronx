@@ -8,9 +8,10 @@ CREATE TABLE players (
 );
 
 CREATE TABLE items (
+	id SERIAL,
 	item_id integer NOT NULL,
 	player_id integer NOT NULL,
-	position integer NOT NULL,
 	count integer NOT NULL,
-	PRIMARY KEY (player_id, position)
+	inv_pos integer,
+	equ_pos integer
 );
