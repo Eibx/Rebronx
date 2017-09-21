@@ -3,16 +3,58 @@
 		<div class="inventory__container">
 			<div class="inventory__equipment">
 				<div class="inventory__equipment-armour">
-					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-head"></div>
-					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-body"></div>
-					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-legs"></div>
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-head">
+						<div class="inventory__item" v-if="headSlot !== null">
+							<div class="inventory__item-name">{{headSlot.name}}</div>
+							<svg class="inventory__item-image" viewBox="0 0 100 100">
+								<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
+								<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+							</svg>
+						</div>
+					 </div>
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-body">
+						 <div class="inventory__item" v-if="bodySlot !== null">
+							<div class="inventory__item-name">{{bodySlot.name}}</div>
+							<svg class="inventory__item-image" viewBox="0 0 100 100">
+								<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
+								<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+							</svg>
+						</div>
+					 </div>
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-legs">
+						 <div class="inventory__item" v-if="legsSlot !== null">
+							<div class="inventory__item-name">{{legsSlot.name}}</div>
+							<svg class="inventory__item-image" viewBox="0 0 100 100">
+								<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
+								<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+							</svg>
+						</div>
+					 </div>
 				</div>
 				<div class="inventory__equipment-player">
 					<div class="inventory__equipment-player-character"></div>
 				</div>
 				<div class="inventory__equipment-weapons">
-					<div class="inventory__equipment-weapons-primary"></div>
-					<div class="inventory__equipment-weapons-secondary"></div>
+					<div class="inventory__equipment-weapons-primary">
+						<div class="inventory__item" v-if="primaryWeapon !== null">
+							<div class="inventory__item-name">{{primaryWeapon.name}}</div>
+							<svg class="inventory__item-image" viewBox="0 0 100 100">
+								<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
+								<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+							</svg>
+						</div>
+					</div>
+					<div class="inventory__equipment-weapons-secondary">
+						<div class="inventory__equipment-weapons-primary">
+							<div class="inventory__item" v-if="secondaryWeapon !== null">
+								<div class="inventory__item-name">{{secondaryWeapon.name}}</div>
+								<svg class="inventory__item-image" viewBox="0 0 100 100">
+									<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
+									<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+								</svg>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="inventory__slots">
@@ -41,7 +83,17 @@ export default {
 		return {
 			isVisible: false,
 			items: [],
+			eqipment: [],
 			moveItem: null,
+
+			headSlot: null,
+			bodySlot: null,
+			legsSlot: null,
+
+			primaryWeapon: null,
+			primaryAmmo: null,
+			secondaryWeapon: null,
+			secondaryAmmo: null,
 		}
 	},
 	created() {
@@ -59,23 +111,50 @@ export default {
 	},
 	methods: {
 		processItems(ids) {
-			var newItems = [];
-			for (var x = 0; x < 18; x++) {
-				newItems[x] = null;
+			var newItems = new Array(18);
+			newItems.fill(null);
+			this.headSlot = null;
+			this.bodySlot = null;
+			this.legsSlot = null;
 
-				for (var i = 0; i < ids.length; i++) {
-					var invitem = ids[i];
-					if (x == invitem[0]) {
-						var item = this.getItem(invitem[1]);
-						if (item !== undefined) {
-							newItems[x] = { name: item.name, count: invitem[2] };
-						} else {
-							newItems[x] = { name: "unknown " + invitem[1], count: invitem[2] };
-						}
+			for (var i = 0; i < ids.length; i++) {
+				var itemId = ids[i][0];
+				var itemCount = ids[i][1];
+				var itemPos = ids[i][2];
+				var itemSlot = ids[i][3];
 
+				var item = this.getItem(itemId);
+				var uiItem = null;
+				if (item !== null) {
+					uiItem = { name: item.name, count: itemCount };
+				} else {
+					uiItem = { name: "unknown " + itemId, count: itemCount };
+				}
+
+				if (itemPos > -1 && itemSlot == -1) {
+					newItems[itemPos] = uiItem;
+				} else if (itemSlot > -1 && itemPos == -1) {
+					if (itemSlot == 10) {
+						this.headSlot = uiItem;
+					} else if (itemSlot == 11) {
+						this.bodySlot = uiItem;
+					} else if (itemSlot == 12) {
+						this.legsSlot = uiItem;
+					} else if (itemSlot == 20) {
+						this.primaryWeapon = uiItem;
+					} else if (itemSlot == 21) {
+						this.primaryAmmo = uiItem;
+					} else if (itemSlot == 30) {
+						this.secondaryWeapon = uiItem;
+					} else if (itemSlot == 31) {
+						this.secondaryAmmo = uiItem;
 					}
 				}
+
+				
+
 			}
+			
 			this.items = newItems;
 		},
 		getItem(id) {
@@ -84,6 +163,8 @@ export default {
 				if (element.id == id)
 					return element;
 			}
+
+			return null;
 		},
 		beginMove(index) {
 			for (var i = 0; i < this.items.length; i++) {
@@ -100,7 +181,11 @@ export default {
 				return;
 			}
 
-			dataService.send('inventory', 'reorder', { current: this.moveItem, new: index });
+			if (this.moveItem == index) {
+				dataService.send('inventory', 'equip', { from: this.moveItem, to: null });
+			} else {
+				dataService.send('inventory', 'reorder', { current: this.moveItem, new: index });
+			}
 
 			this.moveItem = null;
 		}
@@ -162,18 +247,30 @@ export default {
 	padding-top:100%;
 }
 
-
 .inventory__equipment-player {
 	display: flex;
 	flex-direction: column;
 
-	width:100%;
+	width:200px;
 	border:1px solid #666;
 	margin-bottom:3px;
+	margin-right:5px;
 }
 .inventory__equipment-weapons {
 	display: flex;
 	flex-direction: column;
+	width:12%;
+}
+
+.inventory__equipment-weapons-primary {
+	border:1px solid #666;
+	margin-bottom:3px;	
+}
+
+.inventory__equipment-weapons-primary:after {
+	display:block;
+	content:'';
+	padding-top:100%;
 }
 
 
