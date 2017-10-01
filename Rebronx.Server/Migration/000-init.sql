@@ -12,6 +12,5 @@ CREATE TABLE items (
 	item_id integer NOT NULL,
 	player_id integer NOT NULL,
 	count integer NOT NULL,
-	inv_pos integer,
-	equ_pos integer
+	slot integer NOT NULL
 );
