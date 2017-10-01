@@ -58,6 +58,15 @@ namespace Rebronx.Server.Components.Inventory
 				if (inventoryItem == null)
 					return;
 
+				if (inputMessage.To < 100) {
+					var itemEquipmentSlots = itemRepository.GetEquipmentSlots(inventoryItem.Id);
+					var canEquip = itemEquipmentSlots.Any(x => (int)x == inputMessage.To);
+					if (!canEquip)
+					{
+						return;
+					}
+				}
+
 				inventoryRepository.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
 
 				inventorySender.SendInventory(message.Player);
