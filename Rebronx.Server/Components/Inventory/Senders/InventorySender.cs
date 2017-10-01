@@ -21,7 +21,7 @@ namespace Rebronx.Server.Components.Inventory.Senders
 		{
 			var inventory = inventoryRepository.GetInventory(player.Id);
 			
-			List<List<int>> data = inventory.Select(x => new List<int> { x.Id, x.Count, x.InventoryPosition ?? -1, x.EquipmentPosition ?? -1 }).ToList();
+			List<List<int>> data = inventory.Select(x => new List<int> { x.Id, x.Count, x.Slot }).ToList();
 
 			messageService.Send(player, "inventory", "update", data);
 		}
