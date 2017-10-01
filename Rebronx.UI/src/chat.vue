@@ -33,8 +33,10 @@ export default {
 	},
 	methods: {
 		send: function () {
-			dataService.send('chat', 'say', { message: this.message });
-			this.message = "";
+			if (this.message.length > 0) {
+				dataService.send('chat', 'say', { message: this.message });
+				this.message = "";
+			}
 		},
 		blur: function () {
 			document.querySelector('.chat__input input').blur();
