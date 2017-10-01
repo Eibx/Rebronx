@@ -291,7 +291,6 @@ export default {
 	padding-top:100%;
 }
 
-
 .inventory__slots {
 	display:flex;
 	flex-wrap:wrap;
