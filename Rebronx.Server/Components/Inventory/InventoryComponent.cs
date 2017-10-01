@@ -79,6 +79,9 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
+				if (!IsValidSlot(inputMessage.From) || !IsValidSlot(inputMessage.To))
+					return;
+
 				var inventory = inventoryRepository.GetInventory(message.Player.Id);
 				var inventoryItem = inventory.FirstOrDefault(x => x.Slot == inputMessage.From);
 
@@ -101,6 +104,9 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
+				if (!IsValidSlot(inputMessage.From) || !IsValidSlot(inputMessage.To))
+					return;
+
 				var inventory = inventoryRepository.GetInventory(message.Player.Id);
 
 				if (inventory.Count(x => x.Slot > 100) >= 18)
