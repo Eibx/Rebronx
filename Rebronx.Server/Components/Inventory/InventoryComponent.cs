@@ -157,7 +157,11 @@ namespace Rebronx.Server.Components.Inventory
 			return freeSlot;
 		}
 
-		private bool IsValidSlot(int slot) {
+		private bool IsValidSlot(int? slot) {
+			if (!slot.HasValue) 
+			{
+				return false;
+			}
 			if (slot >= 100 && slot <= 117) 
 			{
 				return true;
