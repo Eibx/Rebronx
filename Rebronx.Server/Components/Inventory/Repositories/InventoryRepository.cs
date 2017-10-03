@@ -53,6 +53,35 @@ namespace Rebronx.Server.Components.Inventory.Repositories
 				});
 		}
 
+		public void SwapItem(int playerId, int item1, int item2)
+		{
+			databaseService.ExecuteNonQuery(
+				@"UPDATE items
+				SET
+					slot = CASE WHEN slot = @item1 THEN @item2 ELSE @item1 END
+				WHERE
+					player_id = @playerId",
+				new Dictionary<string, object>() {
+					{ "playerId", playerId },
+					{ "item1", item1 },
+					{ "item2", item2 }
+				}
+			);
+		}
+
+		public void AddItem(int playerId, int item, int count, int slot) 
+		{
+			databaseService.ExecuteNonQuery(
+				@"INSERT items (item_id, player_id, count, slot)
+				VALUES (@playerId, @item, @count, @slot)",
+				new Dictionary<string, object>() {
+					{ "playerId", playerId },
+					{ "item", item },
+					{ "count", count },
+					{ "slot", slot }
+				});
+		}
+
 		private InventoryItem TransformItem(IDataRecord record) 
 		{
 			return new InventoryItem() {
