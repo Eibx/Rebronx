@@ -3,7 +3,7 @@
 		{
 			"id": 1,
 			"name": "Golden mouse",
-			"image": "goldenmouse",
+			"image": null,
 			"type": "valuable",
 			"properties": {
 			}
@@ -11,7 +11,7 @@
 		{
 			"id": 2,
 			"name": "Baked beans",
-			"image": "foodcan",
+			"image": null,
 			"type": "consumable",
 			"properties": {
 				"health": 25
@@ -20,7 +20,7 @@
 		{
 			"id": 3,
 			"name": "Iron pipe",
-			"image": "ironpipe",
+			"image": null,
 			"type": "weapon",
 			"properties": {
 				"damage": 5
@@ -29,7 +29,7 @@
 		{
 			"id": 4,
 			"name": "Knife",
-			"image": "knife",
+			"image": null,
 			"type": "weapon",
 			"properties": {
 				"damage": 10
@@ -38,7 +38,7 @@
 		{
 			"id": 5,
 			"name": "Helmet",
-			"image": "helmet",
+			"image": null,
 			"type": "headarmour",
 			"properties": {
 			}
