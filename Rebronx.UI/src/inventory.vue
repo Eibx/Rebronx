@@ -3,7 +3,7 @@
 		<div class="inventory__container">
 			<div class="inventory__equipment">
 				<div class="inventory__equipment-armour">
-					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-head" v-on:mousedown="beginMove(10)" v-on:mouseup="endMove(10)">
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-head" v-on:mousedown="beginMove(10)" v-on:mouseup="endMove(10)" v-on:dblclick="unequipItem(10)">
 						<div class="inventory__item" v-if="headSlot !== null">
 							<div class="inventory__item-name">{{headSlot.name}}</div>
 							<svg class="inventory__item-image" viewBox="0 0 100 100">
@@ -12,7 +12,7 @@
 							</svg>
 						</div>
 					 </div>
-					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-body" v-on:mousedown="beginMove(11)" v-on:mouseup="endMove(11)">
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-body" v-on:mousedown="beginMove(11)" v-on:mouseup="endMove(11)" v-on:dblclick="unequipItem(11)">
 						 <div class="inventory__item" v-if="bodySlot !== null">
 							<div class="inventory__item-name">{{bodySlot.name}}</div>
 							<svg class="inventory__item-image" viewBox="0 0 100 100">
@@ -21,7 +21,7 @@
 							</svg>
 						</div>
 					 </div>
-					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-legs" v-on:mousedown="beginMove(12)" v-on:mouseup="endMove(12)">
+					 <div class="inventory__equipment-armour-slot inventory__equipment-armour-legs" v-on:mousedown="beginMove(12)" v-on:mouseup="endMove(12)" v-on:dblclick="unequipItem(12)">
 						 <div class="inventory__item" v-if="legsSlot !== null">
 							<div class="inventory__item-name">{{legsSlot.name}}</div>
 							<svg class="inventory__item-image" viewBox="0 0 100 100">
@@ -35,7 +35,7 @@
 					<div class="inventory__equipment-player-character"></div>
 				</div>
 				<div class="inventory__equipment-weapons">
-					<div class="inventory__equipment-weapons-primary" v-on:mousedown="beginMove(20)" v-on:mouseup="endMove(20)">
+					<div class="inventory__equipment-weapons-primary" v-on:mousedown="beginMove(20)" v-on:mouseup="endMove(20)" v-on:dblclick="unequipItem(20)">
 						<div class="inventory__item" v-if="primaryWeapon !== null">
 							<div class="inventory__item-name">{{primaryWeapon.name}}</div>
 							<svg class="inventory__item-image" viewBox="0 0 100 100">
@@ -44,7 +44,7 @@
 							</svg>
 						</div>
 					</div>
-					<div class="inventory__equipment-weapons-secondary" v-on:mousedown="beginMove(30)" v-on:mouseup="endMove(30)">
+					<div class="inventory__equipment-weapons-secondary" v-on:mousedown="beginMove(30)" v-on:mouseup="endMove(30)" v-on:dblclick="unequipItem(30)">
 						<div class="inventory__item" v-if="secondaryWeapon !== null">
 							<div class="inventory__item-name">{{secondaryWeapon.name}}</div>
 							<svg class="inventory__item-image" viewBox="0 0 100 100">
@@ -56,13 +56,16 @@
 				</div>
 			</div>
 			<div class="inventory__slots">
-				<div class="inventory__slot" v-for="(item, index) in items" v-on:mousedown="beginMove(index+100)" v-on:mouseup="endMove(index+100)">
+				<div class="inventory__slot" v-for="(item, index) in items" v-on:mousedown="beginMove(index+100)" v-on:mouseup="endMove(index+100)" v-on:dblclick="equipItem(index+100)">
 					<div class="inventory__item" v-if="item !== null">
-						<div class="inventory__item-name">{{item.name}}</div>
-						<div class="inventory__item-count" v-if="item.count > 1">{{item.count}}</div>
 						<svg class="inventory__item-image" viewBox="0 0 100 100">
-							<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
-							<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+							<g v-if="item.image != null">
+								<line x1="0" y1="0" x2="100" y2="100" stroke-width="2" stroke="#666" />
+								<line x1="0" y1="100" x2="100" y2="0" stroke-width="2" stroke="#666" />
+							</g>
+							<g v-if="item.image == null">
+								<text x="50" y="50" dominant-baseline="middle" text-anchor="middle">{{item.name}}</text>
+							</g>
 						</svg>
 					</div>
 				</div>
@@ -185,16 +188,17 @@ export default {
 				return;
 			}
 
-			if (this.moveItem == index) {
-				dataService.send('inventory', 'equip', { from: this.moveItem, to: null });
-			} else {
+			if (this.moveItem != index) {
 				dataService.send('inventory', 'reorder', { from: this.moveItem, to: index });
 			}
 
 			this.moveItem = null;
 		},
-		unequip(slot) {
-			alert(slot);
+		equipItem(slot) {
+			dataService.send('inventory', 'equip', { from: slot, to: null });
+		},
+		unequipItem(slot) {
+			dataService.send('inventory', 'unequip', { from: slot, to: null });
 		}
 	}
 }
