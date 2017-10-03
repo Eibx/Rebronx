@@ -4,6 +4,7 @@ using System.Linq;
 using Rebronx.Server.Components.Inventory;
 using Rebronx.Server.Components.Inventory.Repositories;
 using Rebronx.Server.Components.Inventory.Senders;
+using Rebronx.Server.Components.Inventory.Services;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Repositories.Interfaces;
 
@@ -13,15 +14,11 @@ namespace Rebronx.Server.Components.Inventory
 	{
 		private const string Component = "inventory";
 
-		private readonly IInventoryRepository inventoryRepository;
-		private readonly IItemRepository itemRepository;
-		private readonly IInventorySender inventorySender;
+		private readonly IInventoryService inventoryService;
 
-		public InventoryComponent(IInventoryRepository inventoryRepository, IItemRepository itemRepository, IInventorySender inventorySender)
+		public InventoryComponent(IInventoryService inventoryService)
 		{
-			this.inventoryRepository = inventoryRepository;
-			this.itemRepository = itemRepository;
-			this.inventorySender = inventorySender;
+			this.inventoryService = inventoryService;
 		}
 
 		public void Run(IList<Message> messages)
@@ -49,27 +46,7 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
-				if (!IsValidSlot(inputMessage.From) || !IsValidSlot(inputMessage.To))
-					return;
-
-				var inventory = inventoryRepository.GetInventory(message.Player.Id);
-				var inventoryItem = inventory.FirstOrDefault(x => x.Slot == inputMessage.From);
-
-				if (inventoryItem == null)
-					return;
-
-				if (inputMessage.To < 100) {
-					var itemEquipmentSlots = itemRepository.GetEquipmentSlots(inventoryItem.Id);
-					var canEquip = itemEquipmentSlots.Any(x => (int)x == inputMessage.To);
-					if (!canEquip)
-					{
-						return;
-					}
-				}
-
-				inventoryRepository.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
-
-				inventorySender.SendInventory(message.Player);
+				inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
 			}
 		}
 
@@ -79,22 +56,7 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
-				if (!IsValidSlot(inputMessage.From) || !IsValidSlot(inputMessage.To))
-					return;
-
-				var inventory = inventoryRepository.GetInventory(message.Player.Id);
-				var inventoryItem = inventory.FirstOrDefault(x => x.Slot == inputMessage.From);
-
-				if (inventoryItem == null) 
-				{
-					return;
-				}
-
-				int equipmentSlot = inputMessage.To ?? GetFreeEquipmentSlot(inventoryItem.Id, inventory);
-
-				inventoryRepository.MoveItem(message.Player.Id, inputMessage.From, equipmentSlot);
-
-				inventorySender.SendInventory(message.Player);
+				inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
 			}
 		}
 
@@ -104,80 +66,8 @@ namespace Rebronx.Server.Components.Inventory
 
 			if (inputMessage != null && message?.Player != null)
 			{
-				if (!IsValidSlot(inputMessage.From) || !IsValidSlot(inputMessage.To))
-					return;
-
-				var inventory = inventoryRepository.GetInventory(message.Player.Id);
-
-				if (inventory.Count(x => x.Slot > 100) >= 18)
-				{
-					return;
-				}
-
-				var moveItemTo = inputMessage.To ?? GetFreeInventorySlot(inventory);
-
-				if (!IsValidSlot(moveItemTo))
-				{
-					return;
-				}
-
-				inventoryRepository.MoveItem(message.Player.Id, inputMessage.From, moveItemTo);
-
-				inventorySender.SendInventory(message.Player);
+				inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
 			}
-		}
-
-		private int GetFreeInventorySlot(List<Models.InventoryItem> inventory) 
-		{
-			var ordered = inventory.OrderBy(x => x.Slot);
-
-			if (ordered.Count() >= 18) {
-				return -1;
-			}
-
-			for (int i = 0; i < 18; i++)
-			{
-				if (!ordered.Any(x => x.Slot == i))
-				{
-					return i;
-				}
-			}
-
-			return -1;
-		}
-
-		private int GetFreeEquipmentSlot(int itemId, List<Models.InventoryItem> inventory) 
-		{
-			var freeSlot = -1;
-			var equipmentSlots = itemRepository.GetEquipmentSlots(itemId);
-
-			foreach (var slot in equipmentSlots)
-			{
-				if (!inventory.Any(x => x.Slot == (int)slot))
-				{
-					freeSlot = (int)slot;
-					break;
-				}
-			}
-
-			return freeSlot;
-		}
-
-		private bool IsValidSlot(int? slot) {
-			if (!slot.HasValue) 
-			{
-				return false;
-			}
-			if (slot >= 100 && slot <= 117) 
-			{
-				return true;
-			} 
-			else if (Enum.IsDefined(typeof(EquipmentSlot), slot))
-			{
-				return true;
-			}
-
-			return false;
 		}
 	}
 
