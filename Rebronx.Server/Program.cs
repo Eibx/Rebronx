@@ -24,6 +24,7 @@ using Rebronx.Server.Components.Combat.Senders;
 using Rebronx.Server.Components.Map.Services;
 using Rebronx.Server.Components.Combat.Repositories;
 using Rebronx.Server.Components.Inventory.Repositories;
+using Rebronx.Server.Components.Inventory.Services;
 
 public class Program
 {
@@ -39,6 +40,7 @@ public class Program
 		services.AddSingleton<IConnectionService, ConnectionService>();
 		services.AddSingleton<IMessageService, MessageService>();
 		services.AddSingleton<IDatabaseService, DatabaseService>();
+		services.AddSingleton<IInventoryService, InventoryService>();
 		
 		//Components
 		services.AddSingleton<IMapComponent, MapComponent>();
