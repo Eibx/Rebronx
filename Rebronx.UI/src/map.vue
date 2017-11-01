@@ -1,13 +1,15 @@
 <template>
 	<div class="map" v-on:mousedown="mousedown" v-on:mouseup="mouseup" v-on:mousemove="mousemove" v-on:wheel="mousewheel">
-		<svg viewBox="0 0 1000 1000">
-			<image x="0" y="0" width="1000" height="1000" xlink:href="/assets/map.svg" />
+		<svg viewBox="0 0 800 800">
+			<image x="0" y="0" width="800" height="800" xlink:href="/assets/map2_original.svg" />
 			<template v-for="node in mapLines">
-				<line v-bind:x1="node.sx * 10" v-bind:y1="node.sy * 10" v-bind:x2="node.ex * 10" v-bind:y2="node.ey * 10" stroke-width="2" stroke="#666" />
-				<line v-bind:x1="node.sx * 10" v-bind:y1="node.sy * 10" v-bind:x2="((node.ex-node.sx)*movePercentage+node.sx)*10" v-bind:y2="((node.ey-node.sy)*movePercentage+node.sy)*10" stroke-width="2" stroke="#fff" />
+				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="node.ex" v-bind:y2="node.ey" stroke-width="2" stroke="#666" />
+				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="((node.ex-node.sx)*movePercentage+node.sx)" v-bind:y2="((node.ey-node.sy)*movePercentage+node.sy)" stroke-width="2" stroke="#fff" />
 			</template>
 			<template v-for="node in mapData">
-				<circle class="map__node" r="6" v-bind:cx="node.posX*10" v-bind:cy="node.posY*10" v-bind:class="{ 'map__node-current': node.isCurrent }" v-on:click="move(node.id)" />
+				<text v-bind:x="node.posX + 3" v-bind:y="node.posY + 10">{{node.id}}</text>
+				<circle class="map__node-current" r="4" v-if="node.isCurrent" v-bind:cx="node.posX" v-bind:cy="node.posY" />
+				<circle class="map__node" r="2" v-bind:cx="node.posX" v-bind:cy="node.posY" v-on:click="move(node.id)" />
 			</template>
 		</svg>
 	</div>
@@ -24,6 +26,7 @@ export default {
 			mapData: [],
 			mapLines: [],
 			movementPath: [],
+			grid: [],
 
 			isDown: false,
 			startX: 0,
@@ -33,7 +36,7 @@ export default {
 			movePercentage: 0.5,
 			moveX: 0,
 			moveY: 0,
-			zoomW: 500,
+			zoomW: 500
 		}
 	},
 	created() {
@@ -181,12 +184,14 @@ export default {
 }
 .map__node {
 	stroke:transparent;
-	stroke-width:20px;
+	stroke-width:8px;
 }
 .map__node:hover {
 	fill:yellowgreen;
 }
 .map__node-current {
-	fill:red;
+	fill:transparent;
+	stroke:#ffffff99;
+	stroke-width:1px;
 }
 </style>
