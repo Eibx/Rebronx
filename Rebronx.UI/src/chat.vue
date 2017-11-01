@@ -36,6 +36,8 @@ export default {
 			if (this.message.length > 0) {
 				dataService.send('chat', 'say', { message: this.message });
 				this.message = "";
+			} else {
+				this.blur();
 			}
 		},
 		blur: function () {
