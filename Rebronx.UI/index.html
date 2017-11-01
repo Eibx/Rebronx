@@ -5,6 +5,12 @@
 	<meta charset="utf-8">
 	<title>Rebronx</title>
 	<style>
+		@font-face {
+			font-family: 'Courier Code';
+			src: url('/assets/fonts/couriercode.woff2') format('woff2');
+			font-weight: normal;
+			font-style: normal;
+		}
 		* {
 			box-sizing: border-box;
 		}
@@ -23,8 +29,9 @@
 		}
 
 		body {
-			font-family: monospace;
+			font-family: 'Courier Code';
 			color: #fff;
+			font-size:12px;
 		}
 
 		ul,
@@ -50,6 +57,10 @@
 		.sidebar {
 			width: 25%;
 			background: #e1e1e1;
+		}
+
+		input, button {
+			font-family: 'Courier Code';
 		}
 
 		input[type=text],
