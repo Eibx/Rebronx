@@ -2,9 +2,9 @@
 	<div class="map" v-on:mousedown="mousedown" v-on:mouseup="mouseup" v-on:mousemove="mousemove" v-on:wheel="mousewheel">
 		<svg viewBox="0 0 800 800">
 			<image x="0" y="0" width="800" height="800" xlink:href="/assets/map2_original.svg" />
-			<template v-for="node in mapLines">
-				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="node.ex" v-bind:y2="node.ey" stroke-width="2" stroke="#666" />
-				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="((node.ex-node.sx)*movePercentage+node.sx)" v-bind:y2="((node.ey-node.sy)*movePercentage+node.sy)" stroke-width="2" stroke="#fff" />
+			<template v-for="(node, index) in mapLines">
+				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="node.ex" v-bind:y2="node.ey" stroke-width="2" stroke="#999" />
+				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="((node.ex-node.sx)*movePercentage+node.sx)" v-bind:y2="((node.ey-node.sy)*movePercentage+node.sy)" v-if="index == 0" stroke-width="2" stroke="#ffff" />
 			</template>
 			<template v-for="node in mapData">
 				<text v-bind:x="node.posX + 3" v-bind:y="node.posY + 10">{{node.id}}</text>
@@ -42,21 +42,21 @@ export default {
 	created() {
 		var self = this;
 
-		var pathData = {};
+		var dijkstraData = {};
 		
 		this.mapData = window.mapData.map;
 
 		for (var i = 0; i < this.mapData.length; i++) {
 			var element = this.mapData[i];
 			this.$set(element, "isCurrent", false);
-			pathData[element.id] = {};
+			dijkstraData[element.id] = {};
 
 			for (var j = 0; j < element.connections.length; j++) {
-				pathData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);				
+				dijkstraData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);				
 			}
 		}
 
-		this.dijkstra = new Dijkstra(pathData);
+		this.dijkstra = new Dijkstra(dijkstraData);
 
 		function getPointPosition(mapData, id) {
 			for (var i = 0; i < mapData.length; i++) {
@@ -91,22 +91,34 @@ export default {
 				clearInterval(movementTimeout);
 
 				self.movePercentage = 0;
-				self.mapLines = [];
 
 				if (this.movementPath.length > 0) {
 					dataService.send('movement', 'move', { position: this.movementPath.shift() });
+				} else {
+					this.mapLines = [];
 				}
 			}
 			else if (type == "movement") {
-				var curpos = getPointPosition(self.mapData, playerService.position);
-				var newpos = getPointPosition(self.mapData, data.position);
-
 				self.mapLines = [];
-				self.mapLines.push({ sx: curpos.x, sy: curpos.y, ex: newpos.x, ey: newpos.y });
+
+				var m = this.movementPath.slice(0);
+				m.unshift(playerService.position, data.position);
+				
+				for (var i = 0; i < m.length-1; i++) {
+					var s = getPointPosition(this.mapData, m[i]);
+					var e = getPointPosition(this.mapData, m[i+1]);
+					self.mapLines.push({ sx: s.x, sy: s.y, ex: e.x, ey: e.y });
+				}
 
 				self.movePercentage = 0;
 				clearInterval(movementTimeout);
-				movementTimeout = setInterval(() => { self.movePercentage += 1 /(data.movetime / 10); }, 10)
+				movementTimeout = setInterval(() => { 
+					self.movePercentage += 1 /(data.movetime / 10); 
+					if (self.movePercentage > 1) {
+						self.movePercentage = 1;
+						clearInterval(movementTimeout);
+					}
+				}, 10)
 			}
 		});
 		dataService.subscribe('join', function(type, data) {
