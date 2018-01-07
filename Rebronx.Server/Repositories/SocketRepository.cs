@@ -9,24 +9,24 @@ namespace Rebronx.Server.Repositories
 {
 	public class SocketRepository : ISocketRepository
 	{
-		private Dictionary<Guid, SocketConnection> sockets;
+		private Dictionary<Guid, ClientConnection> sockets;
 		private BiDictionary<int, Guid> playerSocketDictionary;
 
 		public SocketRepository()
 		{
-			sockets = new Dictionary<Guid, SocketConnection>();
+			sockets = new Dictionary<Guid, ClientConnection>();
 			playerSocketDictionary = new BiDictionary<int, Guid>();
 		}
 
-		public SocketConnection GetConnection(Guid connectionId) 
+		public ClientConnection GetConnection(Guid connectionId) 
 		{
-			SocketConnection connection = null;
+			ClientConnection connection = null;
 			sockets.TryGetValue(connectionId, out connection);
 
 			return connection;
 		}
 
-		public SocketConnection GetConnection(int playerId) 
+		public ClientConnection GetConnection(int playerId) 
 		{
 			Guid connectionId = Guid.Empty;
 			playerSocketDictionary.TryGetByFirst(playerId, out connectionId);
@@ -48,12 +48,12 @@ namespace Rebronx.Server.Repositories
 			}
 		}
 
-		public List<SocketConnection> GetAllConnections()
+		public List<ClientConnection> GetAllConnections()
 		{
 			return sockets.Select(x => x.Value).ToList();
 		}
 
-		public void AddConnection(int playerId, SocketConnection connection) 
+		public void AddConnection(int playerId, ClientConnection connection) 
 		{
 			if (playerSocketDictionary.ContainsByFirst(playerId)) 
 			{
@@ -66,7 +66,7 @@ namespace Rebronx.Server.Repositories
 				sockets.Add(connection.Id, connection);
 		}
 
-		public void AddUnauthorizedConnection(SocketConnection connection) 
+		public void AddUnauthorizedConnection(ClientConnection connection) 
 		{
 			sockets.Add(connection.Id, connection);
 		}
@@ -86,7 +86,7 @@ namespace Rebronx.Server.Repositories
 
 			if (playerSocketDictionary.TryGetByFirst(playerId, out connectionId)) {
 				if (sockets.ContainsKey(connectionId)) {
-					sockets[connectionId].Socket.Shutdown(SocketShutdown.Both);
+					sockets[connectionId].Client.Close();
 					sockets.Remove(connectionId);
 				}
 			}

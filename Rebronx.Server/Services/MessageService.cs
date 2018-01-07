@@ -22,7 +22,7 @@ namespace Rebronx.Server.Services
 			this.socketRepository = socketRepository;
 		}
 
-		public void Send<T>(SocketConnection connection, string component, string type, T data) 
+		public void Send<T>(ClientConnection connection, string component, string type, T data) 
 		{
 			string json = string.Empty;
 			
@@ -34,10 +34,10 @@ namespace Rebronx.Server.Services
 			} 
 			catch {}
 					
-			var socket = connection.Socket;
+			var stream = connection.Stream;
 
-			if (socket != null)
-				webSocketCore.Send(socket, json);
+			if (stream != null)
+				webSocketCore.Send(stream, json);
 		}
 
 		public void Send<T>(Player player, string component, string type, T data) 
@@ -54,8 +54,8 @@ namespace Rebronx.Server.Services
 					
 			var connection = socketRepository.GetConnection(player.Id);
 
-			if (connection?.Socket != null)
-				webSocketCore.Send(connection.Socket, json);
+			if (connection?.Stream != null)
+				webSocketCore.Send(connection.Stream, json);
 		}
 
 		public void SendPosition<T>(int position, string component, string type, T data) 
@@ -75,8 +75,8 @@ namespace Rebronx.Server.Services
 			{
 				var connection = socketRepository.GetConnection(player.Id);
 
-				if (connection?.Socket != null)
-					webSocketCore.Send(connection.Socket, json);
+				if (connection?.Stream != null)
+					webSocketCore.Send(connection.Stream, json);
 			}
 		}
 
@@ -94,10 +94,10 @@ namespace Rebronx.Server.Services
 
 			foreach(var connection in socketRepository.GetAllConnections()) 
 			{
-				var socket = connection?.Socket;
+				var stream = connection?.Stream;
 
-				if (socket != null)
-					webSocketCore.Send(socket, json);
+				if (stream != null)
+					webSocketCore.Send(stream, json);
 			}
 		}
 	}

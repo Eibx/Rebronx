@@ -6,13 +6,13 @@ namespace Rebronx.Server.Repositories.Interfaces
 {
 	public interface ISocketRepository
 	{
-		SocketConnection GetConnection(Guid connectionId);
-		SocketConnection GetConnection(int playerId);
+		ClientConnection GetConnection(Guid connectionId);
+		ClientConnection GetConnection(int playerId);
 		bool IsPlayerOnline(int playerId);
 		int? GetPlayerId(Guid connectionId);
-		List<SocketConnection> GetAllConnections();
-		void AddConnection(int playerId, SocketConnection connection);
-		void AddUnauthorizedConnection(SocketConnection connection);
+		List<ClientConnection> GetAllConnections();
+		void AddConnection(int playerId, ClientConnection connection);
+		void AddUnauthorizedConnection(ClientConnection connection);
 		void RemoveConnection(Guid connectionId);
 		void RemoveConnection(int playerId);
 	}

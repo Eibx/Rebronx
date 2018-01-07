@@ -36,7 +36,7 @@ export default class DataService {
 	}
 
 	open(callback) {
-		this.websocket = new WebSocket("ws://localhost:31337");
+		this.websocket = new WebSocket("wss://localhost:21220");
 		this.websocket.onmessage = (msg) => { this.onData(msg) };
 		this.websocket.onopen = () => {
 			callback({ type: 'open' });

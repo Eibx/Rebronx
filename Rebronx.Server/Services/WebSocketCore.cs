@@ -8,37 +8,48 @@ using System.Linq;
 using Rebronx.Server.Models;
 using Newtonsoft.Json;
 using Rebronx.Server.Repositories.Interfaces;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
+using System.Security.Authentication;
 
 public class WebSocketCore : IWebSocketCore
 {
 	private readonly ISocketRepository socketRepository;
 	private const int TEXT_FRAME = 129;
 	private const int BINARY_FRAME = 64;
-	List<PendingSocket> connectingSockets;
+	List<PendingClient> connectingSockets;
 	List<WebSocketMessage> pendingMessages;
 	TcpListener server;
+	X509Certificate serverCertificate;
 
 	public WebSocketCore(ISocketRepository socketRepository)
 	{
 		this.socketRepository = socketRepository;
-
-		server = new TcpListener(IPAddress.Parse("127.0.0.1"), 31337);
+		serverCertificate = new X509Certificate2("../rebronx.p12", "rebronx_pass", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+		
+		server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
 		server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
 		server.Start();
 
 		pendingMessages = new List<WebSocketMessage>();
-		connectingSockets = new List<PendingSocket>();
+		connectingSockets = new List<PendingClient>();
 	}
 
 	public void GetNewConnections()
 	{
 		while (server.Pending())
 		{
-			var task = server.AcceptSocketAsync();
-			task.Wait();
-			Socket socket = task.Result;
+			var client = server.AcceptTcpClient();
 
-			connectingSockets.Add(new PendingSocket() { Socket = socket, Connected = DateTime.Now });
+			SslStream sslStream = new SslStream(client.GetStream(), false);
+			sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
+
+			connectingSockets.Add(new PendingClient() 
+			{ 
+				Client = client, 
+				Stream = sslStream, 
+				Connected = DateTime.Now 
+			});
 		}
 
 		HandleHttpConnection();
@@ -56,10 +67,11 @@ public class WebSocketCore : IWebSocketCore
 
 			List<byte> data = new List<byte>();
 
-			while (s.Socket.Poll(1000, SelectMode.SelectRead))
+			while (s.Client.Client.Poll(1000, SelectMode.SelectRead))
 			{
 				byte[] buffer = new byte[1024];
-				var received = s.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+
+				var received = s.Stream.Read(buffer, 0, buffer.Length);
 
 				if (received == 0)
 					break;
@@ -115,7 +127,7 @@ public class WebSocketCore : IWebSocketCore
 				if (jsondata == "ping")
 				{
 					s.LastMessage = DateTime.Now;
-					Send(s.Socket, "pong");
+					Send(s.Stream, "pong");
 					continue;
 				}
 
@@ -129,7 +141,7 @@ public class WebSocketCore : IWebSocketCore
 				{
 					wsMessage.Connection = s;
 					output.Add(wsMessage);
-			
+
 				}
 			}
 		}
@@ -137,7 +149,7 @@ public class WebSocketCore : IWebSocketCore
 		return output;
 	}
 
-	public void Send(Socket socket, string data)
+	public void Send(SslStream stream, string data)
 	{
 		List<byte> bytes = new List<byte>();
 
@@ -172,18 +184,19 @@ public class WebSocketCore : IWebSocketCore
 			bytes.AddRange(databytes);
 		}
 
-		try 
+		try
 		{
-			socket.Send(bytes.ToArray());
-		} 
-		catch(System.Net.Sockets.SocketException e) 
+			stream.Write(bytes.ToArray());
+		}
+		catch (System.Net.Sockets.SocketException e)
 		{
 			// Broken pipe exception can happen here
 			Console.WriteLine(e.ToString());
 		}
 	}
 
-	private void SendClose(Socket socket, int reason) {
+	private void SendClose(Socket socket, int reason)
+	{
 		List<byte> bytes = new List<byte>();
 
 		//close frame
@@ -195,7 +208,7 @@ public class WebSocketCore : IWebSocketCore
 		//code/reason 4001
 		bytes.Add(15);
 		bytes.Add(161);
-		
+
 		socket.Send(bytes.ToArray());
 	}
 
@@ -207,7 +220,7 @@ public class WebSocketCore : IWebSocketCore
 
 			string httpRequest = GetHttpRequest(connection);
 
-			if (connection.IsTimeout() || !connection.Socket.Connected || httpRequest == null)
+			if (connection.IsTimeout() || !connection.Client.Connected || httpRequest == null)
 			{
 				connectingSockets.RemoveAt(i);
 				i--;
@@ -219,16 +232,18 @@ public class WebSocketCore : IWebSocketCore
 			if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
 			{
 				byte[] responseBytes = CreateConnectionResponse(httpHeaders);
-				var sent = connection.Socket.Send(responseBytes, 0, responseBytes.Length, SocketFlags.None);
-				
-				var socketConnection = new SocketConnection()
+
+				connection.Stream.Write(responseBytes, 0, responseBytes.Length);
+
+				var ClientConnection = new ClientConnection()
 				{
 					Id = Guid.NewGuid(),
-					Socket = connection.Socket,
+					Client = connection.Client,
+					Stream = connection.Stream,
 					LastMessage = DateTime.Now
 				};
 
-				socketRepository.AddUnauthorizedConnection(socketConnection);
+				socketRepository.AddUnauthorizedConnection(ClientConnection);
 			}
 
 			if (i <= connectingSockets.Count - 1)
@@ -239,17 +254,23 @@ public class WebSocketCore : IWebSocketCore
 		}
 	}
 
-	private string GetHttpRequest(PendingSocket socket)
+	private string GetHttpRequest(PendingClient client)
 	{
 		string output = string.Empty;
 
-		while (socket.Socket.Poll(1000, SelectMode.SelectRead))
+		while (client.Client.Client.Poll(1000, SelectMode.SelectRead))
 		{
-			if (!socket.Socket.Connected)
+			if (!client.Client.Connected)
 				return null;
 
 			byte[] buffer = new byte[1024];
-			var received = socket.Socket.Receive(buffer, 0, buffer.Length, SocketFlags.None);
+
+			int received = 0;
+			try 
+			{
+				received = client.Stream.Read(buffer, 0, buffer.Length);
+			}
+			catch (System.IO.IOException) {}
 
 			if (received == 0)
 				break;
@@ -322,9 +343,11 @@ public class WebSocketCore : IWebSocketCore
 	}
 }
 
-public class PendingSocket
+public class PendingClient
 {
-	public Socket Socket { get; set; }
+	public TcpClient Client { get; set; }
+
+	public SslStream Stream { get; set; }
 	public DateTime Connected { get; set; }
 
 	public bool IsTimeout()
@@ -335,7 +358,7 @@ public class PendingSocket
 
 public class WebSocketMessage
 {
-	public SocketConnection Connection { get; set; }
+	public ClientConnection Connection { get; set; }
 	public string Component { get; set; }
 	public string Type { get; set; }
 	public string Data { get; set; }

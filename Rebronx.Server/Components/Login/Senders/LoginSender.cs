@@ -34,7 +34,7 @@ namespace Rebronx.Server.Components.Login.Senders
 			messageService.Send(player, "login", "login", loginMessage);
 		}
 
-		public void Fail(SocketConnection connection, int reason)
+		public void Fail(ClientConnection connection, int reason)
 		{
 			var loginMessage = new SendLoginMessage();
 			loginMessage.Success = false;
@@ -44,7 +44,7 @@ namespace Rebronx.Server.Components.Login.Senders
 			messageService.Send(connection, "login", "login", loginMessage);
 		}
 
-		public void SignupSuccess(SocketConnection connection, string token)
+		public void SignupSuccess(ClientConnection connection, string token)
 		{
 			var signupMessage = new SendSignupMessage();
 			signupMessage.Success = true;
@@ -54,7 +54,7 @@ namespace Rebronx.Server.Components.Login.Senders
 			messageService.Send(connection, "login", "signup", signupMessage);
 		}
 
-		public void SignupFail(SocketConnection connection, int reason)
+		public void SignupFail(ClientConnection connection, int reason)
 		{
 			var signupMessage = new SendSignupMessage();
 			signupMessage.Success = true;
