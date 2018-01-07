@@ -117,7 +117,7 @@ namespace Rebronx.Server.Repositories
 			return new Player() {
 				Id = record.GetInt32(record.GetOrdinal("id")),
 				Name = record.GetString(record.GetOrdinal("name")),
-				Position = record.GetInt32(record.GetOrdinal("position")),
+				Position = new Position(record.GetInt32(record.GetOrdinal("x")), record.GetInt32(record.GetOrdinal("y"))),
 				Health = record.GetInt32(record.GetOrdinal("health")),
 			};
 		}

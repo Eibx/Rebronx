@@ -21,22 +21,24 @@ namespace Rebronx.Server.Repositories
 			this.socketRepository = socketRepository;
 		}
 
-		public void SetPlayerPositon(Player player, int position)
+		public void SetPlayerPositon(Player player, Position position)
 		{
 			databaseService.ExecuteNonQuery(
 				"UPDATE players SET position = @position WHERE id = @id",
 				new Dictionary<string, object>() {
 					{ "id", player.Id },
-					{ "position", position }
+					{ "x", position.X },
+					{ "y", position.Y }
 				});
 		}
 
-		public List<Player> GetPlayersByPosition(int position)
+		public List<Player> GetPlayersByPosition(Position position)
 		{
 			var data = databaseService.ExecuteReader(
-				"SELECT * FROM players WHERE position = @position",
+				"SELECT * FROM players WHERE position = @position AND dimention = @dimention",
 				new Dictionary<string, object>() {
-					{ "position", position },
+					{ "x", position.X },
+					{ "y", position.Y }
 				});
 			
 			var output = new List<Player>();
@@ -53,7 +55,7 @@ namespace Rebronx.Server.Repositories
 			return new Player() {
 				Id = record.GetInt32(record.GetOrdinal("id")),
 				Name = record.GetString(record.GetOrdinal("name")),
-				Position = record.GetInt32(record.GetOrdinal("position")),
+				Position = new Position(record.GetInt32(record.GetOrdinal("x")), record.GetInt32(record.GetOrdinal("y"))),
 				Health = record.GetInt32(record.GetOrdinal("health")),
 			};
 		}

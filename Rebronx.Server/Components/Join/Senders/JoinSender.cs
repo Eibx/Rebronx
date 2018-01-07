@@ -28,7 +28,7 @@ namespace Rebronx.Server.Components.Join.Senders
 				var joinMessage = new SendJoinMessage();
 				joinMessage.Id = player.Id;
 				joinMessage.Name = player.Name;
-				joinMessage.Position = position;
+				joinMessage.Position = player.Position;
 
 				//TODO: Send credits - CreditRepository?
 				joinMessage.Credits = 0;
@@ -46,6 +46,6 @@ namespace Rebronx.Server.Components.Join.Senders
 		public int Id { get; set; }
 		public string Name { get; set; }
 		public int Credits { get; set; }
-		public int Position { get; set; }
+		public Position Position { get; set; }
 	}
 }

@@ -65,8 +65,8 @@ namespace Rebronx.Server.Components.Movement
 			if (moveMessage == null)
 				return;
 
-			var currentNode = mapService.GetNode(message.Player.Position);
-			var nextNode = mapService.GetNode(moveMessage.Position);
+			var currentNode = mapService.GetNode(message.Player.Position.X);
+			var nextNode = mapService.GetNode(moveMessage.Position.X);
 
 			if (currentNode == null || nextNode == null)
 				return;
@@ -79,7 +79,7 @@ namespace Rebronx.Server.Components.Movement
 			var distanceY = Math.Pow(Math.Abs(nextNode.Y-currentNode.Y), 2);
 			var distance = Math.Sqrt(distanceX + distanceY);
 
-			long travelTime = (long)Math.Round(distance * 100d);
+			long travelTime = (long)Math.Round(distance * 5d);
 
 			movements[message.Player.Id] = new MovementDistination() {
 				Position = moveMessage.Position,
@@ -94,12 +94,12 @@ namespace Rebronx.Server.Components.Movement
 
 	public class InputMoveMessage
 	{
-		public int Position { get; set; }
+		public Position Position { get; set; }
 	}
 
 	public class MovementDistination
 	{
-		public int Position { get; set; }
+		public Position Position { get; set; }
 		public long TravelTime { get; set; }
 		public Player Player { get; set; }
 	}

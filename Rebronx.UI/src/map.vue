@@ -52,7 +52,7 @@ export default {
 			dijkstraData[element.id] = {};
 
 			for (var j = 0; j < element.connections.length; j++) {
-				dijkstraData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);				
+				dijkstraData[element.id.toString()][element.connections[j]] = getDistance(this.mapData, element.id, element.connections[j]);
 			}
 		}
 
@@ -69,7 +69,7 @@ export default {
 
 		function setCurrentPosition(position) {
 			for (var i = 0; i < self.mapData.length; i++) {
-				self.mapData[i].isCurrent = (self.mapData[i].id == position);
+				self.mapData[i].isCurrent = (self.mapData[i].id == position.x);
 			}
 		}
 
@@ -102,7 +102,7 @@ export default {
 				self.mapLines = [];
 
 				var m = this.movementPath.slice(0);
-				m.unshift(playerService.position, data.position);
+				m.unshift(playerService.position.x, data.position.x);
 				
 				for (var i = 0; i < m.length-1; i++) {
 					var s = getPointPosition(this.mapData, m[i]);
@@ -129,9 +129,9 @@ export default {
 	},
 	methods: {
 		move: function(id) {
-			this.movementPath = this.dijkstra.findShortestPath(playerService.position, id);
+			this.movementPath = this.dijkstra.findShortestPath(playerService.position.x, id);
 			this.movementPath.shift();
-			dataService.send('movement', 'move', { position: this.movementPath.shift() });
+			dataService.send('movement', 'move', { position: { x: this.movementPath.shift(), y: 0 }});
 		},
 		mousedown: function (evt) {
 			evt.preventDefault();

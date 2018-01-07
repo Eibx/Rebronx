@@ -6,7 +6,7 @@ export default class PlayerService {
 			this.player = {
 				name: "0",
 				credits:0,
-				position: 0
+				position: { location: 0, dimention: 0 }
 			};
 
 			dataService.subscribe('join', function(type, data) {

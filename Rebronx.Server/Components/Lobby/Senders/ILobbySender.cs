@@ -2,6 +2,6 @@ namespace Rebronx.Server.Components.Lobby.Senders
 {
 	public interface ILobbySender
 	{
-		void Update(int position);
+		void Update(Position position);
 	}
 }

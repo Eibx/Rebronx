@@ -58,7 +58,7 @@ namespace Rebronx.Server.Services
 				webSocketCore.Send(connection.Stream, json);
 		}
 
-		public void SendPosition<T>(int position, string component, string type, T data) 
+		public void SendPosition<T>(Position position, string component, string type, T data) 
 		{
 			string json = string.Empty;
 			

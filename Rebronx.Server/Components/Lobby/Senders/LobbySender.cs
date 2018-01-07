@@ -17,7 +17,7 @@ namespace Rebronx.Server.Components.Lobby.Senders
 			this.messageService = messageService;
 		}
 
-		public void Update(int position)
+		public void Update(Position position)
 		{
 			var players = positionRepository.GetPlayersByPosition(position);
 
