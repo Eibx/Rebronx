@@ -118,7 +118,7 @@ export default {
 						self.movePercentage = 1;
 						clearInterval(movementTimeout);
 					}
-				}, 10)
+				}, 10);
 			}
 		});
 		dataService.subscribe('join', function(type, data) {

@@ -18,7 +18,7 @@ export default class PlayerService {
 			dataService.subscribe('player', function(type, data) {
 				if (type === 'position') {
 					instance.position = data.position;
-				}				
+				}
 			});
 
 			instance = this;
