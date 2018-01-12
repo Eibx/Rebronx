@@ -54,7 +54,7 @@ npm run dev
 **Not needed for now**
 
 ```shell
-echo "127.0.0.1  rebronx.test" >> /etc/hosts
+echo "127.0.0.1  rebronx.test" | sudo tee -a /etc/hosts
 ```
 
 Note that browsers will still not trust these certificates, so make exceptions for https://localhost:8080 and https://localhost:21220.
