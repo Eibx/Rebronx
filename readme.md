@@ -35,6 +35,9 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -node
 openssl pkcs12 -export -inkey key.pem -in cert.pem -out rebronx.p12 -password pass:rebronx_pass
 ```
 
+*Note that browsers will still not trust these certificates.*  
+*So after we get the server and site running - make exceptions for https://localhost:8080 and https://localhost:21220.*
+
 Go to `Rebronx.Server` and run:
 
 ```shell
@@ -42,9 +45,22 @@ dotnet restore
 dotnet build
 ```
 
-*TODO: Describe how to run SQL scripts against PostgreSQL*
+Set up of PostgreSQL
 
-Open a new terminal, and go to `Rebronx.UI` and run:
+```shell
+sudo -i -u postgres psql -c "CREATE USER rebronx WITH PASSWORD 'test' CREATEDB;"
+sudo -i -u postgres psql -c "CREATE DATABASE rebronx"
+sudo -i -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE rebronx to rebronx;"
+```
+
+Go to `Rebronx.Server/Migration` and run:
+
+```shell
+psql -h localhost rebronx rebronx -f 000-init.sql
+# enter "test" as password
+```
+
+Go to `Rebronx.UI` and run:
 
 ```shell
 npm install
@@ -56,8 +72,6 @@ npm run dev
 ```shell
 echo "127.0.0.1  rebronx.test" | sudo tee -a /etc/hosts
 ```
-
-Note that browsers will still not trust these certificates, so make exceptions for https://localhost:8080 and https://localhost:21220.
 
 ## Licensing
 
