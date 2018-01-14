@@ -72,7 +72,7 @@ namespace Rebronx.Server.Components.Inventory.Repositories
 		public void AddItem(int playerId, int item, int count, int slot) 
 		{
 			databaseService.ExecuteNonQuery(
-				@"INSERT items (item_id, player_id, count, slot)
+				@"INSERT INTO items (player_id, item_id, count, slot)
 				VALUES (@playerId, @item, @count, @slot)",
 				new Dictionary<string, object>() {
 					{ "playerId", playerId },

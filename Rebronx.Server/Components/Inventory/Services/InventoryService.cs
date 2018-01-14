@@ -28,6 +28,22 @@ namespace Rebronx.Server.Components.Inventory.Services
 			this.userRepository = userRepository;
 		}
 
+		public void AddItem(int playerId, int itemId, int count = 1)
+		{
+			var inventory = inventoryRepository.GetInventory(playerId);
+			var freeSlot = GetFreeInventorySlot(inventory);
+
+			if (freeSlot > -1) 
+			{
+				inventoryRepository.AddItem(playerId, itemId, count, freeSlot);
+			}
+
+			var player = userRepository.GetPlayerById(playerId);
+
+			if (player != null)
+				inventorySender.SendInventory(player);
+		}
+
 		public void MoveItem(int playerId, int from, int? to)
 		{
 			if (!IsValidSlot(from) || (to.HasValue && !IsValidSlot(to)))
