@@ -5,6 +5,7 @@ using Rebronx.Server.Components.Inventory;
 using Rebronx.Server.Components.Map;
 using Rebronx.Server.Components.Movement;
 using Rebronx.Server.Components.Shop;
+using Rebronx.Server.Components.Command;
 using Rebronx.Server.Services.Interfaces;
 
 public class Application
@@ -12,6 +13,7 @@ public class Application
 	private readonly IWebSocketCore webSocketCore;
 	private readonly IConnectionService connectionService;
 
+	private readonly ICommandComponent commandComponent;
 	private readonly IMapComponent mapComponent;
 	private readonly IMovementComponent movementComponent;
 	private readonly IChatComponent chatComponent;
@@ -22,6 +24,7 @@ public class Application
 		IWebSocketCore webSocketCore,
 		IConnectionService connectionService,
 
+		ICommandComponent commandComponent,
 		IMapComponent mapComponent,
 		IMovementComponent movementComponent,
 		IChatComponent chatComponent,
@@ -32,6 +35,7 @@ public class Application
 		this.webSocketCore = webSocketCore;
 		this.connectionService = connectionService;
 
+		this.commandComponent = commandComponent;
 		this.mapComponent = mapComponent;
 		this.movementComponent = movementComponent;
 		this.chatComponent = chatComponent;
@@ -51,6 +55,7 @@ public class Application
 			var socketMessages = webSocketCore.PollMessages();
 			var playerMessages = connectionService.ConvertToMessages(socketMessages);
 
+			commandComponent.Run(playerMessages);
 			mapComponent.Run(playerMessages);
 			movementComponent.Run(playerMessages);
 			chatComponent.Run(playerMessages);
