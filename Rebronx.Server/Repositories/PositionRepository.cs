@@ -24,7 +24,7 @@ namespace Rebronx.Server.Repositories
 		public void SetPlayerPositon(Player player, Position position)
 		{
 			databaseService.ExecuteNonQuery(
-				"UPDATE players SET position = @position WHERE id = @id",
+				"UPDATE players SET x = @x, y = @y WHERE id = @id",
 				new Dictionary<string, object>() {
 					{ "id", player.Id },
 					{ "x", position.X },
@@ -35,7 +35,7 @@ namespace Rebronx.Server.Repositories
 		public List<Player> GetPlayersByPosition(Position position)
 		{
 			var data = databaseService.ExecuteReader(
-				"SELECT * FROM players WHERE position = @position AND dimention = @dimention",
+				"SELECT * FROM players WHERE x = @x AND y = @y",
 				new Dictionary<string, object>() {
 					{ "x", position.X },
 					{ "y", position.Y }
