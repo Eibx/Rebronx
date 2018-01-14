@@ -115,17 +115,7 @@ namespace Rebronx.Server.Services
 				tokenRepository.SetPlayerToken(player, token);
 			}
 
-			//TODO
-			//Send information about player
-			//Send map information
-			//Send lobby information
-			//Maybe just make a "JoinSender" that does all that.
-
-			socketRepository.AddConnection(player.Id, loginMessage.Connection);
-			movementRepository.SetPlayerPositon(player, player.Position);
-
-			loginSender.Success(player, token);
-			joinSender.Join(player);
+			SendPlayerInformation(player, loginMessage.Connection, token);
 		}
 
 		public void HandleSignupMessage(WebSocketMessage signupMessage)
@@ -140,48 +130,41 @@ namespace Rebronx.Server.Services
 
 			int reason = 0;
 
-			if (!string.IsNullOrEmpty(signupData.Username) && !string.IsNullOrEmpty(signupData.Password)) 
-			{
-				if (signupData.Username.Length > 3) 
-				{
-					var name = signupData.Username;
-
-					if (playerRepository.GetPlayerByName(name) == null) 
-					{
-						var hash = PBKDF2.HashPassword(signupData.Password);
-						var previousToken = string.Empty;
-						var token = string.Empty;
-
-						// TODO: Handle if it still - for some reason - hasn't found an available token
-						do 
-						{
-							previousToken = token;
-							token = GenerateToken();
-
-							if (token == previousToken)
-								throw new Exception("Same Token generated twice! Shouldn't statistically happen");
-						} 
-						while (playerRepository.GetPlayerByToken(token) != null);
-						
-						playerRepository.CreateNewPlayer(name, hash, token);
-						loginSender.SignupSuccess(signupMessage.Connection, token);
-					} 
-					else 
-					{
-						reason = 1003;
-					}
-				} 
-				else 
-				{
-					reason = 1002;
-				}
-			} 
-			else
-			{
+			if (string.IsNullOrEmpty(signupData.Username) || string.IsNullOrEmpty(signupData.Password)) 
 				reason = 1001;
+
+			if (signupData.Username.Length <= 3) 
+				reason = 1002;
+
+			if (playerRepository.GetPlayerByName(signupData.Username) != null)
+				reason = 1003;
+
+			if (reason > 0) 
+			{
+				loginSender.SignupFail(signupMessage.Connection, reason);
+				return;
 			}
+
+			var name = signupData.Username;
+			var hash = PBKDF2.HashPassword(signupData.Password);
+			var previousToken = string.Empty;
+			var token = string.Empty;
+
+			do
+			{
+				previousToken = token;
+				token = GenerateToken();
+
+				if (token == previousToken)
+					throw new Exception("Same Token generated twice! Shouldn't statistically happen");
+			} 
+			while (playerRepository.GetPlayerByToken(token) != null);
 			
-			loginSender.SignupFail(signupMessage.Connection, reason);
+			playerRepository.CreateNewPlayer(name, hash, token);
+
+			var player = playerRepository.GetPlayerByToken(token);
+
+			SendPlayerInformation(player, signupMessage.Connection, token);
 		}
 
 		public void HandleDeadPlayers()
@@ -205,6 +188,21 @@ namespace Rebronx.Server.Services
 					lobbySender.Update(player.Position);
 				}
 			}
+		}
+
+		private void SendPlayerInformation(Player player, ClientConnection connection, string token) 
+		{
+			//TODO
+			//Send information about player
+			//Send map information
+			//Send lobby information
+			//Maybe just make a "JoinSender" that does all that.
+
+			socketRepository.AddConnection(player.Id, connection);
+			movementRepository.SetPlayerPositon(player, player.Position);
+
+			loginSender.Success(player, token);
+			joinSender.Join(player);
 		}
 
 		private string GenerateToken() {
