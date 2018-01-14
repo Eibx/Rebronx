@@ -34,7 +34,14 @@ export default {
 	methods: {
 		send: function () {
 			if (this.message.length > 0) {
-				dataService.send('chat', 'say', { message: this.message });
+				if (this.message.indexOf('/give') == 0) {
+					var commandArguments = this.message.split(' ');
+					commandArguments.shift();
+					dataService.send('command', 'give', { arguments: commandArguments });
+				} else {
+					dataService.send('chat', 'say', { message: this.message });
+				}
+				
 				this.message = "";
 			} else {
 				this.blur();
