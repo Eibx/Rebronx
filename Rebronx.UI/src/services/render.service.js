@@ -56,7 +56,6 @@ export default class RenderService {
 			this.scene.traverse(function (child) {
 				if (child instanceof THREE.Mesh) {
 					child.visible = child.name === meshName.toString();
-					console.log(child.name, meshName.toString(), child.name === meshName.toString())
 				}
 			});
 
