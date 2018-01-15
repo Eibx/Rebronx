@@ -88,7 +88,7 @@ export default {
 	left: 0;
 	top: 0;
 
-	background: rgba(0, 0, 0, 0.6);
+	background: rgba(255, 255, 255, 0.5);
 
 	z-index: 100;
 }
@@ -102,7 +102,7 @@ export default {
 	margin-top: -100px;
 	margin-left: -150px;
 
-	background: #fff;
+	background: #393F4C;
 
 	padding: 20px;
 }

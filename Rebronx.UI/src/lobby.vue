@@ -1,28 +1,13 @@
 <template>
 	<div class="lobby">
 		<ul class="lobby__players">
-			<li class="lobby__player" v-for="player in players" v-on:click="showPlayer(player.id)">
-				<b>{{player.name}}</b> <i>({{player.health}}/100)</i>
+			<li class="lobby__player" v-for="player in players">
+				<img class="lobby__player-avatar" />
 				<div class="lobby__player-info">
-					<b>{{player.name}}</b>
-					<ul>
-						<li>Something</li>
-						<li>Something</li>
-						<li>Something</li>
-					</ul>
+					<span class="lobby__player-name">{{player.name}}</span>
 				</div>
 			</li>
 		</ul>
-
-		<div class="playercard" v-bind:class="{ visible: showCard }">
-			<div class="playercard__name-container">
-				<h2 class="playercard__name">{{cardPlayer.name}}</h2>
-			</div>
-			<div class="playercard__container">
-				{{cardPlayer.health}}
-			</div>
-			
-		</div>
 	</div>
 </template>
 
@@ -34,8 +19,6 @@ export default {
 	data() {
 		return {
 			players: [],
-			showCard: false,
-			cardPlayer: {},
 		}
 	},
 	created() {
@@ -69,31 +52,29 @@ export default {
 
 .lobby__players {
 	padding:5px;
+	display:flex;
 }
 .lobby__player {
 	position:relative;
-	display:block;
-
+	display:flex;
+	width:50%;
 	background:#171b1f;
+	border:1px solid #171b1f;
 	color:#fff;
-	padding:5px;
-	border-bottom:1px solid #fff;
 }
-.lobby__player-info {
-	width:150px;
-	height:100px;
-	top:0;
-	left:-150px;
-	position:absolute;
-	padding:10px;
-	background:#333;
-	color:#fff;
-	display:none;
+.lobby__player:nth-child(odd) {
+	margin-right:5px
 }
 
-.lobby__player:hover {
-	background:#222;
-	cursor:pointer;
+.lobby__player-info {
+	padding:10px;
+}
+
+.lobby__player-name {
+
+}
+.lobby__player-avatar {
+	height:50px;
 }
 
 .playercard {

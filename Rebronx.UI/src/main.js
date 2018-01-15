@@ -4,6 +4,7 @@ import Login from './login.vue'
 import Map from './map.vue'
 import Lobby from './lobby.vue'
 import Inventory from './inventory.vue'
+import Area from './area.vue'
 import Store from './store.vue'
 
 import DataService from './services/data.service.js'
@@ -37,6 +38,7 @@ new Vue({ el: '#login', render: r => r(Login) });
 new Vue({ el: '#map', render: r => r(Map) });
 new Vue({ el: '#lobby', render: r => r(Lobby) });
 new Vue({ el: '#inventory', render: r => r(Inventory) });
+new Vue({ el: '#area', render: r => r(Area) });
 new Vue({ el: '#store', render: r => r(Store) });
 
 window.addEventListener('keyup', function (evt) {

@@ -1,6 +1,6 @@
 <template>
-	<div class="map" v-on:mousedown="mousedown" v-on:mouseup="mouseup" v-on:mousemove="mousemove" v-on:wheel="mousewheel">
-		<svg viewBox="0 0 800 800">
+	<div class="map" v-if="visible" v-on:mousedown="mousedown" v-on:mouseup="mouseup" v-on:mousemove="mousemove" v-on:mousewheel="mousewheel">
+		<svg viewBox="0 0 800 800" transform="translate(0,0)">
 			<image x="0" y="0" width="800" height="800" xlink:href="/assets/map2_original.svg" />
 			<template v-for="(node, index) in mapLines">
 				<line v-bind:x1="node.sx" v-bind:y1="node.sy" v-bind:x2="node.ex" v-bind:y2="node.ey" stroke-width="2" stroke="#999" />
@@ -11,6 +11,7 @@
 				<circle class="map__node-current" r="4" v-if="node.isCurrent" v-bind:cx="node.posX" v-bind:cy="node.posY" />
 				<circle class="map__node" r="2" v-bind:cx="node.posX" v-bind:cy="node.posY" v-on:click="move(node.id)" />
 			</template>
+			<text x="10" y="20">{{offsetX}} {{offsetY}}</text>
 		</svg>
 	</div>
 </template>
@@ -23,6 +24,7 @@ export default {
 
 	data() {
 		return {
+			visible: false,
 			mapData: [],
 			mapLines: [],
 			movementPath: [],
@@ -150,12 +152,22 @@ export default {
 			this.moveX = 0;
 			this.moveY = 0;
 			this.isDown = false;
+
+			var svgElm = document.querySelector('.map > svg');
+			var matrix = svgElm.createSVGMatrix();
+			matrix = matrix.translate(this.offsetX, this.offsetY);
+			svgElm.transform.baseVal.getItem(0).setMatrix(matrix);
 		},
 		mousemove: function (evt) {
 			evt.preventDefault();
 			if (this.isDown) {
 				this.moveX = evt.clientX - this.startX;
 				this.moveY = evt.clientY - this.startY;
+
+				var svgElm = document.querySelector('.map > svg');
+				var matrix = svgElm.createSVGMatrix();
+				matrix = matrix.translate(this.offsetX + this.moveX, this.offsetY + this.moveY);
+				svgElm.transform.baseVal.getItem(0).setMatrix(matrix);
 			}
 		},
 		mousewheel: function (evt) {
