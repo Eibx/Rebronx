@@ -4,7 +4,7 @@ using Rebronx.Server.Components.Combat;
 using Rebronx.Server.Components.Inventory;
 using Rebronx.Server.Components.Map;
 using Rebronx.Server.Components.Movement;
-using Rebronx.Server.Components.Shop;
+using Rebronx.Server.Components.Store;
 using Rebronx.Server.Components.Command;
 using Rebronx.Server.Services.Interfaces;
 
@@ -17,7 +17,7 @@ public class Application
 	private readonly IMapComponent mapComponent;
 	private readonly IMovementComponent movementComponent;
 	private readonly IChatComponent chatComponent;
-	private readonly IShopComponent shopComponent;
+	private readonly IStoreComponent storeComponent;
 	private readonly ICombatComponent combatComponent;
 	private readonly IInventoryComponent inventoryComponent;
 	public Application(
@@ -28,7 +28,7 @@ public class Application
 		IMapComponent mapComponent,
 		IMovementComponent movementComponent,
 		IChatComponent chatComponent,
-		IShopComponent shopComponent,
+		IStoreComponent storeComponent,
 		ICombatComponent combatComponent,
 		IInventoryComponent inventoryComponent)
 	{
@@ -39,7 +39,7 @@ public class Application
 		this.mapComponent = mapComponent;
 		this.movementComponent = movementComponent;
 		this.chatComponent = chatComponent;
-		this.shopComponent = shopComponent;
+		this.storeComponent = storeComponent;
 		this.combatComponent = combatComponent;
 		this.inventoryComponent = inventoryComponent;
 	}
@@ -59,7 +59,7 @@ public class Application
 			mapComponent.Run(playerMessages);
 			movementComponent.Run(playerMessages);
 			chatComponent.Run(playerMessages);
-			shopComponent.Run(playerMessages);
+			storeComponent.Run(playerMessages);
 			combatComponent.Run(playerMessages);
 			inventoryComponent.Run(playerMessages);			
 

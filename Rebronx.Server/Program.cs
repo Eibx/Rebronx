@@ -12,7 +12,7 @@ using Rebronx.Server.Components.Join;
 using Rebronx.Server.Components.Login;
 using Rebronx.Server.Components.Lobby;
 using Rebronx.Server.Components.Combat;
-using Rebronx.Server.Components.Shop;
+using Rebronx.Server.Components.Store;
 using Rebronx.Server.Components.Chat.Senders;
 using Rebronx.Server.Components.Inventory.Senders;
 using Rebronx.Server.Components.Join.Senders;
@@ -48,7 +48,7 @@ public class Program
 		services.AddSingleton<IMapComponent, MapComponent>();
 		services.AddSingleton<IMovementComponent, MovementComponent>();
 		services.AddSingleton<IChatComponent, ChatComponent>();
-		services.AddSingleton<IShopComponent, ShopComponent>();
+		services.AddSingleton<IStoreComponent, StoreComponent>();
 		services.AddSingleton<ICombatComponent, CombatComponent>();
 		services.AddSingleton<IInventoryComponent, InventoryComponent>();
 
