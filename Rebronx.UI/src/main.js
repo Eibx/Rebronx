@@ -17,6 +17,21 @@ window.dataService = new DataService();
 window.playerService = new PlayerService();
 window.renderService = new RenderService();
 
+Vue.directive('show-infobox', function (el, binding) {
+	el.addEventListener('mousemove', function(e) {
+		var infobox = el.parentNode.querySelector('.infobox');
+
+		infobox.style.display = 'block';
+		infobox.style.left = e.clientX + 10 + 'px';
+		infobox.style.top = e.clientY + 10 + 'px';
+	});
+	
+	el.addEventListener('mouseout', function(e) {
+		var infobox = el.parentNode.querySelector('.infobox');
+		infobox.style.display = 'none';
+	});
+});
+
 new Vue({ el: '#chat', render: r => r(Chat) });
 new Vue({ el: '#login', render: r => r(Login) });
 new Vue({ el: '#map', render: r => r(Map) });
