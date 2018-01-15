@@ -41,7 +41,7 @@ export default {
 		if (token) {
 			dataService.open(function (data) {
 				if (data.type == 'error') {
-					alert('error connect to server');
+					console.error('error connect to server');
 				} else if (data.type == 'open') {
 					dataService.send('login', 'login', { token: token });
 					dataService.startPing();
@@ -56,7 +56,7 @@ export default {
 
 			dataService.open(function (data) {
 				if (data.type == 'error') {
-					alert('error connect to server');
+					console.error('error connect to server');
 				} else if (data.type == 'open') {
 					dataService.send('login', 'login', { username: username, password: password });
 					dataService.startPing();
@@ -69,7 +69,7 @@ export default {
 
 			dataService.open(function (data) {
 				if (data.type == 'error') {
-					alert('error connect to server');
+					console.error('error connect to server');
 				} else if (data.type == 'open') {
 					dataService.send('login', 'signup', { username: username, password: password });
 					dataService.startPing();
