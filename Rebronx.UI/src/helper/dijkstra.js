@@ -24,123 +24,128 @@ SOFTWARE.
 https://github.com/andrewhayward/dijkstra/blob/master/LICENSE
 */
 
-export default class Dijkstra {
-	constructor(pathData) {
-		this.map = pathData;
-	}
+class Dijkstra {
+    constructor() {
+    }
 
-	findPaths(start, end) {
-		var costs = {};
-		var open = { '0': [ start ] };
-		var predecessors = {};
-		var keys;
+    load(pathData) {
+        this.map = pathData;
+    }
 
-		var addToOpen = function(cost, vertex) {
-			key = "" + cost;
-			if (!open[key]) open[key] = [];
-			open[key].push(vertex);
-		}
+    findPaths(start, end) {
+        var costs = {};
+        var open = { '0': [ start ] };
+        var predecessors = {};
+        var keys;
 
-		costs[start] = 0;
+        var addToOpen = function(cost, vertex) {
+            key = "" + cost;
+            if (!open[key]) open[key] = [];
+            open[key].push(vertex);
+        }
 
-		while (open) {
-			if(!(keys = this.extractKeys(open)).length) break;
+        costs[start] = 0;
 
-			keys.sort(this.sorter);
+        while (open) {
+            if(!(keys = this.extractKeys(open)).length) break;
 
-			var key = keys[0];
-			var bucket = open[key];
-			var node = bucket.shift();
-			var currentCost = parseFloat(key);
-			var adjacentNodes = this.map[node] || {};
+            keys.sort(this.sorter);
 
-			if (!bucket.length) delete open[key];
+            var key = keys[0];
+            var bucket = open[key];
+            var node = bucket.shift();
+            var currentCost = parseFloat(key);
+            var adjacentNodes = this.map[node] || {};
 
-			for (var vertex in adjacentNodes) {
-				if (Object.prototype.hasOwnProperty.call(adjacentNodes, vertex)) {
-					var cost = adjacentNodes[vertex];
-					var totalCost = cost + currentCost;
-					var vertexCost = costs[vertex];
+            if (!bucket.length) delete open[key];
 
-					if ((vertexCost === undefined) || (vertexCost > totalCost)) {
-						costs[vertex] = totalCost;
-						addToOpen(totalCost, vertex);
-						predecessors[vertex] = node;
-					}
-				}
-			}
-		}
+            for (var vertex in adjacentNodes) {
+                if (Object.prototype.hasOwnProperty.call(adjacentNodes, vertex)) {
+                    var cost = adjacentNodes[vertex];
+                    var totalCost = cost + currentCost;
+                    var vertexCost = costs[vertex];
 
-		if (costs[end] === undefined) {
-			return null;
-		} else {
-			return predecessors;
-		}
+                    if ((vertexCost === undefined) || (vertexCost > totalCost)) {
+                        costs[vertex] = totalCost;
+                        addToOpen(totalCost, vertex);
+                        predecessors[vertex] = node;
+                    }
+                }
+            }
+        }
 
-	}
+        if (costs[end] === undefined) {
+            return null;
+        } else {
+            return predecessors;
+        }
 
-	extractShortest(predecessors, end) {
-		var nodes = [];
-		var u = end;
+    }
 
-		while (u !== undefined) {
-			nodes.push(u);
-			u = predecessors[u];
-		}
+    extractShortest(predecessors, end) {
+        var nodes = [];
+        var u = end;
 
-		nodes.reverse();
-		return nodes;
-	}
+        while (u !== undefined) {
+            nodes.push(u);
+            u = predecessors[u];
+        }
 
-	findShortestPath(a, b) {
-		var nodes = [a, b];
-		var start = nodes.shift();
-		var end;
-		var predecessors;
-		var path = [];
-		var shortest;
+        nodes.reverse();
+        return nodes;
+    }
 
-		while (nodes.length) {
-			end = nodes.shift();
-			predecessors = this.findPaths(start, end);
+    findShortestPath(a, b) {
+        var nodes = [a, b];
+        var start = nodes.shift();
+        var end;
+        var predecessors;
+        var path = [];
+        var shortest;
 
-			if (predecessors) {
-				shortest = this.extractShortest(predecessors, end);
-				if (nodes.length) {
-					path.push.apply(path, shortest.slice(0, -1));
-				} else {
-					return path.concat(shortest);
-				}
-			} else {
-				return null;
-			}
+        while (nodes.length) {
+            end = nodes.shift();
+            predecessors = this.findPaths(start, end);
 
-			start = end;
-		}
-	}
-	
-	toArray(list, offset) {
-		try {
-			return Array.prototype.slice.call(list, offset);
-		} catch (e) {
-			var a = [];
-			for (var i = offset || 0, l = list.length; i < l; ++i) {
-				a.push(list[i]);
-			}
-			return a;
-		}
-	}
+            if (predecessors) {
+                shortest = this.extractShortest(predecessors, end);
+                if (nodes.length) {
+                    path.push.apply(path, shortest.slice(0, -1));
+                } else {
+                    return path.concat(shortest);
+                }
+            } else {
+                return null;
+            }
 
-	sorter(a, b) {
-		return parseFloat(a) - parseFloat(b);
-	}
+            start = end;
+        }
+    }
+    
+    toArray(list, offset) {
+        try {
+            return Array.prototype.slice.call(list, offset);
+        } catch (e) {
+            var a = [];
+            for (var i = offset || 0, l = list.length; i < l; ++i) {
+                a.push(list[i]);
+            }
+            return a;
+        }
+    }
 
-	extractKeys(obj) {
-		var keys = [];
-		var key;
-		for (key in obj) {
-			Object.prototype.hasOwnProperty.call(obj,key) && keys.push(key);
-		}
-		return keys;
-	}
+    sorter(a, b) {
+        return parseFloat(a) - parseFloat(b);
+    }
+
+    extractKeys(obj) {
+        var keys = [];
+        var key;
+        for (key in obj) {
+            Object.prototype.hasOwnProperty.call(obj,key) && keys.push(key);
+        }
+        return keys;
+    }
 }
+
+export default new Dijkstra();
