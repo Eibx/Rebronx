@@ -1,5 +1,5 @@
 <template>
-    <div class="h-full bg-gray-800" style="width:340px;">
+    <div class="lobby-component bg-gray-800">
         
     </div>
 </template>
@@ -23,3 +23,14 @@ export default class Lobby extends Vue {
     }
 }
 </script>
+
+<style scoped>
+.lobby-component {
+    width:360px;
+    height:200px;
+
+    position:absolute;
+    top:20px;
+    right:20px;
+}
+</style>

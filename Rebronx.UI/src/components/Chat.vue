@@ -1,10 +1,17 @@
 <template>
-    <div class="chat">
-        <ul class="chat__messages">
+    <div class="chat-component bg-gray-800 flex flex-col">
+        <ul class="chat__messages w-full h-full">
             <li v-for="msg in msgs" v-bind:key="msg.id">{{msg}}</li>
         </ul>
         <div class="chat__input">
-            <input type="text" v-on:keyup.enter="send" v-on:keyup.esc="blur" placeholder="type your message" v-model="message" />
+            <input
+                class="w-full px-2 bg-gray-600"
+                type="text"
+                v-on:keyup.enter="send"
+                v-on:keyup.esc="blur"
+                placeholder="type your message"
+                v-model="message"
+                />
         </div>
     </div>
 </template>
@@ -60,3 +67,14 @@ export default class Chat extends Vue {
     }
 }
 </script>
+
+<style scoped>
+.chat-component {
+    width:360px;
+    height:300px;
+
+    position:absolute;
+    bottom:20px;
+    right:20px;
+}
+</style>

@@ -7,16 +7,16 @@ class RenderService {
     public scene:any;
     public renderer:any;
 
-    public canvasW: number = 200;
-    public canvasH: number = 200;
+    public canvasW: number = 500;
+    public canvasH: number = 500;
 
     preload() {
         return new Promise((resolve) => {
             if (this.loaded == true)
                 return resolve();
 
-            this.camera = new THREE.PerspectiveCamera(45, this.canvasW / this.canvasH, 0.01, 2000);
-            this.camera.position.x = 1;
+            this.camera = new THREE.PerspectiveCamera(90, this.canvasW / this.canvasH, 0.01, 10000);
+            this.camera.position.set(2, 10, 15);
 
             this.scene = new THREE.Scene();
             this.scene.add(this.camera);
@@ -32,12 +32,22 @@ class RenderService {
             this.renderer.setSize(this.canvasW, this.canvasH);
 
             const loader = new GLTFLoader();
-            loader.load('/assets/items/items.glb', (glb) => {
+            loader.load('/assets/city.glb', (glb) => {
                 this.scene.add(glb.scene);
                 this.loaded = true;
                 resolve();
             });
         });
+    }
+
+    renderMap() : Promise<string> {
+        return new Promise((resolve) => this.preload().then(() => {
+            this.renderer.setClearColor(0x000000, 0);
+
+            this.camera.lookAt(this.scene.position);
+            this.renderer.render(this.scene, this.camera);
+            resolve(this.renderer.domElement.toDataURL());
+        }));
     }
 
     renderItem(meshName:string) : Promise<string> {
