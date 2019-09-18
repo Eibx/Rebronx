@@ -7,48 +7,48 @@ using Rebronx.Server.Enums;
 
 namespace Rebronx.Server.Repositories
 {
-	public class ItemRepository : IItemRepository
-	{
-		private Dictionary<int, Item> items;
+    public class ItemRepository : IItemRepository
+    {
+        private Dictionary<int, Item> items;
 
-		public ItemRepository()
-		{
-			items = new Dictionary<int, Item>();
-			
-			DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../Rebronx.Data/items.json"));
+        public ItemRepository()
+        {
+            items = new Dictionary<int, Item>();
 
-			foreach (var item in output.Data)
-			{
-				items.Add(item.Id, item);
-			}
-		}
+            DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../Rebronx.Data/items.json"));
 
-		public Item GetItem(int id)
-		{
-			return items.ContainsKey(id) ? items[id] : null;
-		}
+            foreach (var item in output.Data)
+            {
+                items.Add(item.Id, item);
+            }
+        }
 
-		public List<EquipmentSlot> GetEquipmentSlots(int itemId) 
-		{
-			var item = GetItem(itemId);
+        public Item GetItem(int id)
+        {
+            return items.ContainsKey(id) ? items[id] : null;
+        }
 
-			if (item == null) {
-				return new List<EquipmentSlot>();
-			}
+        public List<EquipmentSlot> GetEquipmentSlots(int itemId)
+        {
+            var item = GetItem(itemId);
 
-			if (item.Type == "weapon") {
-				return new List<EquipmentSlot> { EquipmentSlot.PrimaryWeapon, EquipmentSlot.SecondaryWeapon };
-			} else if (item.Type == "ammo") {
-				return new List<EquipmentSlot> { EquipmentSlot.PrimaryAmmo, EquipmentSlot.SecondaryAmmo };
-			} else if (item.Type == "headarmour") {
-				return new List<EquipmentSlot> { EquipmentSlot.HeadArmour };
-			} else if (item.Type == "bodyarmour") {
-				return new List<EquipmentSlot> { EquipmentSlot.BodyArmour };
-			} else if (item.Type == "legarmour") {
-				return new List<EquipmentSlot> { EquipmentSlot.LegArmour };
-			}
+            if (item == null) {
+                return new List<EquipmentSlot>();
+            }
 
-			return new List<EquipmentSlot>();
-		}
-	}
+            if (item.Type == "weapon") {
+                return new List<EquipmentSlot> { EquipmentSlot.PrimaryWeapon, EquipmentSlot.SecondaryWeapon };
+            } else if (item.Type == "ammo") {
+                return new List<EquipmentSlot> { EquipmentSlot.PrimaryAmmo, EquipmentSlot.SecondaryAmmo };
+            } else if (item.Type == "headarmour") {
+                return new List<EquipmentSlot> { EquipmentSlot.HeadArmour };
+            } else if (item.Type == "bodyarmour") {
+                return new List<EquipmentSlot> { EquipmentSlot.BodyArmour };
+            } else if (item.Type == "legarmour") {
+                return new List<EquipmentSlot> { EquipmentSlot.LegArmour };
+            }
+
+            return new List<EquipmentSlot>();
+        }
+    }
 }

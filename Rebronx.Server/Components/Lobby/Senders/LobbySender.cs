@@ -6,31 +6,31 @@ using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Components.Lobby.Senders
 {
-	public class LobbySender : ILobbySender
-	{
-		private readonly IPositionRepository positionRepository;
-		private readonly IMessageService messageService;
+    public class LobbySender : ILobbySender
+    {
+        private readonly IPositionRepository positionRepository;
+        private readonly IMessageService messageService;
 
-		public LobbySender(IPositionRepository positionRepository, IMessageService messageService)
-		{
-			this.positionRepository = positionRepository;
-			this.messageService = messageService;
-		}
+        public LobbySender(IPositionRepository positionRepository, IMessageService messageService)
+        {
+            this.positionRepository = positionRepository;
+            this.messageService = messageService;
+        }
 
-		public void Update(Position position)
-		{
-			var players = positionRepository.GetPlayersByPosition(position);
+        public void Update(Position position)
+        {
+            var players = positionRepository.GetPlayersByPosition(position);
 
-			var sendLobbyMessage = new SendLobbyMessage() {
-				Players = players.Select(p => new LobbyPlayer(p)).ToList()
-			};
-			
-			messageService.SendPosition(position, "lobby", "lobby", sendLobbyMessage);
-		}
-	}
+            var sendLobbyMessage = new SendLobbyMessage() {
+                Players = players.Select(p => new LobbyPlayer(p)).ToList()
+            };
 
-	public class SendLobbyMessage 
-	{
-		public List<LobbyPlayer> Players { get; set; }
-	}
+            messageService.SendPosition(position, "lobby", "lobby", sendLobbyMessage);
+        }
+    }
+
+    public class SendLobbyMessage
+    {
+        public List<LobbyPlayer> Players { get; set; }
+    }
 }

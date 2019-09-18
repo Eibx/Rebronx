@@ -1,7 +1,7 @@
 namespace Rebronx.Server.Components.Store
 {
-	public interface IStoreComponent : IComponent
-	{
+    public interface IStoreComponent : IComponent
+    {
 
-	}
+    }
 }

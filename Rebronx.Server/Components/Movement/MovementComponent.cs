@@ -10,97 +10,97 @@ using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Components.Movement
 {
-	public class MovementComponent : Component, IMovementComponent
-	{
-		private const string Component = "movement";
-		private readonly IMovementSender movementSender;
-		private readonly ILobbySender lobbySender;
-		private readonly IPositionRepository movementRepository;
+    public class MovementComponent : Component, IMovementComponent
+    {
+        private const string Component = "movement";
+        private readonly IMovementSender movementSender;
+        private readonly ILobbySender lobbySender;
+        private readonly IPositionRepository movementRepository;
 
-		private readonly IMapService mapService;
+        private readonly IMapService mapService;
 
-		private readonly Dictionary<int, MovementDistination> movements; 
+        private readonly Dictionary<int, MovementDistination> movements;
 
-		public MovementComponent(
-			IMovementSender movementSender,
-			ILobbySender lobbySender,
-			IPositionRepository movementRepository,
-			IMapService mapService)
-		{
-			this.movementSender = movementSender;
-			this.lobbySender = lobbySender;
-			this.movementRepository = movementRepository;
-			this.mapService = mapService;
+        public MovementComponent(
+            IMovementSender movementSender,
+            ILobbySender lobbySender,
+            IPositionRepository movementRepository,
+            IMapService mapService)
+        {
+            this.movementSender = movementSender;
+            this.lobbySender = lobbySender;
+            this.movementRepository = movementRepository;
+            this.mapService = mapService;
 
-			this.movements = new Dictionary<int, MovementDistination>();
-		}
+            this.movements = new Dictionary<int, MovementDistination>();
+        }
 
-		public void Run(IList<Message> messages)
-		{
-			foreach (var message in messages.Where(m => m.Component == Component))
-			{
-				if (message.Type == "move")
-					MessageMove(message);
-			}
+        public void Run(IList<Message> messages)
+        {
+            foreach (var message in messages.Where(m => m.Component == Component))
+            {
+                if (message.Type == "move")
+                    MessageMove(message);
+            }
 
-			foreach (var item in movements.ToList())
-			{
-				if (item.Value.TravelTime <= DateTimeOffset.Now.ToUnixTimeMilliseconds()) 
-				{
-					movementRepository.SetPlayerPositon(item.Value.Player, item.Value.Position);
-					movementSender.SetPosition(item.Value.Player, item.Value.Position);
-					movements.Remove(item.Key);
+            foreach (var item in movements.ToList())
+            {
+                if (item.Value.TravelTime <= DateTimeOffset.Now.ToUnixTimeMilliseconds())
+                {
+                    movementRepository.SetPlayerPositon(item.Value.Player, item.Value.Position);
+                    movementSender.SetPosition(item.Value.Player, item.Value.Position);
+                    movements.Remove(item.Key);
 
-					lobbySender.Update(item.Value.Player.Position);
-					lobbySender.Update(item.Value.Position);
-				}
-			}
-		}
+                    lobbySender.Update(item.Value.Player.Position);
+                    lobbySender.Update(item.Value.Position);
+                }
+            }
+        }
 
-		public void MessageMove(Message message)
-		{
-			var moveMessage = GetData<InputMoveMessage>(message);
-			var player = message.Player;
+        public void MessageMove(Message message)
+        {
+            var moveMessage = GetData<InputMoveMessage>(message);
+            var player = message.Player;
 
-			if (moveMessage == null)
-				return;
+            if (moveMessage == null)
+                return;
 
-			var currentNode = mapService.GetNode(message.Player.Position.X);
-			var nextNode = mapService.GetNode(moveMessage.Position.X);
+            var currentNode = mapService.GetNode(message.Player.Position.X);
+            var nextNode = mapService.GetNode(moveMessage.Position.X);
 
-			if (currentNode == null || nextNode == null)
-				return;
+            if (currentNode == null || nextNode == null)
+                return;
 
-			if (!currentNode.Connections.Contains(nextNode.Id))
-				return;
+            if (!currentNode.Connections.Contains(nextNode.Id))
+                return;
 
-			//TODO: make cleaner
-			var distanceX = Math.Pow(Math.Abs(nextNode.X-currentNode.X), 2);
-			var distanceY = Math.Pow(Math.Abs(nextNode.Y-currentNode.Y), 2);
-			var distance = Math.Sqrt(distanceX + distanceY);
+            //TODO: make cleaner
+            var distanceX = Math.Pow(Math.Abs(nextNode.X-currentNode.X), 2);
+            var distanceY = Math.Pow(Math.Abs(nextNode.Y-currentNode.Y), 2);
+            var distance = Math.Sqrt(distanceX + distanceY);
 
-			long travelTime = (long)Math.Round(distance * 5d);
+            long travelTime = (long)Math.Round(distance * 5d);
 
-			movements[message.Player.Id] = new MovementDistination() {
-				Position = moveMessage.Position,
-				TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTime,
-				Player = player
-			};
+            movements[message.Player.Id] = new MovementDistination() {
+                Position = moveMessage.Position,
+                TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTime,
+                Player = player
+            };
 
-			// Start move and actual move
-			movementSender.StartMove(message.Player, moveMessage.Position, travelTime);
-		}
-	}
+            // Start move and actual move
+            movementSender.StartMove(message.Player, moveMessage.Position, travelTime);
+        }
+    }
 
-	public class InputMoveMessage
-	{
-		public Position Position { get; set; }
-	}
+    public class InputMoveMessage
+    {
+        public Position Position { get; set; }
+    }
 
-	public class MovementDistination
-	{
-		public Position Position { get; set; }
-		public long TravelTime { get; set; }
-		public Player Player { get; set; }
-	}
+    public class MovementDistination
+    {
+        public Position Position { get; set; }
+        public long TravelTime { get; set; }
+        public Player Player { get; set; }
+    }
 }

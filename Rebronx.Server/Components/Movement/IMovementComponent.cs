@@ -1,7 +1,7 @@
 namespace Rebronx.Server.Components.Movement
 {
-	public interface IMovementComponent : IComponent
-	{
+    public interface IMovementComponent : IComponent
+    {
 
-	}
+    }
 }

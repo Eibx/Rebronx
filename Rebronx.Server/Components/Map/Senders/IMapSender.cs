@@ -1,7 +1,7 @@
 namespace Rebronx.Server.Components.Map.Senders
 {
-	public interface IMapSender
-	{
-		void Map(Player player);
-	}
+    public interface IMapSender
+    {
+        void Map(Player player);
+    }
 }

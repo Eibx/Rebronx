@@ -1,7 +1,7 @@
 namespace Rebronx.Server.Components.Chat
 {
-	public interface IChatComponent : IComponent
-	{
+    public interface IChatComponent : IComponent
+    {
 
-	}
+    }
 }

@@ -5,7 +5,7 @@ using Rebronx.Server.Models;
 
 public interface IWebSocketCore
 {
-	void GetNewConnections();
-	List<WebSocketMessage> PollMessages();
-	void Send(SslStream client, string data);
+    void GetNewConnections();
+    List<WebSocketMessage> PollMessages();
+    void Send(SslStream client, string data);
 }

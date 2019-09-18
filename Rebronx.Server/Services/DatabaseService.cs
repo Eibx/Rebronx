@@ -8,74 +8,74 @@ using System.Data;
 
 namespace Rebronx.Server.Services
 {
-	public class DatabaseService : IDatabaseService
-	{
-		private const string connectionString = "Host=localhost;Username=rebronx;Password=test;Database=rebronx;";
+    public class DatabaseService : IDatabaseService
+    {
+        private const string connectionString = "Host=localhost;Username=rebronx;Password=test;Database=rebronx;";
 
-		private NpgsqlConnection conn;
-		
-		public DatabaseService()
-		{
-			conn = new NpgsqlConnection(connectionString);
-		}
+        private NpgsqlConnection conn;
 
-		public void ExecuteNonQuery(string sql, Dictionary<string, object> parameters) 
-		{
-			conn.Close();
-			conn.Open();
+        public DatabaseService()
+        {
+            conn = new NpgsqlConnection(connectionString);
+        }
 
-			using (var cmd = new NpgsqlCommand())
-			{
-				cmd.Connection = conn;
-				cmd.CommandText = sql;
-				foreach(var parameter in parameters) 
-				{
-					cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-				}
-				cmd.ExecuteNonQuery();
-			}
+        public void ExecuteNonQuery(string sql, Dictionary<string, object> parameters)
+        {
+            conn.Close();
+            conn.Open();
 
-			conn.Close();
-		}
+            using (var cmd = new NpgsqlCommand())
+            {
+                cmd.Connection = conn;
+                cmd.CommandText = sql;
+                foreach(var parameter in parameters)
+                {
+                    cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+                }
+                cmd.ExecuteNonQuery();
+            }
 
-		public IDataReader ExecuteReader(string sql, Dictionary<string, object> parameters) 
-		{
-			var output = new List<IDataRecord>();
-			conn.Close();
-			conn.Open();
+            conn.Close();
+        }
 
-			using (var cmd = new NpgsqlCommand(sql, conn))
-			{
-				foreach (var parameter in parameters)
-				{
-					cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-				}
-				var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
-				
-				return reader;
-			}
-		}
+        public IDataReader ExecuteReader(string sql, Dictionary<string, object> parameters)
+        {
+            var output = new List<IDataRecord>();
+            conn.Close();
+            conn.Open();
 
-		public T ExecuteScalar<T>(string sql, Dictionary<string, object> parameters)
-		{
-			conn.Close();
-			conn.Open();
+            using (var cmd = new NpgsqlCommand(sql, conn))
+            {
+                foreach (var parameter in parameters)
+                {
+                    cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+                }
+                var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
 
-			T output;
+                return reader;
+            }
+        }
 
-			using (var cmd = new NpgsqlCommand(sql, conn))
-			{
-				foreach (var parameter in parameters)
-				{
-					cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
-				}
-				
-				output = (T)cmd.ExecuteScalar();
-			}
+        public T ExecuteScalar<T>(string sql, Dictionary<string, object> parameters)
+        {
+            conn.Close();
+            conn.Open();
 
-			conn.Close();
+            T output;
 
-			return output;
-		}
-	}
+            using (var cmd = new NpgsqlCommand(sql, conn))
+            {
+                foreach (var parameter in parameters)
+                {
+                    cmd.Parameters.AddWithValue(parameter.Key, parameter.Value);
+                }
+
+                output = (T)cmd.ExecuteScalar();
+            }
+
+            conn.Close();
+
+            return output;
+        }
+    }
 }

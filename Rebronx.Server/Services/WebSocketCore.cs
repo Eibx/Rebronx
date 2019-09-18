@@ -14,357 +14,357 @@ using System.Security.Authentication;
 
 public class WebSocketCore : IWebSocketCore
 {
-	private readonly ISocketRepository socketRepository;
-	private const int TEXT_FRAME = 129;
-	private const int BINARY_FRAME = 64;
-	List<PendingClient> connectingSockets;
-	List<WebSocketMessage> pendingMessages;
-	TcpListener server;
-	X509Certificate serverCertificate;
+    private readonly ISocketRepository socketRepository;
+    private const int TEXT_FRAME = 129;
+    private const int BINARY_FRAME = 64;
+    List<PendingClient> connectingSockets;
+    List<WebSocketMessage> pendingMessages;
+    TcpListener server;
+    X509Certificate serverCertificate;
 
-	public WebSocketCore(ISocketRepository socketRepository)
-	{
-		this.socketRepository = socketRepository;
-		serverCertificate = new X509Certificate2("../rebronx.p12", "rebronx_pass", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
-		
-		server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
-		server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
-		server.Start();
+    public WebSocketCore(ISocketRepository socketRepository)
+    {
+        this.socketRepository = socketRepository;
+        serverCertificate = new X509Certificate2("../rebronx.p12", "rebronx_pass", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
 
-		pendingMessages = new List<WebSocketMessage>();
-		connectingSockets = new List<PendingClient>();
-	}
+        server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
+        server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+        server.Start();
 
-	public void GetNewConnections()
-	{
-		while (server.Pending())
-		{
-			var client = server.AcceptTcpClient();
+        pendingMessages = new List<WebSocketMessage>();
+        connectingSockets = new List<PendingClient>();
+    }
 
-			SslStream sslStream = new SslStream(client.GetStream(), false);
-			sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
+    public void GetNewConnections()
+    {
+        while (server.Pending())
+        {
+            var client = server.AcceptTcpClient();
 
-			connectingSockets.Add(new PendingClient() 
-			{ 
-				Client = client, 
-				Stream = sslStream, 
-				Connected = DateTime.Now 
-			});
-		}
+            SslStream sslStream = new SslStream(client.GetStream(), false);
+            sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
 
-		HandleHttpConnection();
-	}
+            connectingSockets.Add(new PendingClient()
+            {
+                Client = client,
+                Stream = sslStream,
+                Connected = DateTime.Now
+            });
+        }
 
-	public List<WebSocketMessage> PollMessages()
-	{
-		List<WebSocketMessage> output = new List<WebSocketMessage>();
+        HandleHttpConnection();
+    }
 
-		var sockets = socketRepository.GetAllConnections();
+    public List<WebSocketMessage> PollMessages()
+    {
+        List<WebSocketMessage> output = new List<WebSocketMessage>();
 
-		for (int i = 0; i < sockets.Count; i++)
-		{
-			var s = sockets[i];
+        var sockets = socketRepository.GetAllConnections();
 
-			List<byte> data = new List<byte>();
+        for (int i = 0; i < sockets.Count; i++)
+        {
+            var s = sockets[i];
 
-			while (s.Client.Client.Poll(1000, SelectMode.SelectRead))
-			{
-				byte[] buffer = new byte[1024];
+            List<byte> data = new List<byte>();
 
-				var received = s.Stream.Read(buffer, 0, buffer.Length);
+            while (s.Client.Client.Poll(1000, SelectMode.SelectRead))
+            {
+                byte[] buffer = new byte[1024];
 
-				if (received == 0)
-					break;
+                var received = s.Stream.Read(buffer, 0, buffer.Length);
 
-				data.AddRange(buffer.Take(received));
-			}
+                if (received == 0)
+                    break;
 
-			if (s.IsTimedout())
-			{
-				Console.WriteLine("Dead connection (" + s.Id + ")");
-				sockets.RemoveAt(i);
-				i--;
-				continue;
-			}
+                data.AddRange(buffer.Take(received));
+            }
 
-			if (!data.Any())
-				continue;
+            if (s.IsTimedout())
+            {
+                Console.WriteLine("Dead connection (" + s.Id + ")");
+                sockets.RemoveAt(i);
+                i--;
+                continue;
+            }
 
-			if (data[0] == TEXT_FRAME)
-			{
-				ulong size = 0;
-				int payloadIndex = 0;
-				byte[] mask = new byte[4];
+            if (!data.Any())
+                continue;
 
-				if (data[1] <= 253)
-				{
-					size = (data[1] - 128u);
-					mask = data.Skip(2).Take(4).ToArray();
-					payloadIndex = 6;
-				}
-				else if (data[1] == 254)
-				{
-					size = BitConverter.ToUInt16(data.ToArray(), 2);
-					mask = data.Skip(4).Take(4).ToArray();
-					payloadIndex = 8;
-				}
-				else if (data[1] == 255)
-				{
-					size = BitConverter.ToUInt64(data.ToArray(), 2);
-					mask = data.Skip(10).Take(4).ToArray();
-					payloadIndex = 14;
-				}
+            if (data[0] == TEXT_FRAME)
+            {
+                ulong size = 0;
+                int payloadIndex = 0;
+                byte[] mask = new byte[4];
 
-				var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
-				for (int j = 0; j < payload.Length; j++)
-				{
-					payload[j] = (byte)((int)payload[j] ^ (int)mask[j % 4]);
-				}
+                if (data[1] <= 253)
+                {
+                    size = (data[1] - 128u);
+                    mask = data.Skip(2).Take(4).ToArray();
+                    payloadIndex = 6;
+                }
+                else if (data[1] == 254)
+                {
+                    size = BitConverter.ToUInt16(data.ToArray(), 2);
+                    mask = data.Skip(4).Take(4).ToArray();
+                    payloadIndex = 8;
+                }
+                else if (data[1] == 255)
+                {
+                    size = BitConverter.ToUInt64(data.ToArray(), 2);
+                    mask = data.Skip(10).Take(4).ToArray();
+                    payloadIndex = 14;
+                }
 
-				var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
-				WebSocketMessage wsMessage = null;
+                var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
+                for (int j = 0; j < payload.Length; j++)
+                {
+                    payload[j] = (byte)((int)payload[j] ^ (int)mask[j % 4]);
+                }
 
-				if (jsondata == "ping")
-				{
-					s.LastMessage = DateTime.Now;
-					Send(s.Stream, "pong");
-					continue;
-				}
+                var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
+                WebSocketMessage wsMessage = null;
 
-				try
-				{
-					wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
-				}
-				catch (Exception) { }
+                if (jsondata == "ping")
+                {
+                    s.LastMessage = DateTime.Now;
+                    Send(s.Stream, "pong");
+                    continue;
+                }
 
-				if (wsMessage != null && wsMessage.HasData())
-				{
-					wsMessage.Connection = s;
-					output.Add(wsMessage);
+                try
+                {
+                    wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
+                }
+                catch (Exception) { }
 
-				}
-			}
-		}
+                if (wsMessage != null && wsMessage.HasData())
+                {
+                    wsMessage.Connection = s;
+                    output.Add(wsMessage);
 
-		return output;
-	}
+                }
+            }
+        }
 
-	public void Send(SslStream stream, string data)
-	{
-		List<byte> bytes = new List<byte>();
+        return output;
+    }
 
-		//text frame
-		bytes.Add(129);
+    public void Send(SslStream stream, string data)
+    {
+        List<byte> bytes = new List<byte>();
 
-		var databytes = Encoding.UTF8.GetBytes(data).ToList();
+        //text frame
+        bytes.Add(129);
 
-		if (databytes.Count <= 125)
-		{
-			bytes.Add((byte)databytes.Count);
-			bytes.AddRange(databytes);
-		}
-		else if (databytes.Count <= 65535)
-		{
-			bytes.Add(126);
-			bytes.Add((byte)((databytes.Count() >> 8) & 255));
-			bytes.Add((byte)((databytes.Count()) & 255));
-			bytes.AddRange(databytes);
-		}
-		else
-		{
-			bytes.Add(127);
-			bytes.Add((byte)((databytes.Count() >> 56) & 255));
-			bytes.Add((byte)((databytes.Count() >> 48) & 255));
-			bytes.Add((byte)((databytes.Count() >> 40) & 255));
-			bytes.Add((byte)((databytes.Count() >> 32) & 255));
-			bytes.Add((byte)((databytes.Count() >> 24) & 255));
-			bytes.Add((byte)((databytes.Count() >> 16) & 255));
-			bytes.Add((byte)((databytes.Count() >> 8) & 255));
-			bytes.Add((byte)((databytes.Count()) & 255));
-			bytes.AddRange(databytes);
-		}
+        var databytes = Encoding.UTF8.GetBytes(data).ToList();
 
-		try
-		{
-			stream.Write(bytes.ToArray());
-		}
-		catch (System.Net.Sockets.SocketException e)
-		{
-			// Broken pipe exception can happen here
-			Console.WriteLine(e.ToString());
-		}
-	}
+        if (databytes.Count <= 125)
+        {
+            bytes.Add((byte)databytes.Count);
+            bytes.AddRange(databytes);
+        }
+        else if (databytes.Count <= 65535)
+        {
+            bytes.Add(126);
+            bytes.Add((byte)((databytes.Count() >> 8) & 255));
+            bytes.Add((byte)((databytes.Count()) & 255));
+            bytes.AddRange(databytes);
+        }
+        else
+        {
+            bytes.Add(127);
+            bytes.Add((byte)((databytes.Count() >> 56) & 255));
+            bytes.Add((byte)((databytes.Count() >> 48) & 255));
+            bytes.Add((byte)((databytes.Count() >> 40) & 255));
+            bytes.Add((byte)((databytes.Count() >> 32) & 255));
+            bytes.Add((byte)((databytes.Count() >> 24) & 255));
+            bytes.Add((byte)((databytes.Count() >> 16) & 255));
+            bytes.Add((byte)((databytes.Count() >> 8) & 255));
+            bytes.Add((byte)((databytes.Count()) & 255));
+            bytes.AddRange(databytes);
+        }
 
-	private void SendClose(Socket socket, int reason)
-	{
-		List<byte> bytes = new List<byte>();
+        try
+        {
+            stream.Write(bytes.ToArray());
+        }
+        catch (System.Net.Sockets.SocketException e)
+        {
+            // Broken pipe exception can happen here
+            Console.WriteLine(e.ToString());
+        }
+    }
 
-		//close frame
-		bytes.Add(136);
+    private void SendClose(Socket socket, int reason)
+    {
+        List<byte> bytes = new List<byte>();
 
-		//length
-		bytes.Add(2);
+        //close frame
+        bytes.Add(136);
 
-		//code/reason 4001
-		bytes.Add(15);
-		bytes.Add(161);
+        //length
+        bytes.Add(2);
 
-		socket.Send(bytes.ToArray());
-	}
+        //code/reason 4001
+        bytes.Add(15);
+        bytes.Add(161);
 
-	private void HandleHttpConnection()
-	{
-		for (int i = 0; i < connectingSockets.Count; i++)
-		{
-			var connection = connectingSockets[i];
+        socket.Send(bytes.ToArray());
+    }
 
-			string httpRequest = GetHttpRequest(connection);
+    private void HandleHttpConnection()
+    {
+        for (int i = 0; i < connectingSockets.Count; i++)
+        {
+            var connection = connectingSockets[i];
 
-			if (connection.IsTimeout() || !connection.Client.Connected || httpRequest == null)
-			{
-				connectingSockets.RemoveAt(i);
-				i--;
-				continue;
-			}
+            string httpRequest = GetHttpRequest(connection);
 
-			var httpHeaders = GetHttpHeaders(httpRequest);
+            if (connection.IsTimeout() || !connection.Client.Connected || httpRequest == null)
+            {
+                connectingSockets.RemoveAt(i);
+                i--;
+                continue;
+            }
 
-			if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
-			{
-				byte[] responseBytes = CreateConnectionResponse(httpHeaders);
+            var httpHeaders = GetHttpHeaders(httpRequest);
 
-				connection.Stream.Write(responseBytes, 0, responseBytes.Length);
+            if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
+            {
+                byte[] responseBytes = CreateConnectionResponse(httpHeaders);
 
-				var ClientConnection = new ClientConnection()
-				{
-					Id = Guid.NewGuid(),
-					Client = connection.Client,
-					Stream = connection.Stream,
-					LastMessage = DateTime.Now
-				};
+                connection.Stream.Write(responseBytes, 0, responseBytes.Length);
 
-				socketRepository.AddUnauthorizedConnection(ClientConnection);
-			}
+                var ClientConnection = new ClientConnection()
+                {
+                    Id = Guid.NewGuid(),
+                    Client = connection.Client,
+                    Stream = connection.Stream,
+                    LastMessage = DateTime.Now
+                };
 
-			if (i <= connectingSockets.Count - 1)
-			{
-				connectingSockets.RemoveAt(i);
-				i--;
-			}
-		}
-	}
+                socketRepository.AddUnauthorizedConnection(ClientConnection);
+            }
 
-	private string GetHttpRequest(PendingClient client)
-	{
-		string output = string.Empty;
+            if (i <= connectingSockets.Count - 1)
+            {
+                connectingSockets.RemoveAt(i);
+                i--;
+            }
+        }
+    }
 
-		while (client.Client.Client.Poll(1000, SelectMode.SelectRead))
-		{
-			if (!client.Client.Connected)
-				return null;
+    private string GetHttpRequest(PendingClient client)
+    {
+        string output = string.Empty;
 
-			byte[] buffer = new byte[1024];
+        while (client.Client.Client.Poll(1000, SelectMode.SelectRead))
+        {
+            if (!client.Client.Connected)
+                return null;
 
-			int received = 0;
-			try 
-			{
-				received = client.Stream.Read(buffer, 0, buffer.Length);
-			}
-			catch (System.IO.IOException) {}
+            byte[] buffer = new byte[1024];
 
-			if (received == 0)
-				break;
+            int received = 0;
+            try
+            {
+                received = client.Stream.Read(buffer, 0, buffer.Length);
+            }
+            catch (System.IO.IOException) {}
 
-			var message = Encoding.ASCII.GetString(buffer, 0, received);
-			output += message;
-		}
+            if (received == 0)
+                break;
 
-		return output;
-	}
+            var message = Encoding.ASCII.GetString(buffer, 0, received);
+            output += message;
+        }
 
-	private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
-	{
-		var wskey = headers["Sec-WebSocket-Key"];
+        return output;
+    }
 
-		var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-		var wskeyResult = Convert.ToBase64String(keyhash);
+    private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
+    {
+        var wskey = headers["Sec-WebSocket-Key"];
 
-		var response = "HTTP/1.1 101 Switching Protocols\r\n" +
-			"Upgrade: websocket\r\n" +
-			"Connection: Upgrade\r\n" +
-			"Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
-		var responseBytes = Encoding.ASCII.GetBytes(response);
-		return responseBytes;
-	}
+        var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+        var wskeyResult = Convert.ToBase64String(keyhash);
 
-	private Dictionary<string, string> GetHttpHeaders(string data)
-	{
-		var headers = new Dictionary<string, string>();
+        var response = "HTTP/1.1 101 Switching Protocols\r\n" +
+            "Upgrade: websocket\r\n" +
+            "Connection: Upgrade\r\n" +
+            "Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
+        var responseBytes = Encoding.ASCII.GetBytes(response);
+        return responseBytes;
+    }
 
-		if (!data.StartsWith("GET"))
-			return headers;
+    private Dictionary<string, string> GetHttpHeaders(string data)
+    {
+        var headers = new Dictionary<string, string>();
 
-		var lines = data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-		foreach (var line in lines)
-		{
-			if (line.StartsWith("GET /"))
-			{
-				var token = GetQueryString(line, "u");
+        if (!data.StartsWith("GET"))
+            return headers;
 
-				if (token != null)
-					headers.Add("Username", token);
+        var lines = data.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        foreach (var line in lines)
+        {
+            if (line.StartsWith("GET /"))
+            {
+                var token = GetQueryString(line, "u");
 
-				continue;
-			}
+                if (token != null)
+                    headers.Add("Username", token);
 
-			int split = line.IndexOf(":");
-			if (split > -1)
-			{
-				string propertykey = line.Substring(0, split);
-				string propertyValue = line.Substring(split + 1);
-				headers.Add(propertykey, propertyValue.Trim());
-			}
-		}
+                continue;
+            }
 
-		return headers;
-	}
+            int split = line.IndexOf(":");
+            if (split > -1)
+            {
+                string propertykey = line.Substring(0, split);
+                string propertyValue = line.Substring(split + 1);
+                headers.Add(propertykey, propertyValue.Trim());
+            }
+        }
 
-	private byte[] Hash(string input)
-	{
-		using (var sha1 = SHA1.Create())
-		{
-			return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
-		}
-	}
+        return headers;
+    }
 
-	private string GetQueryString(string line, string name)
-	{
-		return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
-	}
+    private byte[] Hash(string input)
+    {
+        using (var sha1 = SHA1.Create())
+        {
+            return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
+        }
+    }
+
+    private string GetQueryString(string line, string name)
+    {
+        return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
+    }
 }
 
 public class PendingClient
 {
-	public TcpClient Client { get; set; }
+    public TcpClient Client { get; set; }
 
-	public SslStream Stream { get; set; }
-	public DateTime Connected { get; set; }
+    public SslStream Stream { get; set; }
+    public DateTime Connected { get; set; }
 
-	public bool IsTimeout()
-	{
-		return (Connected.AddSeconds(5) < DateTime.Now);
-	}
+    public bool IsTimeout()
+    {
+        return (Connected.AddSeconds(5) < DateTime.Now);
+    }
 }
 
 public class WebSocketMessage
 {
-	public ClientConnection Connection { get; set; }
-	public string Component { get; set; }
-	public string Type { get; set; }
-	public string Data { get; set; }
+    public ClientConnection Connection { get; set; }
+    public string Component { get; set; }
+    public string Type { get; set; }
+    public string Data { get; set; }
 
-	public bool HasData()
-	{
-		return !string.IsNullOrEmpty(Component) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Data);
-	}
+    public bool HasData()
+    {
+        return !string.IsNullOrEmpty(Component) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Data);
+    }
 }

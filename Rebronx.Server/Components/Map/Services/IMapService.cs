@@ -3,9 +3,9 @@ using Rebronx.Server.Models;
 
 namespace Rebronx.Server.Components.Map.Services
 {
-	public interface IMapService
-	{
-		Dictionary<int, MapNode> GetMap();
-		MapNode GetNode(int node);
-	}
+    public interface IMapService
+    {
+        Dictionary<int, MapNode> GetMap();
+        MapNode GetNode(int node);
+    }
 }

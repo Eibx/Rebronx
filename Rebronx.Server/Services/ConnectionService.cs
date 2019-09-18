@@ -15,214 +15,214 @@ using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Services
 {
-	public class ConnectionService : IConnectionService
-	{
-		private readonly IUserRepository playerRepository;
-		private readonly ISocketRepository socketRepository;
-		private readonly ITokenRepository tokenRepository;
-		private readonly IPositionRepository movementRepository;
-		private readonly IJoinSender joinSender;
-		private readonly ILoginSender loginSender;
-		private readonly ILobbySender lobbySender;
+    public class ConnectionService : IConnectionService
+    {
+        private readonly IUserRepository playerRepository;
+        private readonly ISocketRepository socketRepository;
+        private readonly ITokenRepository tokenRepository;
+        private readonly IPositionRepository movementRepository;
+        private readonly IJoinSender joinSender;
+        private readonly ILoginSender loginSender;
+        private readonly ILobbySender lobbySender;
 
-		public ConnectionService(
-			IUserRepository playerRepository, 
-			ISocketRepository socketRepository, 
-			ITokenRepository tokenRepository, 
-			IPositionRepository movementRepository,
-			IJoinSender joinSender, 
-			ILoginSender loginSender, 
-			ILobbySender lobbySender)
-		{
-			this.socketRepository = socketRepository;
-			this.playerRepository = playerRepository;
-			this.tokenRepository = tokenRepository;
-			this.movementRepository = movementRepository;
-			this.joinSender = joinSender;
-			this.loginSender = loginSender;
-			this.lobbySender = lobbySender;
-		}
+        public ConnectionService(
+            IUserRepository playerRepository,
+            ISocketRepository socketRepository,
+            ITokenRepository tokenRepository,
+            IPositionRepository movementRepository,
+            IJoinSender joinSender,
+            ILoginSender loginSender,
+            ILobbySender lobbySender)
+        {
+            this.socketRepository = socketRepository;
+            this.playerRepository = playerRepository;
+            this.tokenRepository = tokenRepository;
+            this.movementRepository = movementRepository;
+            this.joinSender = joinSender;
+            this.loginSender = loginSender;
+            this.lobbySender = lobbySender;
+        }
 
-		public List<Message> ConvertToMessages(List<WebSocketMessage> messages)
-		{
-			var output = new List<Message>();
+        public List<Message> ConvertToMessages(List<WebSocketMessage> messages)
+        {
+            var output = new List<Message>();
 
-			foreach (var message in messages)
-			{
-				if (message.Type == "login") {
-					HandleLoginMessage(message);
-					continue;
-				} else if (message.Type == "signup") {
-					HandleSignupMessage(message);
-					continue;
-				}
+            foreach (var message in messages)
+            {
+                if (message.Type == "login") {
+                    HandleLoginMessage(message);
+                    continue;
+                } else if (message.Type == "signup") {
+                    HandleSignupMessage(message);
+                    continue;
+                }
 
-				Player player = null;
-				var playerId = socketRepository.GetPlayerId(message.Connection.Id);
+                Player player = null;
+                var playerId = socketRepository.GetPlayerId(message.Connection.Id);
 
-				if (playerId != null)
-					player = playerRepository.GetPlayerById(playerId.Value);
+                if (playerId != null)
+                    player = playerRepository.GetPlayerById(playerId.Value);
 
-				if (player == null)
-					return output;
+                if (player == null)
+                    return output;
 
-				output.Add(new Message()
-				{
-					Player = player,
-					Component = message.Component,
-					Type = message.Type,
-					Data = message.Data
-				});
-			}
+                output.Add(new Message()
+                {
+                    Player = player,
+                    Component = message.Component,
+                    Type = message.Type,
+                    Data = message.Data
+                });
+            }
 
-			return output;
-		}
+            return output;
+        }
 
-		public void HandleLoginMessage(WebSocketMessage loginMessage)
-		{
-			LoginMessage loginData = null;
-			try {
-				loginData = Newtonsoft.Json.JsonConvert.DeserializeObject<LoginMessage>(loginMessage.Data);
-			} catch { }
+        public void HandleLoginMessage(WebSocketMessage loginMessage)
+        {
+            LoginMessage loginData = null;
+            try {
+                loginData = Newtonsoft.Json.JsonConvert.DeserializeObject<LoginMessage>(loginMessage.Data);
+            } catch { }
 
-			if (loginData == null)
-				return;
-			
-			Player player = null;
-			string token;
-			
-			if (!string.IsNullOrEmpty(loginData.Token)) 
-			{
-				player = playerRepository.GetPlayerByToken(loginData.Token);
+            if (loginData == null)
+                return;
 
-				if (player == null) {
-					loginSender.Fail(loginMessage.Connection, 4002);
-					return;
-				}
+            Player player = null;
+            string token;
 
-				token = loginData.Token;
-			}
-			else
-			{
-				player = playerRepository.GetPlayerByLogin(loginData.Username, loginData.Password);
+            if (!string.IsNullOrEmpty(loginData.Token))
+            {
+                player = playerRepository.GetPlayerByToken(loginData.Token);
 
-				if (player == null) {
-					loginSender.Fail(loginMessage.Connection, 4001);
-					return;
-				}
+                if (player == null) {
+                    loginSender.Fail(loginMessage.Connection, 4002);
+                    return;
+                }
 
-				token = GenerateToken();
-				tokenRepository.SetPlayerToken(player, token);
-			}
+                token = loginData.Token;
+            }
+            else
+            {
+                player = playerRepository.GetPlayerByLogin(loginData.Username, loginData.Password);
 
-			SendPlayerInformation(player, loginMessage.Connection, token);
-		}
+                if (player == null) {
+                    loginSender.Fail(loginMessage.Connection, 4001);
+                    return;
+                }
 
-		public void HandleSignupMessage(WebSocketMessage signupMessage)
-		{
-			SignupMessage signupData = null;
-			try {
-				signupData = Newtonsoft.Json.JsonConvert.DeserializeObject<SignupMessage>(signupMessage.Data);
-			} catch { }
+                token = GenerateToken();
+                tokenRepository.SetPlayerToken(player, token);
+            }
 
-			if (signupData == null)
-				return;
+            SendPlayerInformation(player, loginMessage.Connection, token);
+        }
 
-			int reason = 0;
+        public void HandleSignupMessage(WebSocketMessage signupMessage)
+        {
+            SignupMessage signupData = null;
+            try {
+                signupData = Newtonsoft.Json.JsonConvert.DeserializeObject<SignupMessage>(signupMessage.Data);
+            } catch { }
 
-			if (string.IsNullOrEmpty(signupData.Username) || string.IsNullOrEmpty(signupData.Password)) 
-				reason = 1001;
+            if (signupData == null)
+                return;
 
-			if (signupData.Username.Length <= 3) 
-				reason = 1002;
+            int reason = 0;
 
-			if (playerRepository.GetPlayerByName(signupData.Username) != null)
-				reason = 1003;
+            if (string.IsNullOrEmpty(signupData.Username) || string.IsNullOrEmpty(signupData.Password))
+                reason = 1001;
 
-			if (reason > 0) 
-			{
-				loginSender.SignupFail(signupMessage.Connection, reason);
-				return;
-			}
+            if (signupData.Username.Length <= 3)
+                reason = 1002;
 
-			var name = signupData.Username;
-			var hash = PBKDF2.HashPassword(signupData.Password);
-			var previousToken = string.Empty;
-			var token = string.Empty;
+            if (playerRepository.GetPlayerByName(signupData.Username) != null)
+                reason = 1003;
 
-			do
-			{
-				previousToken = token;
-				token = GenerateToken();
+            if (reason > 0)
+            {
+                loginSender.SignupFail(signupMessage.Connection, reason);
+                return;
+            }
 
-				if (token == previousToken)
-					throw new Exception("Same Token generated twice! Shouldn't statistically happen");
-			} 
-			while (playerRepository.GetPlayerByToken(token) != null);
-			
-			playerRepository.CreateNewPlayer(name, hash, token);
+            var name = signupData.Username;
+            var hash = PBKDF2.HashPassword(signupData.Password);
+            var previousToken = string.Empty;
+            var token = string.Empty;
 
-			var player = playerRepository.GetPlayerByToken(token);
+            do
+            {
+                previousToken = token;
+                token = GenerateToken();
 
-			SendPlayerInformation(player, signupMessage.Connection, token);
-		}
+                if (token == previousToken)
+                    throw new Exception("Same Token generated twice! Shouldn't statistically happen");
+            }
+            while (playerRepository.GetPlayerByToken(token) != null);
 
-		public void HandleDeadPlayers()
-		{
-			var connections = socketRepository.GetAllConnections();
-			var timeouts = connections.Where(x => x.Client == null || x.IsTimedout()).ToList();
-			foreach (var timeout in timeouts)
-			{
-				Player player = null;
-				var playerId = socketRepository.GetPlayerId(timeout.Id);
-				if (playerId.HasValue)
-				{
-					player = playerRepository.GetPlayerById(playerId.Value);					
-				}
+            playerRepository.CreateNewPlayer(name, hash, token);
 
-				Console.WriteLine($"Connection removed:{timeout.Id} - {timeout.LastMessage}");
-				socketRepository.RemoveConnection(timeout.Id);
+            var player = playerRepository.GetPlayerByToken(token);
 
-				if (player != null) 
-				{
-					lobbySender.Update(player.Position);
-				}
-			}
-		}
+            SendPlayerInformation(player, signupMessage.Connection, token);
+        }
 
-		private void SendPlayerInformation(Player player, ClientConnection connection, string token) 
-		{
-			//TODO
-			//Send information about player
-			//Send map information
-			//Send lobby information
-			//Maybe just make a "JoinSender" that does all that.
+        public void HandleDeadPlayers()
+        {
+            var connections = socketRepository.GetAllConnections();
+            var timeouts = connections.Where(x => x.Client == null || x.IsTimedout()).ToList();
+            foreach (var timeout in timeouts)
+            {
+                Player player = null;
+                var playerId = socketRepository.GetPlayerId(timeout.Id);
+                if (playerId.HasValue)
+                {
+                    player = playerRepository.GetPlayerById(playerId.Value);
+                }
 
-			socketRepository.AddConnection(player.Id, connection);
-			movementRepository.SetPlayerPositon(player, player.Position);
+                Console.WriteLine($"Connection removed:{timeout.Id} - {timeout.LastMessage}");
+                socketRepository.RemoveConnection(timeout.Id);
 
-			loginSender.Success(player, token);
-			joinSender.Join(player);
-		}
+                if (player != null)
+                {
+                    lobbySender.Update(player.Position);
+                }
+            }
+        }
 
-		private string GenerateToken() {
-			var bytes = new byte[32];
-			var rnd = RandomNumberGenerator.Create();
-			rnd.GetBytes(bytes);
-			return Convert.ToBase64String(bytes);
-		}
-	}
+        private void SendPlayerInformation(Player player, ClientConnection connection, string token)
+        {
+            //TODO
+            //Send information about player
+            //Send map information
+            //Send lobby information
+            //Maybe just make a "JoinSender" that does all that.
+
+            socketRepository.AddConnection(player.Id, connection);
+            movementRepository.SetPlayerPositon(player, player.Position);
+
+            loginSender.Success(player, token);
+            joinSender.Join(player);
+        }
+
+        private string GenerateToken() {
+            var bytes = new byte[32];
+            var rnd = RandomNumberGenerator.Create();
+            rnd.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
+        }
+    }
 }
 
-public class LoginMessage 
+public class LoginMessage
 {
-	public string Username { get; set; }
-	public string Password { get; set; }
-	public string Token { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
+    public string Token { get; set; }
 }
 
-public class SignupMessage 
+public class SignupMessage
 {
-	public string Username { get; set; }
-	public string Password { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
 }

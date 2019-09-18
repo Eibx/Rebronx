@@ -1,7 +1,7 @@
 namespace Rebronx.Server.Components.Combat
 {
-	public interface ICombatComponent : IComponent
-	{
+    public interface ICombatComponent : IComponent
+    {
 
-	}
+    }
 }

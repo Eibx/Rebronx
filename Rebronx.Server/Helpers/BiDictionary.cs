@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 
 /// <summary>
-/// This is a dictionary guaranteed to have only one of each value and key. 
+/// This is a dictionary guaranteed to have only one of each value and key.
 /// It may be searched either by TFirst or by TSecond, giving a unique answer because it is 1 to 1.
 /// </summary>
 /// <typeparam name="TFirst">The type of the "key"</typeparam>
@@ -97,7 +97,7 @@ public class BiDictionary<TFirst, TSecond>
 
     /// <summary>
     /// Tries to add the pair to the dictionary.
-    /// Returns false if either element is already in the dictionary        
+    /// Returns false if either element is already in the dictionary
     /// </summary>
     /// <param name="first"></param>
     /// <param name="second"></param>
@@ -169,15 +169,15 @@ public class BiDictionary<TFirst, TSecond>
         return true;
     }
 
-	public Boolean ContainsByFirst(TFirst first) 
-	{
-		return firstToSecond.ContainsKey(first);
-	}
+    public Boolean ContainsByFirst(TFirst first)
+    {
+        return firstToSecond.ContainsKey(first);
+    }
 
-	public Boolean ContainsBySecond(TSecond second) 
-	{
-		return secondToFirst.ContainsKey(second);
-	}
+    public Boolean ContainsBySecond(TSecond second)
+    {
+        return secondToFirst.ContainsKey(second);
+    }
 
     #endregion
 

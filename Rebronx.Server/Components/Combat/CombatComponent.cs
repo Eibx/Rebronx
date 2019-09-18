@@ -5,63 +5,63 @@ using Rebronx.Server.Components.Combat.Repositories;
 using Rebronx.Server.Components.Combat.Senders;
 using Rebronx.Server.Repositories.Interfaces;
 
-namespace Rebronx.Server.Components.Combat 
+namespace Rebronx.Server.Components.Combat
 {
-	public class CombatComponent : Component, ICombatComponent
-	{
-		private const string Component = "combat";
-		private Random random;
-		private readonly ICombatSender combatSender;
-		private readonly IUserRepository userRepository;
-		private readonly ICombatRepository combatRepository;
+    public class CombatComponent : Component, ICombatComponent
+    {
+        private const string Component = "combat";
+        private Random random;
+        private readonly ICombatSender combatSender;
+        private readonly IUserRepository userRepository;
+        private readonly ICombatRepository combatRepository;
 
-		public CombatComponent(ICombatSender combatSender, IUserRepository userRepository, ICombatRepository combatRepository)
-		{
-			random = new Random();
-			this.combatSender = combatSender;
-			this.userRepository = userRepository;
-			this.combatRepository = combatRepository;
-		}
+        public CombatComponent(ICombatSender combatSender, IUserRepository userRepository, ICombatRepository combatRepository)
+        {
+            random = new Random();
+            this.combatSender = combatSender;
+            this.userRepository = userRepository;
+            this.combatRepository = combatRepository;
+        }
 
-		public void Run(IList<Message> messages)
-		{
-			foreach (var message in messages.Where(m => m.Component == Component))
-			{
-				if (message.Type == "attack")
-					Attack(message);
-			}
-		}
+        public void Run(IList<Message> messages)
+        {
+            foreach (var message in messages.Where(m => m.Component == Component))
+            {
+                if (message.Type == "attack")
+                    Attack(message);
+            }
+        }
 
-		public void Attack(Message message)
-		{
-			var inputMessage = GetData<InputAttackMessage>(message);
+        public void Attack(Message message)
+        {
+            var inputMessage = GetData<InputAttackMessage>(message);
 
-			if (inputMessage != null && message?.Player != null)
-			{
-				if (message.Player.Id == inputMessage.Victim)
-					return;
-				
-				var attacker = message.Player;
-				var victim = userRepository.GetPlayerById(inputMessage.Victim);
+            if (inputMessage != null && message?.Player != null)
+            {
+                if (message.Player.Id == inputMessage.Victim)
+                    return;
 
-				if (victim == null)
-					return;
+                var attacker = message.Player;
+                var victim = userRepository.GetPlayerById(inputMessage.Victim);
 
-				var attackerStats = combatRepository.GetCombatStats(attacker.Id);
-				var victimStats = combatRepository.GetCombatStats(victim.Id);
+                if (victim == null)
+                    return;
 
-				var rand = ((float)random.Next(0,100))/100f;
-				var hit = (((float)attackerStats.Accuracy/(float)victimStats.Agility)/2.0f)+rand >= 1;
+                var attackerStats = combatRepository.GetCombatStats(attacker.Id);
+                var victimStats = combatRepository.GetCombatStats(victim.Id);
 
-				var damage = (hit) ? 10 : -1;
+                var rand = ((float)random.Next(0,100))/100f;
+                var hit = (((float)attackerStats.Accuracy/(float)victimStats.Agility)/2.0f)+rand >= 1;
 
-				combatSender.AttackerReport(attacker, damage);
-				combatSender.VictimReport(victim, damage);
-			}
-		}
-	}
-	public class InputAttackMessage
-	{
-		public int Victim { get; set; }
-	}
+                var damage = (hit) ? 10 : -1;
+
+                combatSender.AttackerReport(attacker, damage);
+                combatSender.VictimReport(victim, damage);
+            }
+        }
+    }
+    public class InputAttackMessage
+    {
+        public int Victim { get; set; }
+    }
 }
