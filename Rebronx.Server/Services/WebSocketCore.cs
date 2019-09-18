@@ -25,7 +25,8 @@ public class WebSocketCore : IWebSocketCore
     public WebSocketCore(ISocketRepository socketRepository)
     {
         this.socketRepository = socketRepository;
-        serverCertificate = new X509Certificate2("../rebronx.p12", "rebronx_pass", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+
+        serverCertificate = new X509Certificate2("../rebronx.p12", "", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
 
         server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
         server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);

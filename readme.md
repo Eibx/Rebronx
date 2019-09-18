@@ -32,7 +32,7 @@ Then create a self-signed certificate:
 
 ```shell
 openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -nodes -subj '/CN=localhost/O=Rebronx/OU=Rebronx'
-openssl pkcs12 -export -inkey key.pem -in cert.pem -out rebronx.p12 -password pass:rebronx_pass
+openssl pkcs12 -export -inkey key.pem -in cert.pem -out rebronx.p12 -password pass:
 ```
 
 *Note that browsers will still not trust these certificates.*  
