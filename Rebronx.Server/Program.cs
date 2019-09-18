@@ -1,5 +1,5 @@
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using LightInject;
 using Rebronx.Server.Services;
 using Rebronx.Server.Services.Interfaces;
 using Rebronx.Server.Repositories.Interfaces;
@@ -29,55 +29,50 @@ using Rebronx.Server.Systems.Command;
 
 public class Program
 {
-    public static IServiceProvider Container { get; private set; }
-
     public static void Main(string[] args)
     {
-        var services = new ServiceCollection();
+        var container = new LightInject.ServiceContainer();
 
         //Services
-        services.AddSingleton<Application, Application>();
-        services.AddSingleton<IWebSocketCore, WebSocketCore>();
-        services.AddSingleton<IConnectionService, ConnectionService>();
-        services.AddSingleton<IMessageService, MessageService>();
-        services.AddSingleton<IDatabaseService, DatabaseService>();
-        services.AddSingleton<IInventoryService, InventoryService>();
+        container.RegisterSingleton<Application, Application>();
+        container.RegisterSingleton<IWebSocketCore, WebSocketCore>();
+        container.RegisterSingleton<IConnectionService, ConnectionService>();
+        container.RegisterSingleton<IMessageService, MessageService>();
+        container.RegisterSingleton<IDatabaseService, DatabaseService>();
+        container.RegisterSingleton<IInventoryService, InventoryService>();
 
         //Components
-        services.AddSingleton<ICommandSystem, CommandSystem>();
-        services.AddSingleton<IMapSystem, MapSystem>();
-        services.AddSingleton<IMovementSystem, MovementSystem>();
-        services.AddSingleton<IChatSystem, ChatSystem>();
-        services.AddSingleton<IStoreSystem, StoreSystem>();
-        services.AddSingleton<ICombatSystem, CombatSystem>();
-        services.AddSingleton<IInventorySystem, InventorySystem>();
+        container.RegisterSingleton<ICommandSystem, CommandSystem>();
+        container.RegisterSingleton<IMapSystem, MapSystem>();
+        container.RegisterSingleton<IMovementSystem, MovementSystem>();
+        container.RegisterSingleton<IChatSystem, ChatSystem>();
+        container.RegisterSingleton<IStoreSystem, StoreSystem>();
+        container.RegisterSingleton<ICombatSystem, CombatSystem>();
+        container.RegisterSingleton<IInventorySystem, InventorySystem>();
 
         //Senders
-        services.AddSingleton<IChatSender, ChatSender>();
-        services.AddSingleton<IInventorySender, InventorySender>();
-        services.AddSingleton<IJoinSender, JoinSender>();
-        services.AddSingleton<ILoginSender, LoginSender>();
-        services.AddSingleton<ILobbySender, LobbySender>();
-        services.AddSingleton<IMapSender, MapSender>();
-        services.AddSingleton<IMovementSender, MovementSender>();
-        services.AddSingleton<ICombatSender, CombatSender>();
-        services.AddSingleton<IMapService, MapService>();
-        services.AddSingleton<IInventorySender, InventorySender>();
+        container.RegisterSingleton<IChatSender, ChatSender>();
+        container.RegisterSingleton<IInventorySender, InventorySender>();
+        container.RegisterSingleton<IJoinSender, JoinSender>();
+        container.RegisterSingleton<ILoginSender, LoginSender>();
+        container.RegisterSingleton<ILobbySender, LobbySender>();
+        container.RegisterSingleton<IMapSender, MapSender>();
+        container.RegisterSingleton<IMovementSender, MovementSender>();
+        container.RegisterSingleton<ICombatSender, CombatSender>();
+        container.RegisterSingleton<IMapService, MapService>();
+        container.RegisterSingleton<IInventorySender, InventorySender>();
 
         //Repositories
-        services.AddSingleton<IUserRepository, UserRepository>();
-        services.AddSingleton<ISocketRepository, SocketRepository>();
-        services.AddSingleton<IPositionRepository, PositionRepository>();
-        services.AddSingleton<ITokenRepository, TokenRepository>();
-        //services.AddSingleton<ICooldownRepository, CooldownRepository>();
-        services.AddSingleton<ICombatRepository, CombatRepository>();
-        services.AddSingleton<IInventoryRepository, InventoryRepository>();
-        services.AddSingleton<IItemRepository, ItemRepository>();
+        container.RegisterSingleton<IUserRepository, UserRepository>();
+        container.RegisterSingleton<ISocketRepository, SocketRepository>();
+        container.RegisterSingleton<IPositionRepository, PositionRepository>();
+        container.RegisterSingleton<ITokenRepository, TokenRepository>();
+        //container.RegisterSingleton<ICooldownRepository, CooldownRepository>();
+        container.RegisterSingleton<ICombatRepository, CombatRepository>();
+        container.RegisterSingleton<IInventoryRepository, InventoryRepository>();
+        container.RegisterSingleton<IItemRepository, ItemRepository>();
 
-
-        Container = services.BuildServiceProvider();
-
-        var app = Container.GetService<Application>();
+        var app = container.GetInstance<Application>();
         app.Run();
     }
 }
