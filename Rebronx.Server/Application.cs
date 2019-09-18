@@ -1,11 +1,11 @@
 using System.Threading;
-using Rebronx.Server.Components.Chat;
-using Rebronx.Server.Components.Combat;
-using Rebronx.Server.Components.Inventory;
-using Rebronx.Server.Components.Map;
-using Rebronx.Server.Components.Movement;
-using Rebronx.Server.Components.Store;
-using Rebronx.Server.Components.Command;
+using Rebronx.Server.Systems.Chat;
+using Rebronx.Server.Systems.Combat;
+using Rebronx.Server.Systems.Inventory;
+using Rebronx.Server.Systems.Map;
+using Rebronx.Server.Systems.Movement;
+using Rebronx.Server.Systems.Store;
+using Rebronx.Server.Systems.Command;
 using Rebronx.Server.Services.Interfaces;
 
 public class Application
@@ -13,35 +13,35 @@ public class Application
     private readonly IWebSocketCore webSocketCore;
     private readonly IConnectionService connectionService;
 
-    private readonly ICommandComponent commandComponent;
-    private readonly IMapComponent mapComponent;
-    private readonly IMovementComponent movementComponent;
-    private readonly IChatComponent chatComponent;
-    private readonly IStoreComponent storeComponent;
-    private readonly ICombatComponent combatComponent;
-    private readonly IInventoryComponent inventoryComponent;
+    private readonly ICommandSystem commandSystem;
+    private readonly IMapSystem mapSystem;
+    private readonly IMovementSystem movementSystem;
+    private readonly IChatSystem chatSystem;
+    private readonly IStoreSystem storeSystem;
+    private readonly ICombatSystem combatSystem;
+    private readonly IInventorySystem inventorySystem;
     public Application(
         IWebSocketCore webSocketCore,
         IConnectionService connectionService,
 
-        ICommandComponent commandComponent,
-        IMapComponent mapComponent,
-        IMovementComponent movementComponent,
-        IChatComponent chatComponent,
-        IStoreComponent storeComponent,
-        ICombatComponent combatComponent,
-        IInventoryComponent inventoryComponent)
+        ICommandSystem commandSystem,
+        IMapSystem mapSystem,
+        IMovementSystem movementSystem,
+        IChatSystem chatSystem,
+        IStoreSystem storeSystem,
+        ICombatSystem combatSystem,
+        IInventorySystem inventorySystem)
     {
         this.webSocketCore = webSocketCore;
         this.connectionService = connectionService;
 
-        this.commandComponent = commandComponent;
-        this.mapComponent = mapComponent;
-        this.movementComponent = movementComponent;
-        this.chatComponent = chatComponent;
-        this.storeComponent = storeComponent;
-        this.combatComponent = combatComponent;
-        this.inventoryComponent = inventoryComponent;
+        this.commandSystem = commandSystem;
+        this.mapSystem = mapSystem;
+        this.movementSystem = movementSystem;
+        this.chatSystem = chatSystem;
+        this.storeSystem = storeSystem;
+        this.combatSystem = combatSystem;
+        this.inventorySystem = inventorySystem;
     }
 
     public void Run()
@@ -55,13 +55,13 @@ public class Application
             var socketMessages = webSocketCore.PollMessages();
             var playerMessages = connectionService.ConvertToMessages(socketMessages);
 
-            commandComponent.Run(playerMessages);
-            mapComponent.Run(playerMessages);
-            movementComponent.Run(playerMessages);
-            chatComponent.Run(playerMessages);
-            storeComponent.Run(playerMessages);
-            combatComponent.Run(playerMessages);
-            inventoryComponent.Run(playerMessages);
+            commandSystem.Run(playerMessages);
+            mapSystem.Run(playerMessages);
+            movementSystem.Run(playerMessages);
+            chatSystem.Run(playerMessages);
+            storeSystem.Run(playerMessages);
+            combatSystem.Run(playerMessages);
+            inventorySystem.Run(playerMessages);
 
             Thread.Sleep(1);
         }

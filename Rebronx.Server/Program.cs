@@ -4,28 +4,28 @@ using Rebronx.Server.Services;
 using Rebronx.Server.Services.Interfaces;
 using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Repositories;
-using Rebronx.Server.Components.Chat;
-using Rebronx.Server.Components.Map;
-using Rebronx.Server.Components.Movement;
-using Rebronx.Server.Components.Inventory;
-using Rebronx.Server.Components.Join;
-using Rebronx.Server.Components.Login;
-using Rebronx.Server.Components.Lobby;
-using Rebronx.Server.Components.Combat;
-using Rebronx.Server.Components.Store;
-using Rebronx.Server.Components.Chat.Senders;
-using Rebronx.Server.Components.Inventory.Senders;
-using Rebronx.Server.Components.Join.Senders;
-using Rebronx.Server.Components.Login.Senders;
-using Rebronx.Server.Components.Lobby.Senders;
-using Rebronx.Server.Components.Map.Senders;
-using Rebronx.Server.Components.Movement.Senders;
-using Rebronx.Server.Components.Combat.Senders;
-using Rebronx.Server.Components.Map.Services;
-using Rebronx.Server.Components.Combat.Repositories;
-using Rebronx.Server.Components.Inventory.Repositories;
-using Rebronx.Server.Components.Inventory.Services;
-using Rebronx.Server.Components.Command;
+using Rebronx.Server.Systems.Chat;
+using Rebronx.Server.Systems.Map;
+using Rebronx.Server.Systems.Movement;
+using Rebronx.Server.Systems.Inventory;
+using Rebronx.Server.Systems.Join;
+using Rebronx.Server.Systems.Login;
+using Rebronx.Server.Systems.Lobby;
+using Rebronx.Server.Systems.Combat;
+using Rebronx.Server.Systems.Store;
+using Rebronx.Server.Systems.Chat.Senders;
+using Rebronx.Server.Systems.Inventory.Senders;
+using Rebronx.Server.Systems.Join.Senders;
+using Rebronx.Server.Systems.Login.Senders;
+using Rebronx.Server.Systems.Lobby.Senders;
+using Rebronx.Server.Systems.Map.Senders;
+using Rebronx.Server.Systems.Movement.Senders;
+using Rebronx.Server.Systems.Combat.Senders;
+using Rebronx.Server.Systems.Map.Services;
+using Rebronx.Server.Systems.Combat.Repositories;
+using Rebronx.Server.Systems.Inventory.Repositories;
+using Rebronx.Server.Systems.Inventory.Services;
+using Rebronx.Server.Systems.Command;
 
 public class Program
 {
@@ -44,13 +44,13 @@ public class Program
         services.AddSingleton<IInventoryService, InventoryService>();
 
         //Components
-        services.AddSingleton<ICommandComponent, CommandComponent>();
-        services.AddSingleton<IMapComponent, MapComponent>();
-        services.AddSingleton<IMovementComponent, MovementComponent>();
-        services.AddSingleton<IChatComponent, ChatComponent>();
-        services.AddSingleton<IStoreComponent, StoreComponent>();
-        services.AddSingleton<ICombatComponent, CombatComponent>();
-        services.AddSingleton<IInventoryComponent, InventoryComponent>();
+        services.AddSingleton<ICommandSystem, CommandSystem>();
+        services.AddSingleton<IMapSystem, MapSystem>();
+        services.AddSingleton<IMovementSystem, MovementSystem>();
+        services.AddSingleton<IChatSystem, ChatSystem>();
+        services.AddSingleton<IStoreSystem, StoreSystem>();
+        services.AddSingleton<ICombatSystem, CombatSystem>();
+        services.AddSingleton<IInventorySystem, InventorySystem>();
 
         //Senders
         services.AddSingleton<IChatSender, ChatSender>();
