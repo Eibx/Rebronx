@@ -2,7 +2,7 @@
     <div class="store">
         <ul class="store-items">
             <li class="store-item">
-                <div class="store-item--image" v-show-infobox>
+                <div class="store-item--image">
                     <img v-bind:src="image" alt="" />
                 </div>
                 <div class="store-item--info">
@@ -41,13 +41,12 @@ import DataService from '../services/data.service'
 import RenderService from '../services/render.service'
 
 @Component({
-    name: 'area'
+    name: 'store'
 })
 export default class Store extends Vue {
     public image: string =  "";
 
     created() {
-        RenderService.renderItem("4").then((src: string) => { this.image = src; });
     }
     
     buy(item: any, amount: number) {

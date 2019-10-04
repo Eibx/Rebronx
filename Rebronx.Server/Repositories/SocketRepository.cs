@@ -3,11 +3,10 @@ using System.Linq;
 using System.Collections.Generic;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories.Interfaces;
-using System.Net.Sockets;
 
 namespace Rebronx.Server.Repositories
 {
-    public class SocketRepository : ISocketRepository
+	public class SocketRepository : ISocketRepository
     {
         private Dictionary<Guid, ClientConnection> sockets;
         private BiDictionary<int, Guid> playerSocketDictionary;

@@ -40,6 +40,8 @@ public class WebSocketCore : IWebSocketCore
     {
         while (server.Pending())
         {
+            Console.WriteLine("accepting connection?");
+
             var client = server.AcceptTcpClient();
 
             SslStream sslStream = new SslStream(client.GetStream(), false);

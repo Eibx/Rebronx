@@ -1,5 +1,5 @@
 <template>
-    <div class="area">
+    <div class="location">
         <div>@ westpark</div>
 
         <ul>
@@ -18,8 +18,8 @@
 import { Component, Prop, Vue } from 'vue-property-decorator';
 import DataService from '../services/data.service.js'
 
-@Component({ name: 'area' })
-export default class Area extends Vue {
+@Component({ name: 'location' })
+export default class Location extends Vue {
     
 }
 </script>
