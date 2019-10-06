@@ -8,6 +8,8 @@
     "build": "npm run tailwind & vue-cli-service build"
   },
   "dependencies": {
+    "ngraph.graph": "^18.0.1",
+    "ngraph.path": "^1.2.0",
     "tailwindcss": "^1.1.2",
     "three": "^0.108.0",
     "three-gltf-loader": "^1.108.0",

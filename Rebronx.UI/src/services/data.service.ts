@@ -1,5 +1,5 @@
 class DataService {
-    public subscribers:any = {};
+    public subscribers: any = {};
     public websocket: WebSocket | null;
 
     constructor() {
@@ -14,10 +14,10 @@ class DataService {
         console.log("received:", message.data);
 
         var baseMessage = null
+        
         try {
             baseMessage = JSON.parse(message.data);
-        } 
-        catch(e) { 
+        } catch(e) { 
             return;
         }
 
@@ -61,7 +61,7 @@ class DataService {
         try {
             var jsonData = JSON.stringify(data);
             var json = JSON.stringify({ component: component, type: type, data: jsonData });
-            console.log("sent:    ", json);
+            console.log("sent: ", json);
             
             if (this.websocket !== null)
                 this.websocket.send(json);

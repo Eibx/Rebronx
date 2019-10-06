@@ -1,5 +1,5 @@
 <template>
-    <div class="map-component bg-gray-900" ref="canvasContainer" v-on:mousemove="updateCoordinates"></div>
+    <div class="map-component bg-gray-900" ref="canvasContainer" v-on:mousemove="updateCoordinates" v-on:click="click"></div>
 </template>
 
 <script lang="ts">
@@ -7,6 +7,7 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import DataService from '../services/data.service'
 import RenderService from '../services/render.service'
+import MapService from '../services/map.service'
 
 @Component({ name: "world" })
 export default class World extends Vue {
@@ -15,6 +16,9 @@ export default class World extends Vue {
     };
 
     public mapUrl:string = "";
+
+    private from: number | null = null;
+    private to: number | null = null;
 
     created() {
         this.renderMap();
@@ -32,6 +36,27 @@ export default class World extends Vue {
     updateCoordinates(event: MouseEvent) {
         RenderService.onMouseMove(event);
     }
+
+    click() {
+        let cursor = RenderService.cursorPosition;
+
+        var location = MapService.getCloseLocation(cursor.x, cursor.y);
+
+        if (location == null)
+            return;
+
+        if (this.from === null) {
+            this.from = location.id;
+        } else if (this.to === null) {
+            this.to = location.id;
+
+            let path = MapService.getShortestPath(this.from, this.to)
+            RenderService.setActivePath(path);
+
+            this.from = null;
+            this.to = null;
+        }
+    }
 }
 </script>
 
@@ -42,4 +67,4 @@ export default class World extends Vue {
     height:100%;
     z-index:0;
 }
-</style>
+</style> 
