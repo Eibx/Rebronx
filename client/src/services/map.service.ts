@@ -1,5 +1,5 @@
 class MapService {
-    private map = require('../../../Rebronx.Data/map.json');
+    private map = require('../../../data/map.json');
     private pathfinder: any = null;
 
     constructor() {
