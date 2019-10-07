@@ -23,9 +23,9 @@ cd rebronx
 
 Directory name | Description
 -------------- | --------------
-Rebronx.Server | The WebSocket server using .NET Core (backend)
-Rebronx.UI | Vue.js site (fronend)
-Rebronx.Data | Data shared between the frontend and backend, such as item and map information
+server | The WebSocket server using .NET Core (backend)
+client | Vue.js site (fronend)
+data | Data shared between the frontend and backend, such as item and map information
 
 
 Then create a self-signed certificate:
