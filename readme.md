@@ -17,8 +17,8 @@ In order to get things running you will need the following.
 First clone the project using Git:
 
 ```shell
-git clone https://gitlab.com/Eibx/Rebronx.git
-cd Rebronx
+git clone https://gitlab.com/eibx/rebronx.git
+cd rebronx
 ```
 
 Directory name | Description
@@ -48,8 +48,8 @@ dotnet build
 Set up of PostgreSQL
 
 ```shell
-sudo -i -u postgres psql -c "CREATE USER rebronx WITH PASSWORD 'test' CREATEDB;"
-sudo -i -u postgres psql -c "CREATE DATABASE rebronx"
+sudo -i -u postgres psql -c "CREATE USER rebronx;"
+sudo -i -u postgres psql -c "CREATE DATABASE rebronx;"
 sudo -i -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE rebronx to rebronx;"
 ```
 
@@ -57,7 +57,6 @@ Go to `Rebronx.Server/Migration` and run:
 
 ```shell
 psql -h localhost rebronx rebronx -f 000-init.sql
-# enter "test" as password
 ```
 
 Go to `Rebronx.UI` and run:
