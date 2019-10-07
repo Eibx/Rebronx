@@ -19,6 +19,8 @@ class RenderService {
     public cursorPosition = new THREE.Vector2(0, 0);
     public activePath: any[] = [];
     public activePathMesh: any;
+    public startTime: number = 0;
+    public endTime: number = 0;
 
     public setup() : Promise<HTMLCanvasElement> {
         return new Promise<HTMLCanvasElement>((resolve) => this.preloadModel().then(() => {
@@ -83,18 +85,27 @@ class RenderService {
     }
 
     public setActivePath(paths: number[]) {
-        if (this.activePathMesh !== null)
+        if (this.activePathMesh !== null) {
             this.scene.remove(this.activePathMesh);
+        }
 
-        var geometry = new THREE.Geometry();
+        this.startTime = new Date().getTime();
+        this.endTime = new Date().getTime() + 10000;
+        this.activePath = [];
+        var positions = new Float32Array(paths.length * 3);
         for (let i = 0; i < paths.length; i++) {
             const node = mapService.getNode(paths[i]);
             if (node === null)
                 continue;
 
             this.activePath.push({ x: node.x, y: -node.y });
-            geometry.vertices.push(new THREE.Vector3(node.x, 0.2, -node.y));
+            positions[i*3+0] = node.x;
+            positions[i*3+1] = 0.2;
+            positions[i*3+2] = -node.y;
         }
+
+        var geometry = new THREE.BufferGeometry();
+        geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
 
         var material = new THREE.LineBasicMaterial({ color: 0x0000ff, linewidth: 3 });
         var line = new THREE.Line(geometry, material);
@@ -118,14 +129,26 @@ class RenderService {
 
         if (this.activePath.length > 1) {
             const geometry = this.activePathMesh.geometry
-            const l = this.activePath.length-1;
+            const segmentTime = (this.endTime - this.startTime) / (this.activePath.length-1);
+
+            let currentTime = (new Date().getTime() - this.startTime);
+            if (this.startTime > this.endTime)
+                currentTime = (this.endTime - this.startTime);
+
+            let segment = Math.ceil(currentTime / segmentTime);
+            if (segment == 0) {
+                segment = 1;
+            }
+            geometry.setDrawRange(0, segment+1);
+
+            const l = segment;
             const diffX = (this.activePath[l].x - this.activePath[l-1].x)
             const diffY = (this.activePath[l].y - this.activePath[l-1].y)
-            const s = (Math.sin(new Date().getTime()/1000)+1)/2;
-
-            geometry.vertices[l].x = this.activePath[l-1].x + diffX*s;
-            geometry.vertices[l].z = this.activePath[l-1].y + diffY*s;
-            geometry.verticesNeedUpdate = true;
+            const s = (currentTime-segmentTime*(segment-1)) / segmentTime;
+            
+            geometry.attributes.position.array[l*3+0] = this.activePath[l-1].x + diffX*s;
+            geometry.attributes.position.array[l*3+2] = this.activePath[l-1].y + diffY*s;
+            geometry.attributes.position.needsUpdate = true;
         }
 
         this.renderer.render(this.scene, this.camera);
