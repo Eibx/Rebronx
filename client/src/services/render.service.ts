@@ -89,8 +89,6 @@ class RenderService {
             this.scene.remove(this.activePathMesh);
         }
 
-        this.startTime = new Date().getTime();
-        this.endTime = new Date().getTime() + 10000;
         this.activePath = [];
         var positions = new Float32Array(paths.length * 3);
         for (let i = 0; i < paths.length; i++) {
@@ -127,27 +125,16 @@ class RenderService {
             this.cones[closeNode.id].material.color.setHex(0xFFD1D5);
         }
 
-        if (this.activePath.length > 1) {
-            const geometry = this.activePathMesh.geometry
-            const segmentTime = (this.endTime - this.startTime) / (this.activePath.length-1);
-
-            let currentTime = (new Date().getTime() - this.startTime);
-            if (this.startTime > this.endTime)
-                currentTime = (this.endTime - this.startTime);
-
-            let segment = Math.ceil(currentTime / segmentTime);
-            if (segment == 0) {
-                segment = 1;
-            }
-            geometry.setDrawRange(0, segment+1);
-
-            const l = segment;
-            const diffX = (this.activePath[l].x - this.activePath[l-1].x)
-            const diffY = (this.activePath[l].y - this.activePath[l-1].y)
-            const s = (currentTime-segmentTime*(segment-1)) / segmentTime;
+        let currentStep = mapService.getActiveStep();
+        if (currentStep != null) {
+            const i = currentStep.index;
+            const diffX = (this.activePath[i].x - this.activePath[i-1].x)
+            const diffY = (this.activePath[i].y - this.activePath[i-1].y)
             
-            geometry.attributes.position.array[l*3+0] = this.activePath[l-1].x + diffX*s;
-            geometry.attributes.position.array[l*3+2] = this.activePath[l-1].y + diffY*s;
+            const geometry = this.activePathMesh.geometry
+            geometry.setDrawRange(0, i);
+            geometry.attributes.position.array[i*3+0] = this.activePath[i-1].x + diffX * currentStep.travel;
+            geometry.attributes.position.array[i*3+2] = this.activePath[i-1].y + diffY * currentStep.travel;
             geometry.attributes.position.needsUpdate = true;
         }
 

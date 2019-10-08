@@ -51,6 +51,8 @@ export default class World extends Vue {
             this.to = location.id;
 
             let path = MapService.getShortestPath(this.from, this.to)
+            
+            MapService.setActivePath(path);
             RenderService.setActivePath(path);
 
             this.from = null;
