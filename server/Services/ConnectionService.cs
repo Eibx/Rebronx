@@ -49,12 +49,15 @@ namespace Rebronx.Server.Services
 
             foreach (var message in messages)
             {
-                if (message.Type == "login") {
-                    HandleLoginMessage(message);
-                    continue;
-                } else if (message.Type == "signup") {
-                    HandleSignupMessage(message);
-                    continue;
+                switch (message.Type)
+                {
+                    case "login":
+                        HandleLoginMessage(message);
+                        continue;
+
+                    case "signup":
+                        HandleSignupMessage(message);
+                        continue;
                 }
 
                 Player player = null;
@@ -81,14 +84,15 @@ namespace Rebronx.Server.Services
         public void HandleLoginMessage(WebSocketMessage loginMessage)
         {
             LoginMessage loginData = null;
-            try {
+            try
+            {
                 loginData = Newtonsoft.Json.JsonConvert.DeserializeObject<LoginMessage>(loginMessage.Data);
             } catch { }
 
             if (loginData == null)
                 return;
 
-            Player player = null;
+            Player player;
             string token;
 
             if (!string.IsNullOrEmpty(loginData.Token))
@@ -171,6 +175,7 @@ namespace Rebronx.Server.Services
         {
             var connections = socketRepository.GetAllConnections();
             var timeouts = connections.Where(x => x.Client == null || x.IsTimedout()).ToList();
+
             foreach (var timeout in timeouts)
             {
                 Player player = null;
@@ -180,12 +185,12 @@ namespace Rebronx.Server.Services
                     player = playerRepository.GetPlayerById(playerId.Value);
                 }
 
-                Console.WriteLine($"Connection removed:{timeout.Id} - {timeout.LastMessage}");
+                Console.WriteLine($"Connection removed: {timeout.Id} - {timeout.LastMessage}");
                 socketRepository.RemoveConnection(timeout.Id);
 
                 if (player != null)
                 {
-                    lobbySender.Update(player.Position);
+                    lobbySender.Update(player.Node);
                 }
             }
         }
@@ -199,7 +204,7 @@ namespace Rebronx.Server.Services
             //Maybe just make a "JoinSender" that does all that.
 
             socketRepository.AddConnection(player.Id, connection);
-            movementRepository.SetPlayerPositon(player, player.Position);
+            movementRepository.SetPlayerPosition(player, player.Node);
 
             loginSender.Success(player, token);
             joinSender.Join(player);

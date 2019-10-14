@@ -8,8 +8,8 @@ namespace Rebronx.Server.Repositories
 {
 	public class SocketRepository : ISocketRepository
     {
-        private Dictionary<Guid, ClientConnection> sockets;
-        private BiDictionary<int, Guid> playerSocketDictionary;
+        private readonly Dictionary<Guid, ClientConnection> sockets;
+        private readonly BiDictionary<int, Guid> playerSocketDictionary;
 
         public SocketRepository()
         {
@@ -19,16 +19,14 @@ namespace Rebronx.Server.Repositories
 
         public ClientConnection GetConnection(Guid connectionId)
         {
-            ClientConnection connection = null;
-            sockets.TryGetValue(connectionId, out connection);
+            sockets.TryGetValue(connectionId, out var connection);
 
             return connection;
         }
 
         public ClientConnection GetConnection(int playerId)
         {
-            Guid connectionId = Guid.Empty;
-            playerSocketDictionary.TryGetByFirst(playerId, out connectionId);
+            playerSocketDictionary.TryGetByFirst(playerId, out var connectionId);
 
             return GetConnection(connectionId);
         }
@@ -38,13 +36,14 @@ namespace Rebronx.Server.Repositories
             return playerSocketDictionary.ContainsByFirst(playerId);
         }
 
-        public int? GetPlayerId(Guid connectionId) {
-            int playerId = 0;
-            if (playerSocketDictionary.TryGetBySecond(connectionId, out playerId)) {
+        public int? GetPlayerId(Guid connectionId)
+        {
+            if (playerSocketDictionary.TryGetBySecond(connectionId, out var playerId))
+            {
                 return playerId;
-            } else {
-                return null;
             }
+
+            return null;
         }
 
         public List<ClientConnection> GetAllConnections()
@@ -81,10 +80,10 @@ namespace Rebronx.Server.Repositories
 
         public void RemoveConnection(int playerId)
         {
-            Guid connectionId = Guid.Empty;
-
-            if (playerSocketDictionary.TryGetByFirst(playerId, out connectionId)) {
-                if (sockets.ContainsKey(connectionId)) {
+            if (playerSocketDictionary.TryGetByFirst(playerId, out var connectionId))
+            {
+                if (sockets.ContainsKey(connectionId))
+                {
                     sockets[connectionId].Client.Close();
                     sockets.Remove(connectionId);
                 }

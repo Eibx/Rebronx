@@ -1,47 +1,47 @@
 {
-	"data": [
-		{
-			"id": 1,
-			"name": "Golden mouse",
-			"image": null,
-			"type": "valuable",
-			"properties": {
-			}
-		},
-		{
-			"id": 2,
-			"name": "Baked beans",
-			"image": null,
-			"type": "consumable",
-			"properties": {
-				"health": 25
-			}
-		},
-		{
-			"id": 3,
-			"name": "Iron pipe",
-			"image": null,
-			"type": "weapon",
-			"properties": {
-				"damage": 5
-			}
-		},
-		{
-			"id": 4,
-			"name": "Knife",
-			"image": null,
-			"type": "weapon",
-			"properties": {
-				"damage": 10
-			}
-		},
-		{
-			"id": 5,
-			"name": "Helmet",
-			"image": null,
-			"type": "headarmour",
-			"properties": {
-			}
-		}
-	]
+    "data": [
+        {
+            "id": 1,
+            "name": "Golden mouse",
+            "image": null,
+            "type": "valuable",
+            "properties": {
+            }
+        },
+        {
+            "id": 2,
+            "name": "Baked beans",
+            "image": null,
+            "type": "consumable",
+            "properties": {
+                "health": 25
+            }
+        },
+        {
+            "id": 3,
+            "name": "Iron pipe",
+            "image": null,
+            "type": "weapon",
+            "properties": {
+                "damage": 5
+            }
+        },
+        {
+            "id": 4,
+            "name": "Knife",
+            "image": null,
+            "type": "weapon",
+            "properties": {
+                "damage": 10
+            }
+        },
+        {
+            "id": 5,
+            "name": "Helmet",
+            "image": null,
+            "type": "headarmour",
+            "properties": {
+            }
+        }
+    ]
 }

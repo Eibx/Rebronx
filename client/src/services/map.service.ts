@@ -19,8 +19,8 @@ class MapService {
             graph.addNode(node.id, { x: node.x, y: node.y });
 
             for (let n = 0; n < node.connections.length; n++) {
-                const connection = node.connections[n];
-                graph.addLink(node.id, connection);
+                const connectionId = node.connections[n].id;
+                graph.addLink(node.id, connectionId);
             }
         }
 
@@ -99,6 +99,7 @@ class MapService {
         this.endTravelTime = new Date().getTime() + 10000;
 
         this.activePath = [];
+        this.totalCost = 0;
         
         this.activePath.push({ id: paths[0], cost: 0 });
 
@@ -111,10 +112,8 @@ class MapService {
             this.activePath.push(connection);
         }
 
-        this.totalCost = 0;
         for (let i = 1; i < this.activePath.length; i++) {
-            const element = this.activePath[i];
-            this.totalCost += element.cost;
+            this.totalCost += this.activePath[i].cost;
         }
     }
 
@@ -125,31 +124,34 @@ class MapService {
         const totalTravelTime = this.endTravelTime - this.startTravelTime;
         const currentTravelTime = new Date().getTime() - this.startTravelTime;
 
+        if (currentTravelTime > totalTravelTime)
+            return null;
+
         const percentageTime = currentTravelTime / totalTravelTime;
         const percentageCost = this.totalCost * percentageTime;
 
         let currentCost = 0;
+        let previousCost = 0;
         let index = 0;
         let percentage = 0;
-        for (let i = 0; i < this.activePath.length; i++) {
+
+        for (let i = 1; i < this.activePath.length; i++) {
             const path = this.activePath[i];
 
             index = i;
+
+            previousCost = currentCost;
             currentCost += path.cost;
 
-            if (currentCost < percentageCost)
+            if (currentCost < percentageCost) {
                 continue;
+            }
 
-            percentage = (percentageCost - (currentCost - path.cost)) / currentCost;
+            percentage = (percentageCost - previousCost) / (currentCost - previousCost);
             break;
         }
 
-        if (index == 0)
-            return null;
-
-        return { 
-            from: this.activePath[index-1].id,
-            to: this.activePath[index],
+        return {
             travel: percentage,
             index: index
         }

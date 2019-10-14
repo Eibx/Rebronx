@@ -17,9 +17,9 @@ namespace Rebronx.Server.Systems.Chat.Senders
             var chatMessage = new SendChatMessage();
             chatMessage.Message = $"{player.Name}: {message}";
 
-            var position = player?.Position;
+            var position = player?.Node;
             if (position != null)
-                messageService.SendPosition(player.Position, "lobby", "chat", chatMessage);
+                messageService.SendPosition(player.Node, "lobby", "chat", chatMessage);
         }
     }
 

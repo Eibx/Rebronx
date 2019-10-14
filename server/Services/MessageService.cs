@@ -58,7 +58,7 @@ namespace Rebronx.Server.Services
                 webSocketCore.Send(connection.Stream, json);
         }
 
-        public void SendPosition<T>(Position position, string component, string type, T data)
+        public void SendPosition<T>(int node, string component, string type, T data)
         {
             string json = string.Empty;
 
@@ -71,7 +71,7 @@ namespace Rebronx.Server.Services
             catch {}
 
 
-            foreach(var player in positionRepository.GetPlayersByPosition(position))
+            foreach(var player in positionRepository.GetPlayersByPosition(node))
             {
                 var connection = socketRepository.GetConnection(player.Id);
 

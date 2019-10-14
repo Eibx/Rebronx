@@ -47,12 +47,12 @@ namespace Rebronx.Server.Systems.Movement
             {
                 if (item.Value.TravelTime <= DateTimeOffset.Now.ToUnixTimeMilliseconds())
                 {
-                    movementRepository.SetPlayerPositon(item.Value.Player, item.Value.Position);
-                    movementSender.SetPosition(item.Value.Player, item.Value.Position);
+                    movementRepository.SetPlayerPosition(item.Value.Player, item.Value.Node);
+                    movementSender.SetPosition(item.Value.Player, item.Value.Node);
                     movements.Remove(item.Key);
 
-                    lobbySender.Update(item.Value.Player.Position);
-                    lobbySender.Update(item.Value.Position);
+                    lobbySender.Update(item.Value.Player.Node);
+                    lobbySender.Update(item.Value.Node);
                 }
             }
         }
@@ -65,41 +65,52 @@ namespace Rebronx.Server.Systems.Movement
             if (moveMessage == null)
                 return;
 
-            var currentNode = mapService.GetNode(message.Player.Position.X);
-            var nextNode = mapService.GetNode(moveMessage.Position.X);
-
-            if (currentNode == null || nextNode == null)
+            if (moveMessage.Nodes.Count < 2)
                 return;
 
-            if (!currentNode.Connections.Contains(nextNode.Id))
+            var playerNode = message.Player.Node;
+
+            if (playerNode != moveMessage.Nodes.First())
                 return;
 
-            //TODO: make cleaner
-            var distanceX = Math.Pow(Math.Abs(nextNode.X-currentNode.X), 2);
-            var distanceY = Math.Pow(Math.Abs(nextNode.Y-currentNode.Y), 2);
-            var distance = Math.Sqrt(distanceX + distanceY);
+            float totalCost = 0.0f;
+            for (int i = 1; i < moveMessage.Nodes.Count; i++)
+            {
+                var previousNode = mapService.GetNode(moveMessage.Nodes[i-1]);
+                var currentNode = mapService.GetNode(moveMessage.Nodes[i]);
 
-            long travelTime = (long)Math.Round(distance * 5d);
+                if (previousNode == null || currentNode == null)
+                    return;
+
+                var connection = previousNode.Connections.FirstOrDefault(x => x.Id == currentNode.Id);
+                if (connection == null)
+                    return;
+
+                totalCost += connection.Cost;
+            }
+
+            //TODO: Look at this.
+            long travelTimeInMs = (long)totalCost * 1000;
 
             movements[message.Player.Id] = new MovementDistination() {
-                Position = moveMessage.Position,
-                TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTime,
+                Node = moveMessage.Nodes.Last(),
+                TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTimeInMs,
                 Player = player
             };
 
             // Start move and actual move
-            movementSender.StartMove(message.Player, moveMessage.Position, travelTime);
+            movementSender.StartMove(message.Player, travelTimeInMs);
         }
     }
 
     public class InputMoveMessage
     {
-        public Position Position { get; set; }
+        public List<int> Nodes { get; set; }
     }
 
     public class MovementDistination
     {
-        public Position Position { get; set; }
+        public int Node { get; set; }
         public long TravelTime { get; set; }
         public Player Player { get; set; }
     }

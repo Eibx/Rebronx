@@ -17,8 +17,7 @@ public class WebSocketCore : IWebSocketCore
     private readonly ISocketRepository socketRepository;
     private const int TEXT_FRAME = 129;
     private const int BINARY_FRAME = 64;
-    List<PendingClient> connectingSockets;
-    List<WebSocketMessage> pendingMessages;
+    List<ConnectingClient> connectingClients;
     TcpListener server;
     X509Certificate serverCertificate;
 
@@ -26,14 +25,13 @@ public class WebSocketCore : IWebSocketCore
     {
         this.socketRepository = socketRepository;
 
-        serverCertificate = new X509Certificate2("../rebronx.p12", "", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+        serverCertificate = new X509Certificate2("../rebronx.p12", "1", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
 
         server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
         server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
         server.Start();
 
-        pendingMessages = new List<WebSocketMessage>();
-        connectingSockets = new List<PendingClient>();
+        connectingClients = new List<ConnectingClient>();
     }
 
     public void GetNewConnections()
@@ -44,12 +42,12 @@ public class WebSocketCore : IWebSocketCore
 
             var client = server.AcceptTcpClient();
 
-            SslStream sslStream = new SslStream(client.GetStream(), false);
-            sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
+            SslStream sslStream = new SslStream(client.GetStream(), true);
+            sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls13, true);
 
-            connectingSockets.Add(new PendingClient()
+            connectingClients.Add(new ConnectingClient()
             {
-                Client = client,
+                TcpClient = client,
                 Stream = sslStream,
                 Connected = DateTime.Now
             });
@@ -121,7 +119,7 @@ public class WebSocketCore : IWebSocketCore
                 var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
                 for (int j = 0; j < payload.Length; j++)
                 {
-                    payload[j] = (byte)((int)payload[j] ^ (int)mask[j % 4]);
+                    payload[j] = (byte)(payload[j] ^ mask[j % 4]);
                 }
 
                 var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
@@ -144,7 +142,6 @@ public class WebSocketCore : IWebSocketCore
                 {
                     wsMessage.Connection = s;
                     output.Add(wsMessage);
-
                 }
             }
         }
@@ -191,7 +188,7 @@ public class WebSocketCore : IWebSocketCore
         {
             stream.Write(bytes.ToArray());
         }
-        catch (System.Net.Sockets.SocketException e)
+        catch (SocketException e)
         {
             // Broken pipe exception can happen here
             Console.WriteLine(e.ToString());
@@ -217,15 +214,15 @@ public class WebSocketCore : IWebSocketCore
 
     private void HandleHttpConnection()
     {
-        for (int i = 0; i < connectingSockets.Count; i++)
+        for (int i = 0; i < connectingClients.Count; i++)
         {
-            var connection = connectingSockets[i];
+            var connection = connectingClients[i];
 
             string httpRequest = GetHttpRequest(connection);
 
-            if (connection.IsTimeout() || !connection.Client.Connected || httpRequest == null)
+            if (connection.IsTimeout() || !connection.TcpClient.Connected || httpRequest == null)
             {
-                connectingSockets.RemoveAt(i);
+                connectingClients.RemoveAt(i);
                 i--;
                 continue;
             }
@@ -238,32 +235,32 @@ public class WebSocketCore : IWebSocketCore
 
                 connection.Stream.Write(responseBytes, 0, responseBytes.Length);
 
-                var ClientConnection = new ClientConnection()
+                var clientConnection = new ClientConnection()
                 {
                     Id = Guid.NewGuid(),
-                    Client = connection.Client,
+                    Client = connection.TcpClient,
                     Stream = connection.Stream,
                     LastMessage = DateTime.Now
                 };
 
-                socketRepository.AddUnauthorizedConnection(ClientConnection);
+                socketRepository.AddUnauthorizedConnection(clientConnection);
             }
 
-            if (i <= connectingSockets.Count - 1)
+            if (i <= connectingClients.Count - 1)
             {
-                connectingSockets.RemoveAt(i);
+                connectingClients.RemoveAt(i);
                 i--;
             }
         }
     }
 
-    private string GetHttpRequest(PendingClient client)
+    private string GetHttpRequest(ConnectingClient connectingClient)
     {
         string output = string.Empty;
 
-        while (client.Client.Client.Poll(1000, SelectMode.SelectRead))
+        while (connectingClient.TcpClient.Client.Poll(1000, SelectMode.SelectRead))
         {
-            if (!client.Client.Connected)
+            if (!connectingClient.TcpClient.Connected)
                 return null;
 
             byte[] buffer = new byte[1024];
@@ -271,7 +268,7 @@ public class WebSocketCore : IWebSocketCore
             int received = 0;
             try
             {
-                received = client.Stream.Read(buffer, 0, buffer.Length);
+                received = connectingClient.Stream.Read(buffer, 0, buffer.Length);
             }
             catch (System.IO.IOException) {}
 
@@ -287,15 +284,15 @@ public class WebSocketCore : IWebSocketCore
 
     private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
     {
-        var wskey = headers["Sec-WebSocket-Key"];
+        var webSocketKey = headers["Sec-WebSocket-Key"];
 
-        var keyhash = Hash(wskey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-        var wskeyResult = Convert.ToBase64String(keyhash);
+        var keyHash = Hash(webSocketKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+        var wsKeyResult = Convert.ToBase64String(keyHash);
 
         var response = "HTTP/1.1 101 Switching Protocols\r\n" +
             "Upgrade: websocket\r\n" +
             "Connection: Upgrade\r\n" +
-            "Sec-WebSocket-Accept: " + wskeyResult + "\r\n\r\n";
+            "Sec-WebSocket-Accept: " + wsKeyResult + "\r\n\r\n";
         var responseBytes = Encoding.ASCII.GetBytes(response);
         return responseBytes;
     }
@@ -323,9 +320,9 @@ public class WebSocketCore : IWebSocketCore
             int split = line.IndexOf(":");
             if (split > -1)
             {
-                string propertykey = line.Substring(0, split);
-                string propertyValue = line.Substring(split + 1);
-                headers.Add(propertykey, propertyValue.Trim());
+                var propertyKey = line.Substring(0, split);
+                var propertyValue = line.Substring(split + 1);
+                headers.Add(propertyKey, propertyValue.Trim());
             }
         }
 
@@ -346,9 +343,9 @@ public class WebSocketCore : IWebSocketCore
     }
 }
 
-public class PendingClient
+public class ConnectingClient
 {
-    public TcpClient Client { get; set; }
+    public TcpClient TcpClient { get; set; }
 
     public SslStream Stream { get; set; }
     public DateTime Connected { get; set; }

@@ -38,6 +38,6 @@ namespace Rebronx.Server.Systems.Chat
     }
     public class InputChatMessage
     {
-        public string Message { get; set; }
+        public string Message { get; set; } = "";
     }
 }

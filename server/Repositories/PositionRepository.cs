@@ -8,37 +8,31 @@ namespace Rebronx.Server.Repositories
 {
     public class PositionRepository : IPositionRepository
     {
-        private Dictionary<string, List<int>> positions;
-
         private readonly IDatabaseService databaseService;
         private readonly ISocketRepository socketRepository;
 
         public PositionRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
         {
-            positions = new Dictionary<string, List<int>>();
-
             this.databaseService = databaseService;
             this.socketRepository = socketRepository;
         }
 
-        public void SetPlayerPositon(Player player, Position position)
+        public void SetPlayerPosition(Player player, int node)
         {
             databaseService.ExecuteNonQuery(
-                "UPDATE players SET x = @x, y = @y WHERE id = @id",
+                "UPDATE players SET node = @node WHERE id = @id",
                 new Dictionary<string, object>() {
                     { "id", player.Id },
-                    { "x", position.X },
-                    { "y", position.Y }
+                    { "node", node }
                 });
         }
 
-        public List<Player> GetPlayersByPosition(Position position)
+        public List<Player> GetPlayersByPosition(int node)
         {
             var data = databaseService.ExecuteReader(
-                "SELECT * FROM players WHERE x = @x AND y = @y",
+                "SELECT * FROM players WHERE node = @node",
                 new Dictionary<string, object>() {
-                    { "x", position.X },
-                    { "y", position.Y }
+                    { "node", node }
                 });
 
             var output = new List<Player>();
@@ -55,7 +49,7 @@ namespace Rebronx.Server.Repositories
             return new Player() {
                 Id = record.GetInt32(record.GetOrdinal("id")),
                 Name = record.GetString(record.GetOrdinal("name")),
-                Position = new Position(record.GetInt32(record.GetOrdinal("x")), record.GetInt32(record.GetOrdinal("y"))),
+                Node = record.GetInt32(record.GetOrdinal("node")),
                 Health = record.GetInt32(record.GetOrdinal("health")),
             };
         }

@@ -17,15 +17,15 @@ namespace Rebronx.Server.Systems.Lobby.Senders
             this.messageService = messageService;
         }
 
-        public void Update(Position position)
+        public void Update(int node)
         {
-            var players = positionRepository.GetPlayersByPosition(position);
+            var players = positionRepository.GetPlayersByPosition(node);
 
             var sendLobbyMessage = new SendLobbyMessage() {
                 Players = players.Select(p => new LobbyPlayer(p)).ToList()
             };
 
-            messageService.SendPosition(position, "lobby", "lobby", sendLobbyMessage);
+            messageService.SendPosition(node, "lobby", "lobby", sendLobbyMessage);
         }
     }
 

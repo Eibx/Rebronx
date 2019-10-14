@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Rebronx.Server.Models;
-using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Systems.Map.Services
 {
@@ -12,34 +11,33 @@ namespace Rebronx.Server.Systems.Map.Services
 
         public MapService()
         {
-            var mapFile = File.ReadAllText("../Rebronx.Data/map.json");
+            var mapFile = File.ReadAllText("../data/map.json");
 
-            dynamic mapJson = JsonConvert.DeserializeObject(mapFile);
+            MapData mapData = JsonConvert.DeserializeObject<MapData>(mapFile);
 
             map = new Dictionary<int, MapNode>();
-            foreach(var node in mapJson.map)
+            foreach(var node in mapData.Nodes)
             {
-                map.Add((int)node.id, new MapNode() {
-                    Id = (int)node.id,
-                    X = (int)node.posX,
-                    Y = (int)node.posY,
-                    Connections = node.connections.ToObject<List<int>>()
-                });
+                if (node == null)
+                    continue;
+
+                map.Add(node.Id, node);
             }
         }
 
         public Dictionary<int, MapNode> GetMap()
         {
-            return this.map;
+            return map;
         }
+
         public MapNode GetNode(int node)
         {
-            if (!this.map.ContainsKey(node))
+            if (!map.ContainsKey(node))
             {
                 return null;
             }
 
-            return this.map[node];
+            return map[node];
         }
     }
 }

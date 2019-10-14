@@ -14,22 +14,21 @@ namespace Rebronx.Server.Systems.Movement.Senders
             this.lobbySender = lobbySender;
         }
 
-        public void StartMove(Player player, Position newPosition, long moveTime)
+        public void StartMove(Player player, long moveTime)
         {
             var movementMessage = new SendStartMoveMessage()
             {
-                Position = newPosition,
                 MoveTime = moveTime
             };
 
             messageService.Send(player, "player", "movement", movementMessage);
         }
 
-        public void SetPosition(Player player, Position newPosition)
+        public void SetPosition(Player player, int newNode)
         {
             var movementMessage = new SendPositionMessage()
             {
-                Position = newPosition
+                Node = newNode
             };
 
             messageService.Send(player, "player", "position", movementMessage);
@@ -39,12 +38,11 @@ namespace Rebronx.Server.Systems.Movement.Senders
 
     public class SendStartMoveMessage
     {
-        public Position Position { get; set; }
         public long MoveTime { get; set; }
     }
 
     public class SendPositionMessage
     {
-        public Position Position { get; set; }
+        public int Node { get; set; }
     }
 }

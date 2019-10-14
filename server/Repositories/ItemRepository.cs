@@ -15,7 +15,7 @@ namespace Rebronx.Server.Repositories
         {
             items = new Dictionary<int, Item>();
 
-            DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../Rebronx.Data/items.json"));
+            DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../data/items.json"));
 
             foreach (var item in output.Data)
             {
@@ -36,19 +36,21 @@ namespace Rebronx.Server.Repositories
                 return new List<EquipmentSlot>();
             }
 
-            if (item.Type == "weapon") {
-                return new List<EquipmentSlot> { EquipmentSlot.PrimaryWeapon, EquipmentSlot.SecondaryWeapon };
-            } else if (item.Type == "ammo") {
-                return new List<EquipmentSlot> { EquipmentSlot.PrimaryAmmo, EquipmentSlot.SecondaryAmmo };
-            } else if (item.Type == "headarmour") {
-                return new List<EquipmentSlot> { EquipmentSlot.HeadArmour };
-            } else if (item.Type == "bodyarmour") {
-                return new List<EquipmentSlot> { EquipmentSlot.BodyArmour };
-            } else if (item.Type == "legarmour") {
-                return new List<EquipmentSlot> { EquipmentSlot.LegArmour };
+            switch (item.Type)
+            {
+                case "weapon":
+                    return new List<EquipmentSlot> { EquipmentSlot.PrimaryWeapon, EquipmentSlot.SecondaryWeapon };
+                case "ammo":
+                    return new List<EquipmentSlot> { EquipmentSlot.PrimaryAmmo, EquipmentSlot.SecondaryAmmo };
+                case "headarmor":
+                    return new List<EquipmentSlot> { EquipmentSlot.HeadArmour };
+                case "bodyarmor":
+                    return new List<EquipmentSlot> { EquipmentSlot.BodyArmour };
+                case "legarmor":
+                    return new List<EquipmentSlot> { EquipmentSlot.LegArmour };
+                default:
+                    return new List<EquipmentSlot>();
             }
-
-            return new List<EquipmentSlot>();
         }
     }
 }
