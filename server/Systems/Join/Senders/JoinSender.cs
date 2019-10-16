@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
+using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Lobby;
-using Rebronx.Server.Services.Interfaces;
 using Rebronx.Server.Systems.Inventory.Senders;
 using Rebronx.Server.Systems.Lobby.Senders;
 

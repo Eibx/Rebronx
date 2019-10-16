@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Rebronx.Server.Enums;
-using Rebronx.Server.Repositories.Interfaces;
+using Rebronx.Server.Repositories;
 using Rebronx.Server.Systems.Inventory.Repositories;
 using Rebronx.Server.Systems.Inventory.Senders;
 

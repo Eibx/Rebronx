@@ -1,8 +1,7 @@
 using System.Linq;
 using Newtonsoft.Json;
 using Rebronx.Server.Models;
-using Rebronx.Server.Repositories.Interfaces;
-using Rebronx.Server.Services.Interfaces;
+using Rebronx.Server.Repositories;
 
 namespace Rebronx.Server.Services
 {
@@ -30,7 +29,7 @@ namespace Rebronx.Server.Services
             {
                 var settings = new JsonSerializerSettings();
                 settings.ContractResolver = new LowercaseContractResolver();
-                json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new { component, type, data }, Formatting.None, settings);
             }
             catch {}
 
@@ -48,7 +47,7 @@ namespace Rebronx.Server.Services
             {
                 var settings = new JsonSerializerSettings();
                 settings.ContractResolver = new LowercaseContractResolver();
-                json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new { component, type, data }, Formatting.None, settings);
             }
             catch {}
 
@@ -66,7 +65,7 @@ namespace Rebronx.Server.Services
             {
                 var settings = new JsonSerializerSettings();
                 settings.ContractResolver = new LowercaseContractResolver();
-                json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new { component, type, data }, Formatting.None, settings);
             }
             catch {}
 
@@ -88,7 +87,7 @@ namespace Rebronx.Server.Services
             {
                 var settings = new JsonSerializerSettings();
                 settings.ContractResolver = new LowercaseContractResolver();
-                json = Newtonsoft.Json.JsonConvert.SerializeObject(new { component = component, type = type, data = data }, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new { component, type, data }, Formatting.None, settings);
             }
             catch {}
 

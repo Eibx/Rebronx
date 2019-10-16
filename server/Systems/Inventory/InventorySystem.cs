@@ -5,7 +5,6 @@ using Rebronx.Server.Systems.Inventory;
 using Rebronx.Server.Systems.Inventory.Repositories;
 using Rebronx.Server.Systems.Inventory.Senders;
 using Rebronx.Server.Enums;
-using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Systems.Inventory.Services;
 
 namespace Rebronx.Server.Systems.Inventory

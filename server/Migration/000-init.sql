@@ -4,8 +4,7 @@ CREATE TABLE players (
     hash text NOT NULL,
     token text,
     health integer NOT NULL DEFAULT 100,
-    x integer NOT NULL DEFAULT 0,
-    y integer NOT NULL DEFAULT 0
+    node integer NOT NULL DEFAULT 0,
 );
 
 CREATE TABLE items (

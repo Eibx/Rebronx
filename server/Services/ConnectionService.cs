@@ -2,16 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Rebronx.Server.Helpers;
+using Rebronx.Server.Models;
+using Rebronx.Server.Repositories;
 using Rebronx.Server.Systems.Join;
 using Rebronx.Server.Systems.Join.Senders;
 using Rebronx.Server.Systems.Lobby;
 using Rebronx.Server.Systems.Lobby.Senders;
 using Rebronx.Server.Systems.Login;
 using Rebronx.Server.Systems.Login.Senders;
-using Rebronx.Server.Helpers;
-using Rebronx.Server.Models;
-using Rebronx.Server.Repositories.Interfaces;
-using Rebronx.Server.Services.Interfaces;
 
 namespace Rebronx.Server.Services
 {
@@ -174,7 +173,7 @@ namespace Rebronx.Server.Services
         public void HandleDeadPlayers()
         {
             var connections = socketRepository.GetAllConnections();
-            var timeouts = connections.Where(x => x.Client == null || x.IsTimedout()).ToList();
+            var timeouts = connections.Where(x => x.Client == null || x.IsTimedOut()).ToList();
 
             foreach (var timeout in timeouts)
             {
@@ -217,17 +216,17 @@ namespace Rebronx.Server.Services
             return Convert.ToBase64String(bytes);
         }
     }
-}
 
-public class LoginMessage
-{
-    public string Username { get; set; }
-    public string Password { get; set; }
-    public string Token { get; set; }
-}
+    public class LoginMessage
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Token { get; set; }
+    }
 
-public class SignupMessage
-{
-    public string Username { get; set; }
-    public string Password { get; set; }
+    public class SignupMessage
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
 }

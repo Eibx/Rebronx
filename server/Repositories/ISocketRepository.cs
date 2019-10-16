@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Rebronx.Server.Models;
 
-namespace Rebronx.Server.Repositories.Interfaces
+namespace Rebronx.Server.Repositories
 {
     public interface ISocketRepository
     {

@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rebronx.Server.Repositories.Interfaces;
-using Rebronx.Server.Services.Interfaces;
+using Rebronx.Server.Repositories;
+using Rebronx.Server.Services;
 
 namespace Rebronx.Server.Systems.Lobby.Senders
 {

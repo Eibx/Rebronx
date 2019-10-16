@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Rebronx.Server.Models;
-using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Enums;
 
 namespace Rebronx.Server.Repositories
@@ -15,12 +14,12 @@ namespace Rebronx.Server.Repositories
         {
             items = new Dictionary<int, Item>();
 
-            DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../data/items.json"));
+            //DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../data/items.json"));
 
-            foreach (var item in output.Data)
-            {
-                items.Add(item.Id, item);
-            }
+            //foreach (var item in output.Data)
+            //{
+            //    items.Add(item.Id, item);
+            //}
         }
 
         public Item GetItem(int id)

@@ -1,6 +1,4 @@
-using System;
-
-namespace Rebronx.Server.Repositories.Interfaces
+namespace Rebronx.Server.Repositories
 {
     public interface ICooldownRepository
     {

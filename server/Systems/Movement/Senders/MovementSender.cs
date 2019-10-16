@@ -1,4 +1,4 @@
-using Rebronx.Server.Services.Interfaces;
+using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Lobby.Senders;
 
 namespace Rebronx.Server.Systems.Movement.Senders

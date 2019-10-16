@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rebronx.Server.Services.Interfaces;
+using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Inventory.Repositories;
 
 namespace Rebronx.Server.Systems.Inventory.Senders

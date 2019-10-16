@@ -1,8 +1,6 @@
 using System;
 using LightInject;
 using Rebronx.Server.Services;
-using Rebronx.Server.Services.Interfaces;
-using Rebronx.Server.Repositories.Interfaces;
 using Rebronx.Server.Repositories;
 using Rebronx.Server.Systems.Chat;
 using Rebronx.Server.Systems.Map;

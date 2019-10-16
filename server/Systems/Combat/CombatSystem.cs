@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rebronx.Server.Repositories.Interfaces;
+using Rebronx.Server.Repositories;
 using Rebronx.Server.Systems.Combat.Repositories;
 using Rebronx.Server.Systems.Combat.Senders;
 

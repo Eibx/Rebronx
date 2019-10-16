@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Dapper;
 using Rebronx.Server.Models;
-using Rebronx.Server.Repositories.Interfaces;
-using Rebronx.Server.Services.Interfaces;
+using Rebronx.Server.Repositories;
+using Rebronx.Server.Services;
 
 namespace Rebronx.Server.Systems.Inventory.Repositories
 {
@@ -20,10 +21,11 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
 
         public List<InventoryItem> GetInventory(int playerId)
         {
-            var data = databaseService.ExecuteReader(
+            var connection = databaseService.GetConnection();
+            var data = connection.ExecuteReader(
                 "SELECT * FROM items WHERE player_id = @playerId",
-                new Dictionary<string, object>() {
-                    { "playerId", playerId }
+                new {
+                    playerId,
                 });
 
             var output = new List<InventoryItem>();
@@ -38,7 +40,8 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
 
         public void MoveItem(int playerId, int from, int to)
         {
-            databaseService.ExecuteNonQuery(
+            var connection = databaseService.GetConnection();
+            connection.Execute(
                 @"UPDATE items
                 SET
                     slot = @to
@@ -46,39 +49,41 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
                     player_id = @playerId AND
                     slot = @from AND
                     (SELECT COUNT(1) FROM items WHERE player_id = @playerId AND slot = @to) = 0",
-                new Dictionary<string, object>() {
-                    { "playerId", playerId },
-                    { "from", from },
-                    { "to", to }
+                new {
+                    playerId,
+                    from,
+                    to,
                 });
         }
 
         public void SwapItem(int playerId, int item1, int item2)
         {
-            databaseService.ExecuteNonQuery(
+            var connection = databaseService.GetConnection();
+            connection.Execute(
                 @"UPDATE items
                 SET
                     slot = CASE WHEN slot = @item1 THEN @item2 ELSE @item1 END
                 WHERE
                     player_id = @playerId",
-                new Dictionary<string, object>() {
-                    { "playerId", playerId },
-                    { "item1", item1 },
-                    { "item2", item2 }
+                new {
+                    playerId,
+                    item1,
+                    item2,
                 }
             );
         }
 
         public void AddItem(int playerId, int item, int count, int slot)
         {
-            databaseService.ExecuteNonQuery(
+            var connection = databaseService.GetConnection();
+            connection.Execute(
                 @"INSERT INTO items (player_id, item_id, count, slot)
                 VALUES (@playerId, @item, @count, @slot)",
-                new Dictionary<string, object>() {
-                    { "playerId", playerId },
-                    { "item", item },
-                    { "count", count },
-                    { "slot", slot }
+                new {
+                    playerId,
+                    item,
+                    count,
+                    slot,
                 });
         }
 

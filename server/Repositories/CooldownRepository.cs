@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Rebronx.Server.Repositories.Interfaces;
-using Rebronx.Server.Services.Interfaces;
+using Dapper;
+using Rebronx.Server.Services;
 
 namespace Rebronx.Server.Repositories
 {
@@ -33,22 +33,26 @@ namespace Rebronx.Server.Repositories
 
         public long? GetAbsoluteCooldown(Player player, string type)
         {
-            return databaseService.ExecuteScalar<long?>(
+            var connection = databaseService.GetConnection();
+
+            return connection.ExecuteScalar<long?>(
                 "SELECT time FROM cooldowns WHERE playerId = @playerId AND type = @type",
-                new Dictionary<string, object>() {
-                    { "playerId", player.Id },
-                    { "type", type }
+                new {
+                    playerId = player.Id,
+                    type
                 });
         }
 
         public void SetAbsoluteCooldown(Player player, string type, long unixtime)
         {
-            databaseService.ExecuteNonQuery(
+            var connection = databaseService.GetConnection();
+
+            connection.Execute(
                 "INSERT INTO cooldowns (playerId, type, time) values (@id, @type, @time) ON CONFLICT (playerId, time) DO UPDATE SET time = @time;",
-                new Dictionary<string, object>() {
-                    { "id", player.Id },
-                    { "type", type },
-                    { "time", unixtime }
+                new {
+                    id = player.Id,
+                    type = type,
+                    time = unixtime,
                 }
             );
         }

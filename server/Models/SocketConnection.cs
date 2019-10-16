@@ -10,10 +10,8 @@ namespace Rebronx.Server.Models
         public SslStream Stream { get; set; }
         public DateTime LastMessage { get; set; }
 
-        public bool IsTimedout() {
+        public bool IsTimedOut() {
             return LastMessage.AddSeconds(15) < DateTime.Now;
         }
-
-        public ClientConnection() { }
     }
 }

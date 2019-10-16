@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Models;
 
-namespace Rebronx.Server.Repositories.Interfaces
+namespace Rebronx.Server.Repositories
 {
     public interface IItemRepository
     {

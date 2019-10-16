@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net.Sockets;
+using Dapper;
 using Rebronx.Server.Helpers;
-using Rebronx.Server.Repositories.Interfaces;
-using Rebronx.Server.Services.Interfaces;
+using Rebronx.Server.Models;
+using Rebronx.Server.Services;
 
 namespace Rebronx.Server.Repositories
 {
@@ -20,97 +21,82 @@ namespace Rebronx.Server.Repositories
 
         public void CreateNewPlayer(string name, string hash, string token)
         {
-            databaseService.ExecuteNonQuery(
+            var connection = databaseService.GetConnection();
+            connection.Execute(
                 "INSERT INTO players (name, hash, token) VALUES (@name, @hash, @token)",
-                new Dictionary<string, object> () {
-                    { "name", name },
-                    { "position", 1 },
-                    { "hash", hash },
-                    { "token", token }
+                new {
+                    name,
+                    position = 1,
+                    hash,
+                    token,
                 });
         }
 
         public void RemovePlayer(int playerId)
         {
-            databaseService.ExecuteNonQuery(
+            var connection = databaseService.GetConnection();
+            connection.Execute(
                 "DELETE FROM players WHERE id = @id",
-                new Dictionary<string, object> () {
-                    { "id", playerId }
+                new {
+                    id = playerId,
                 });
         }
 
         public Player GetPlayerByName(string name)
         {
-            var data = databaseService.ExecuteReader(
+            var connection = databaseService.GetConnection();
+            var player = connection.QueryFirstOrDefault<Player>(
                 "SELECT * FROM players WHERE name = @name",
-                new Dictionary<string, object>() {
-                    { "name", name }
+                new {
+                    name,
                 });
 
-            if (!data.Read()) {
-                return null;
-            }
-
-            var output = TransformPlayer(data);
-
-            return output;
+            return player;
         }
 
         public Player GetPlayerByLogin(string name, string password)
         {
-            var data = databaseService.ExecuteReader(
+            var connection = databaseService.GetConnection();
+            var data = connection.QueryFirstOrDefault<UserAuthentication>(
                 "SELECT id, hash FROM players WHERE name = @name",
-                new Dictionary<string, object>() {
-                    { "name", name }
+                new {
+                    name
                 });
 
-            if (!data.Read()) {
+            if (data == null)
                 return null;
-            }
 
-            var playerId = data.GetInt32(0);
-            var playerHash = data.GetString(1);
+            var playerId = data.Id;
+            var playerHash = data.Hash;
 
             if (!PBKDF2.ValidatePassword(password, playerHash))
                 return null;
 
-            var output = GetPlayerById(playerId);
-
-            return output;
+            return GetPlayerById(playerId);
         }
 
         public Player GetPlayerByToken(string token)
         {
-            var data = databaseService.ExecuteReader(
-                "SELECT Id FROM players WHERE token = @token",
-                new Dictionary<string, object>() {
-                    { "token", token }
+            var connection = databaseService.GetConnection();
+            var player = connection.QueryFirstOrDefault<Player>(
+                "SELECT * FROM players WHERE token = @token",
+                new {
+                    token = token,
                 });
 
-            if (!data.Read()) {
-                return null;
-            }
-
-            var output = GetPlayerById(data.GetInt32(0));
-
-            return output;
+            return player;
         }
 
         public Player GetPlayerById(int playerId)
         {
-            var data = databaseService.ExecuteReader(
+            var connection = databaseService.GetConnection();
+            var player = connection.QueryFirstOrDefault<Player>(
                 "SELECT * FROM players WHERE id = @id",
-                new Dictionary<string, object>() {
-                    { "id", playerId }
+                new {
+                    id = playerId,
                 });
 
-            if (!data.Read()) {
-                return null;
-            }
-
-            var output = TransformPlayer(data);
-
-            return output;
+            return player;
         }
 
         private Player TransformPlayer(IDataRecord record) {

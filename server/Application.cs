@@ -1,4 +1,5 @@
 using System.Threading;
+using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Chat;
 using Rebronx.Server.Systems.Combat;
 using Rebronx.Server.Systems.Inventory;
@@ -6,7 +7,6 @@ using Rebronx.Server.Systems.Map;
 using Rebronx.Server.Systems.Movement;
 using Rebronx.Server.Systems.Store;
 using Rebronx.Server.Systems.Command;
-using Rebronx.Server.Services.Interfaces;
 
 public class Application
 {

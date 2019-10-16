@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Rebronx.Server.Models;
-using Rebronx.Server.Repositories.Interfaces;
 
 namespace Rebronx.Server.Repositories
 {
