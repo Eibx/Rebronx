@@ -7,8 +7,8 @@ import Vue from 'vue'
 import Component from 'vue-class-component';
 import RenderService from '../services/render.service'
 import MapService from '../services/map.service'
-import WorldStoreModule from "@/stores/world.store";
-import {getModule} from "vuex-module-decorators";
+
+import WorldStore from '../stores/world.store';
 
 @Component({ name: "world" })
 export default class World extends Vue {
@@ -16,10 +16,10 @@ export default class World extends Vue {
         canvasContainer: HTMLCanvasElement;
     };
 
-    worldStore: WorldStoreModule = getModule(WorldStoreModule);
-
     private from: number | null = null;
     private to: number | null = null;
+
+    public worldStore = WorldStore;
 
     created() {
         this.renderMap();
@@ -39,7 +39,6 @@ export default class World extends Vue {
     }
 
     click() {
-        console.log(this.worldStore.currentNode);
         let cursor = RenderService.cursorPosition;
 
         const location = MapService.getCloseLocation(cursor.x, cursor.y);
@@ -47,19 +46,9 @@ export default class World extends Vue {
         if (location == null)
             return;
 
-        if (this.from === null) {
-            this.from = location.id;
-        } else if (this.to === null) {
-            this.to = location.id;
+        let path = MapService.getShortestPath(this.worldStore.currentNode, location.id);
 
-            let path = MapService.getShortestPath(this.from, this.to);
-
-            MapService.setActivePath(path);
-            RenderService.setActivePath(path);
-
-            this.from = null;
-            this.to = null;
-        }
+        MapService.startTravel(path);
     }
 }
 </script>

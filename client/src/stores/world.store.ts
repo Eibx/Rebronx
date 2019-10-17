@@ -1,18 +1,11 @@
-import { VuexModule, Module, Mutation } from 'vuex-module-decorators'
-import Vuex from 'vuex'
-import Vue from "vue";
+import Vue from 'vue';
 
-Vue.use(Vuex);
+class Store {
+    public currentNode: number = 0;
 
-@Module
-class WorldStoreModule extends VuexModule {
-    currentNode: number = 0;
+
 }
 
-new Vuex.Store({
-    modules: {
-        myMod: WorldStoreModule
-    }
-});
+const WorldStore = Vue.observable(new Store());
 
-export default WorldStoreModule
+export default WorldStore;

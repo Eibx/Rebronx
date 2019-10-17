@@ -11,16 +11,16 @@ namespace Rebronx.Server.Services
     {
         private const string ConnectionString = "Host=localhost;Username=rebronx_role;Database=rebronx_database;";
 
-        private readonly NpgsqlConnection conn;
+        private readonly NpgsqlConnection _conn;
 
         public DatabaseService()
         {
-            conn = new NpgsqlConnection(ConnectionString);
+            _conn = new NpgsqlConnection(ConnectionString);
         }
 
         public NpgsqlConnection GetConnection()
         {
-            return conn;
+            return _conn;
         }
     }
 }

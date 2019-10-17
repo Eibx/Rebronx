@@ -7,16 +7,16 @@ namespace Rebronx.Server.Repositories
 {
     public class TokenRepository : ITokenRepository
     {
-        private readonly IDatabaseService databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public TokenRepository(IDatabaseService databaseService)
         {
-            this.databaseService = databaseService;
+            _databaseService = databaseService;
         }
 
         public string GetToken(Player player)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             var token = connection.ExecuteScalar<string>(
                 "SELECT token FROM players WHERE id = @id",
                 new {
@@ -28,7 +28,7 @@ namespace Rebronx.Server.Repositories
 
         public void SetPlayerToken(Player player, string token)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 "UPDATE players SET token = @token WHERE id = @id",
                 new {
@@ -39,7 +39,7 @@ namespace Rebronx.Server.Repositories
 
         public void RemovePlayerToken(Player player)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 "UPDATE players SET token = NULL WHERE id = @id",
                 new {

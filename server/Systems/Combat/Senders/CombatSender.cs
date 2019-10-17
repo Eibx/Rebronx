@@ -6,31 +6,31 @@ namespace Rebronx.Server.Systems.Combat.Senders
 {
     public class CombatSender : ICombatSender
     {
-        private IMessageService messageService;
-        private ISocketRepository socketRepository;
+        private IMessageService _messageService;
+        private ISocketRepository _socketRepository;
 
         public CombatSender(IMessageService messageService, ISocketRepository socketRepository)
         {
-            this.messageService = messageService;
-            this.socketRepository = socketRepository;
+            _messageService = messageService;
+            _socketRepository = socketRepository;
         }
 
         public void AttackerReport(Player player, int damage)
         {
-            var connection = socketRepository.GetConnection(player.Id);
+            var connection = _socketRepository.GetConnection(player.Id);
             var combatReport = new SendCombatReport() {
                 Damage = damage
             };
-            messageService.Send(connection, "combat", "attacker", combatReport);
+            _messageService.Send(connection, "combat", "attacker", combatReport);
         }
 
         public void VictimReport(Player player, int damage)
         {
-            var connection = socketRepository.GetConnection(player.Id);
+            var connection = _socketRepository.GetConnection(player.Id);
             var combatReport = new SendCombatReport() {
                 Damage = damage
             };
-            messageService.Send(connection, "combat", "victim", combatReport);
+            _messageService.Send(connection, "combat", "victim", combatReport);
         }
     }
 

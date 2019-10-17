@@ -8,24 +8,24 @@ namespace Rebronx.Server.Systems.Lobby.Senders
 {
     public class LobbySender : ILobbySender
     {
-        private readonly IPositionRepository positionRepository;
-        private readonly IMessageService messageService;
+        private readonly IPositionRepository _positionRepository;
+        private readonly IMessageService _messageService;
 
         public LobbySender(IPositionRepository positionRepository, IMessageService messageService)
         {
-            this.positionRepository = positionRepository;
-            this.messageService = messageService;
+            _positionRepository = positionRepository;
+            _messageService = messageService;
         }
 
         public void Update(int node)
         {
-            var players = positionRepository.GetPlayersByPosition(node);
+            var players = _positionRepository.GetPlayersByPosition(node);
 
             var sendLobbyMessage = new SendLobbyMessage() {
                 Players = players.Select(p => new LobbyPlayer(p)).ToList()
             };
 
-            messageService.SendPosition(node, "lobby", "lobby", sendLobbyMessage);
+            _messageService.SendPosition(node, "lobby", "lobby", sendLobbyMessage);
         }
     }
 

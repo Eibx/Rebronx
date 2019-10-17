@@ -1,25 +1,33 @@
 import DataService from './data.service'
+import MapService from './map.service'
+import RenderService from './render.service'
+import PlayerStore from '../stores/player.store'
+import WorldStore from '../stores/world.store'
 
 class PlayerService {
-    public player: any = {
-        name: "0",
-        credits:0,
-        position: { location: 0, dimention: 0 }
-    };
-
-    constructor() {
-        DataService.subscribe('join', (type: any, data: any) => {
-            this.player.name = data.name;
-            this.player.credits = data.credits;
-            this.player.position = data.position;
+    public setup() {
+        DataService.subscribe('join', (type: string, data: any) => {
+            PlayerStore.name = data.name;
+            PlayerStore.bits = data.credits;
+            WorldStore.currentNode = data.node;
         });
 
-        DataService.subscribe('player', (type: any, data: any) => {
+        DataService.subscribe('player', (type: string, data: any) => {
             if (type === 'position') {
-                this.player.position = data.position;
+                WorldStore.currentNode = data.node;
+            }
+
+            if (type === 'movement') {
+                MapService.setActivePath(data.nodes, data.movetime);
+                RenderService.setActivePath(data.nodes);
             }
         });
     }
+
+    constructor() {
+    }
 }
 
-export default new PlayerService();
+const playerStores = new PlayerService();
+
+export default playerStores;

@@ -6,10 +6,10 @@ namespace Rebronx.Server.Systems.Chat.Senders
 {
     public class ChatSender : IChatSender
     {
-        private readonly IMessageService messageService;
+        private readonly IMessageService _messageService;
         public ChatSender(IMessageService messageService)
         {
-            this.messageService = messageService;
+            _messageService = messageService;
         }
 
         public void Say(Player player, string message)
@@ -17,7 +17,7 @@ namespace Rebronx.Server.Systems.Chat.Senders
             var chatMessage = new SendChatMessage();
             chatMessage.Message = $"{player.Name}: {message}";
 
-            messageService.SendPosition(player.Node, "lobby", "chat", chatMessage);
+            _messageService.SendPosition(player.Node, "lobby", "chat", chatMessage);
         }
     }
 

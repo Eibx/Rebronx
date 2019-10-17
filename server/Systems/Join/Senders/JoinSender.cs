@@ -9,15 +9,15 @@ namespace Rebronx.Server.Systems.Join.Senders
 {
     public class JoinSender : IJoinSender
     {
-        private readonly IMessageService messageService;
-        private readonly ILobbySender lobbySender;
-        private readonly IInventorySender inventorySender;
+        private readonly IMessageService _messageService;
+        private readonly ILobbySender _lobbySender;
+        private readonly IInventorySender _inventorySender;
 
         public JoinSender(IMessageService messageService, ILobbySender lobbySender, IInventorySender inventorySender)
         {
-            this.messageService = messageService;
-            this.lobbySender = lobbySender;
-            this.inventorySender = inventorySender;
+            _messageService = messageService;
+            _lobbySender = lobbySender;
+            _inventorySender = inventorySender;
         }
 
         public void Join(Player player)
@@ -33,9 +33,9 @@ namespace Rebronx.Server.Systems.Join.Senders
                 //TODO: Send credits - CreditRepository?
                 joinMessage.Credits = 0;
 
-                messageService.Send(player, "join", "join", joinMessage);
-                lobbySender.Update(position);
-                inventorySender.SendInventory(player);
+                _messageService.Send(player, "join", "join", joinMessage);
+                _lobbySender.Update(position);
+                _inventorySender.SendInventory(player);
             }
 
         }

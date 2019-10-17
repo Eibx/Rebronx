@@ -10,18 +10,18 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
 {
     public class InventoryRepository : IInventoryRepository
     {
-        private readonly IDatabaseService databaseService;
-        private readonly IItemRepository itemRepository;
+        private readonly IDatabaseService _databaseService;
+        private readonly IItemRepository _itemRepository;
 
         public InventoryRepository(IDatabaseService databaseService, IItemRepository itemRepository)
         {
-            this.databaseService = databaseService;
-            this.itemRepository = itemRepository;
+            _databaseService = databaseService;
+            _itemRepository = itemRepository;
         }
 
         public List<InventoryItem> GetInventory(int playerId)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             var data = connection.ExecuteReader(
                 "SELECT * FROM items WHERE player_id = @playerId",
                 new {
@@ -40,7 +40,7 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
 
         public void MoveItem(int playerId, int from, int to)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 @"UPDATE items
                 SET
@@ -58,7 +58,7 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
 
         public void SwapItem(int playerId, int item1, int item2)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 @"UPDATE items
                 SET
@@ -75,7 +75,7 @@ namespace Rebronx.Server.Systems.Inventory.Repositories
 
         public void AddItem(int playerId, int item, int count, int slot)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 @"INSERT INTO items (player_id, item_id, count, slot)
                 VALUES (@playerId, @item, @count, @slot)",

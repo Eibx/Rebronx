@@ -10,8 +10,8 @@ using System.Collections.Generic;
 /// <typeparam name="TSecond">The type of the "value"</typeparam>
 public class BiDictionary<TFirst, TSecond>
 {
-    IDictionary<TFirst, TSecond> firstToSecond = new Dictionary<TFirst, TSecond>();
-    IDictionary<TSecond, TFirst> secondToFirst = new Dictionary<TSecond, TFirst>();
+    IDictionary<TFirst, TSecond> _firstToSecond = new Dictionary<TFirst, TSecond>();
+    IDictionary<TSecond, TFirst> _secondToFirst = new Dictionary<TSecond, TFirst>();
 
     #region Exception throwing methods
 
@@ -23,11 +23,11 @@ public class BiDictionary<TFirst, TSecond>
     /// <param name="second"></param>
     public void Add(TFirst first, TSecond second)
     {
-        if (firstToSecond.ContainsKey(first) || secondToFirst.ContainsKey(second))
+        if (_firstToSecond.ContainsKey(first) || _secondToFirst.ContainsKey(second))
             throw new ArgumentException("Duplicate first or second");
 
-        firstToSecond.Add(first, second);
-        secondToFirst.Add(second, first);
+        _firstToSecond.Add(first, second);
+        _secondToFirst.Add(second, first);
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public class BiDictionary<TFirst, TSecond>
     public TSecond GetByFirst(TFirst first)
     {
         TSecond second;
-        if (!firstToSecond.TryGetValue(first, out second))
+        if (!_firstToSecond.TryGetValue(first, out second))
             throw new ArgumentException("first");
 
         return second;
@@ -54,7 +54,7 @@ public class BiDictionary<TFirst, TSecond>
     public TFirst GetBySecond(TSecond second)
     {
         TFirst first;
-        if (!secondToFirst.TryGetValue(second, out first))
+        if (!_secondToFirst.TryGetValue(second, out first))
             throw new ArgumentException("second");
 
         return first;
@@ -69,11 +69,11 @@ public class BiDictionary<TFirst, TSecond>
     public void RemoveByFirst(TFirst first)
     {
         TSecond second;
-        if (!firstToSecond.TryGetValue(first, out second))
+        if (!_firstToSecond.TryGetValue(first, out second))
             throw new ArgumentException("first");
 
-        firstToSecond.Remove(first);
-        secondToFirst.Remove(second);
+        _firstToSecond.Remove(first);
+        _secondToFirst.Remove(second);
     }
 
     /// <summary>
@@ -84,11 +84,11 @@ public class BiDictionary<TFirst, TSecond>
     public void RemoveBySecond(TSecond second)
     {
         TFirst first;
-        if (!secondToFirst.TryGetValue(second, out first))
+        if (!_secondToFirst.TryGetValue(second, out first))
             throw new ArgumentException("second");
 
-        secondToFirst.Remove(second);
-        firstToSecond.Remove(first);
+        _secondToFirst.Remove(second);
+        _firstToSecond.Remove(first);
     }
 
     #endregion
@@ -104,11 +104,11 @@ public class BiDictionary<TFirst, TSecond>
     /// <returns>true if successfully added, false if either element are already in the dictionary</returns>
     public Boolean TryAdd(TFirst first, TSecond second)
     {
-        if (firstToSecond.ContainsKey(first) || secondToFirst.ContainsKey(second))
+        if (_firstToSecond.ContainsKey(first) || _secondToFirst.ContainsKey(second))
             return false;
 
-        firstToSecond.Add(first, second);
-        secondToFirst.Add(second, first);
+        _firstToSecond.Add(first, second);
+        _secondToFirst.Add(second, first);
         return true;
     }
 
@@ -122,7 +122,7 @@ public class BiDictionary<TFirst, TSecond>
     /// <returns>true if first is in the dictionary, false otherwise</returns>
     public Boolean TryGetByFirst(TFirst first, out TSecond second)
     {
-        return firstToSecond.TryGetValue(first, out second);
+        return _firstToSecond.TryGetValue(first, out second);
     }
 
     /// <summary>
@@ -134,7 +134,7 @@ public class BiDictionary<TFirst, TSecond>
     /// <returns>true if second is in the dictionary, false otherwise</returns>
     public Boolean TryGetBySecond(TSecond second, out TFirst first)
     {
-        return secondToFirst.TryGetValue(second, out first);
+        return _secondToFirst.TryGetValue(second, out first);
     }
 
     /// <summary>
@@ -145,11 +145,11 @@ public class BiDictionary<TFirst, TSecond>
     public Boolean TryRemoveByFirst(TFirst first)
     {
         TSecond second;
-        if (!firstToSecond.TryGetValue(first, out second))
+        if (!_firstToSecond.TryGetValue(first, out second))
             return false;
 
-        firstToSecond.Remove(first);
-        secondToFirst.Remove(second);
+        _firstToSecond.Remove(first);
+        _secondToFirst.Remove(second);
         return true;
     }
 
@@ -161,22 +161,22 @@ public class BiDictionary<TFirst, TSecond>
     public Boolean TryRemoveBySecond(TSecond second)
     {
         TFirst first;
-        if (!secondToFirst.TryGetValue(second, out first))
+        if (!_secondToFirst.TryGetValue(second, out first))
             return false;
 
-        secondToFirst.Remove(second);
-        firstToSecond.Remove(first);
+        _secondToFirst.Remove(second);
+        _firstToSecond.Remove(first);
         return true;
     }
 
     public Boolean ContainsByFirst(TFirst first)
     {
-        return firstToSecond.ContainsKey(first);
+        return _firstToSecond.ContainsKey(first);
     }
 
     public Boolean ContainsBySecond(TSecond second)
     {
-        return secondToFirst.ContainsKey(second);
+        return _secondToFirst.ContainsKey(second);
     }
 
     #endregion
@@ -186,7 +186,7 @@ public class BiDictionary<TFirst, TSecond>
     /// </summary>
     public Int32 Count
     {
-        get { return firstToSecond.Count; }
+        get { return _firstToSecond.Count; }
     }
 
     /// <summary>
@@ -194,7 +194,7 @@ public class BiDictionary<TFirst, TSecond>
     /// </summary>
     public void Clear()
     {
-        firstToSecond.Clear();
-        secondToFirst.Clear();
+        _firstToSecond.Clear();
+        _secondToFirst.Clear();
     }
 }

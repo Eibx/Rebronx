@@ -9,11 +9,11 @@ namespace Rebronx.Server.Systems.Chat
     public class ChatSystem : System, IChatSystem
     {
         private const string Component = "chat";
-        private readonly IChatSender chatSender;
+        private readonly IChatSender _chatSender;
 
         public ChatSystem(IChatSender chatSender)
         {
-            this.chatSender = chatSender;
+            _chatSender = chatSender;
         }
 
         public void Run(IList<Message> messages)
@@ -32,7 +32,7 @@ namespace Rebronx.Server.Systems.Chat
             if (inputMessage != null && message?.Player != null)
             {
                 Console.WriteLine(message.Player.Name + ": " + inputMessage.Message);
-                chatSender.Say(message.Player, inputMessage.Message);
+                _chatSender.Say(message.Player, inputMessage.Message);
             }
         }
     }

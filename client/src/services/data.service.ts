@@ -1,5 +1,5 @@
 class DataService {
-    public subscribers: any = {};
+    public subscribers: { [key: string]: any } = {};
     public websocket: WebSocket | null;
 
     constructor() {
@@ -13,17 +13,17 @@ class DataService {
 
         console.log("received:", message.data);
 
-        var baseMessage = null
-        
+        let baseMessage = null;
+
         try {
             baseMessage = JSON.parse(message.data);
-        } catch(e) { 
+        } catch(e) {
             return;
         }
 
-        var subscriptions = this.subscribers[baseMessage.component];
+        const subscriptions = this.subscribers[baseMessage.component];
         if (subscriptions) {
-            for (var i = 0; i < subscriptions.length; i++) {
+            for (let i = 0; i < subscriptions.length; i++) {
                 subscriptions[i](baseMessage.type, baseMessage.data);
             }
         }
@@ -36,7 +36,7 @@ class DataService {
             callback({ type: 'open' });
         };
         this.websocket.onerror = (e) => {
-            callback({ type: 'error' }); 
+            callback({ type: 'error' });
         };
         this.websocket.onclose = (e) => {
             callback({ type: 'error' });
@@ -44,7 +44,7 @@ class DataService {
     }
 
     startPing() {
-        setInterval(() => { 
+        setInterval(() => {
             if (this.websocket !== null)
                 this.websocket.send("ping");
         }, 5000);
@@ -62,7 +62,7 @@ class DataService {
             var jsonData = JSON.stringify(data);
             var json = JSON.stringify({ component: component, type: type, data: jsonData });
             console.log("sent: ", json);
-            
+
             if (this.websocket !== null)
                 this.websocket.send(json);
         } catch (e) {

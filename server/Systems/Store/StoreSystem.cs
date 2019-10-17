@@ -9,13 +9,13 @@ namespace Rebronx.Server.Systems.Store
     public class StoreSystem : System, IStoreSystem
     {
         private const string Component = "store";
-        private readonly IInventoryService inventoryService;
-        private readonly IItemRepository itemRepository;
+        private readonly IInventoryService _inventoryService;
+        private readonly IItemRepository _itemRepository;
 
         public StoreSystem(IInventoryService inventoryService, IItemRepository itemRepository)
         {
-            this.inventoryService = inventoryService;
-            this.itemRepository = itemRepository;
+            _inventoryService = inventoryService;
+            _itemRepository = itemRepository;
         }
 
         public void Run(IList<Message> messages)
@@ -33,10 +33,10 @@ namespace Rebronx.Server.Systems.Store
 
             //TODO: Check if store has item
             //TODO: Get store price and deduct user
-            var item = itemRepository.GetItem(inputMessage.Item);
+            var item = _itemRepository.GetItem(inputMessage.Item);
 
             if (item != null) {
-                inventoryService.AddItem(message.Player.Id, inputMessage.Item, inputMessage.Amount);
+                _inventoryService.AddItem(message.Player.Id, inputMessage.Item, inputMessage.Amount);
             }
         }
     }

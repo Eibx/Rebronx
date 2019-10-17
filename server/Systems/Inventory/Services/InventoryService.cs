@@ -10,11 +10,11 @@ namespace Rebronx.Server.Systems.Inventory.Services
 {
     public class InventoryService : IInventoryService
     {
-        private readonly IInventoryRepository inventoryRepository;
-        private readonly IInventorySender inventorySender;
-        private readonly IItemRepository itemRepository;
+        private readonly IInventoryRepository _inventoryRepository;
+        private readonly IInventorySender _inventorySender;
+        private readonly IItemRepository _itemRepository;
 
-        private readonly IUserRepository userRepository;
+        private readonly IUserRepository _userRepository;
 
         public InventoryService(
             IInventoryRepository inventoryRepository,
@@ -22,26 +22,26 @@ namespace Rebronx.Server.Systems.Inventory.Services
             IItemRepository itemRepository,
             IUserRepository userRepository)
         {
-            this.inventoryRepository = inventoryRepository;
-            this.inventorySender = inventorySender;
-            this.itemRepository = itemRepository;
-            this.userRepository = userRepository;
+            _inventoryRepository = inventoryRepository;
+            _inventorySender = inventorySender;
+            _itemRepository = itemRepository;
+            _userRepository = userRepository;
         }
 
         public void AddItem(int playerId, int itemId, int count = 1)
         {
-            var inventory = inventoryRepository.GetInventory(playerId);
+            var inventory = _inventoryRepository.GetInventory(playerId);
             var freeSlot = GetFreeInventorySlot(inventory);
 
             if (freeSlot > -1)
             {
-                inventoryRepository.AddItem(playerId, itemId, count, freeSlot);
+                _inventoryRepository.AddItem(playerId, itemId, count, freeSlot);
             }
 
-            var player = userRepository.GetPlayerById(playerId);
+            var player = _userRepository.GetPlayerById(playerId);
 
             if (player != null)
-                inventorySender.SendInventory(player);
+                _inventorySender.SendInventory(player);
         }
 
         public void MoveItem(int playerId, int from, int? to)
@@ -50,7 +50,7 @@ namespace Rebronx.Server.Systems.Inventory.Services
                 return;
 
             int destinationSlot = -1;
-            var inventory = inventoryRepository.GetInventory(playerId);
+            var inventory = _inventoryRepository.GetInventory(playerId);
             var inventoryItem = inventory.FirstOrDefault(x => x.Slot == from);
 
             if (inventoryItem == null)
@@ -81,18 +81,18 @@ namespace Rebronx.Server.Systems.Inventory.Services
             {
                 if (IsValidSlotForItem(destinationItem.Id, from))
                 {
-                    inventoryRepository.SwapItem(playerId, destinationSlot, from);
+                    _inventoryRepository.SwapItem(playerId, destinationSlot, from);
                 }
             }
             else
             {
-                inventoryRepository.MoveItem(playerId, from, destinationSlot);
+                _inventoryRepository.MoveItem(playerId, from, destinationSlot);
             }
 
-            var player = userRepository.GetPlayerById(playerId);
+            var player = _userRepository.GetPlayerById(playerId);
 
             if (player != null)
-                inventorySender.SendInventory(player);
+                _inventorySender.SendInventory(player);
         }
 
         private bool IsValidSlot(int? slot) {
@@ -134,7 +134,7 @@ namespace Rebronx.Server.Systems.Inventory.Services
         private int GetFreeEquipmentSlot(int itemId, List<Models.InventoryItem> inventory)
         {
             var freeSlot = -1;
-            var equipmentSlots = itemRepository.GetEquipmentSlots(itemId);
+            var equipmentSlots = _itemRepository.GetEquipmentSlots(itemId);
 
             foreach (var slot in equipmentSlots)
             {
@@ -151,7 +151,7 @@ namespace Rebronx.Server.Systems.Inventory.Services
         private bool IsValidSlotForItem(int itemId, int slot)
         {
             if (slot < 100) {
-                var slots = itemRepository.GetEquipmentSlots(itemId).Select(x => (int)x);
+                var slots = _itemRepository.GetEquipmentSlots(itemId).Select(x => (int)x);
 
                 return slots.Contains(slot);
             }

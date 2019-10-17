@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Net.Sockets;
 using Dapper;
@@ -12,16 +11,16 @@ namespace Rebronx.Server.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private readonly IDatabaseService databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public UserRepository(IDatabaseService databaseService)
         {
-            this.databaseService = databaseService;
+            _databaseService = databaseService;
         }
 
         public void CreateNewPlayer(string name, string hash, string token)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 "INSERT INTO players (name, hash, token) VALUES (@name, @hash, @token)",
                 new {
@@ -34,7 +33,7 @@ namespace Rebronx.Server.Repositories
 
         public void RemovePlayer(int playerId)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             connection.Execute(
                 "DELETE FROM players WHERE id = @id",
                 new {
@@ -44,7 +43,7 @@ namespace Rebronx.Server.Repositories
 
         public Player GetPlayerByName(string name)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             var player = connection.QueryFirstOrDefault<Player>(
                 "SELECT * FROM players WHERE name = @name",
                 new {
@@ -56,7 +55,7 @@ namespace Rebronx.Server.Repositories
 
         public Player GetPlayerByLogin(string name, string password)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             var data = connection.QueryFirstOrDefault<UserAuthentication>(
                 "SELECT id, hash FROM players WHERE name = @name",
                 new {
@@ -69,15 +68,22 @@ namespace Rebronx.Server.Repositories
             var playerId = data.Id;
             var playerHash = data.Hash;
 
-            if (!PBKDF2.ValidatePassword(password, playerHash))
+            if (!Pbkdf2.ValidatePassword(password, playerHash))
                 return null;
+
+            var iterations = Pbkdf2.GetHashIterations(playerHash);
+            if (iterations != Pbkdf2.Pbkdf2Iterations)
+            {
+                var hash = Pbkdf2.HashPassword(password);
+                UpdateHash(playerId, hash);
+            }
 
             return GetPlayerById(playerId);
         }
 
         public Player GetPlayerByToken(string token)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             var player = connection.QueryFirstOrDefault<Player>(
                 "SELECT * FROM players WHERE token = @token",
                 new {
@@ -89,7 +95,7 @@ namespace Rebronx.Server.Repositories
 
         public Player GetPlayerById(int playerId)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
             var player = connection.QueryFirstOrDefault<Player>(
                 "SELECT * FROM players WHERE id = @id",
                 new {
@@ -99,13 +105,16 @@ namespace Rebronx.Server.Repositories
             return player;
         }
 
-        private Player TransformPlayer(IDataRecord record) {
-            return new Player() {
-                Id = record.GetInt32(record.GetOrdinal("id")),
-                Name = record.GetString(record.GetOrdinal("name")),
-                Node = record.GetInt32(record.GetOrdinal("node")),
-                Health = record.GetInt32(record.GetOrdinal("health")),
-            };
+        public void UpdateHash(int playerId, string hash)
+        {
+            var connection = _databaseService.GetConnection();
+            var player = connection.Execute(
+                "UPDATE players SET hash = @hash WHERE id = @id",
+                new
+                {
+                    id = playerId,
+                    hash
+                });
         }
     }
 }

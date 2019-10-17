@@ -6,11 +6,11 @@ namespace Rebronx.Server.Systems.Login.Senders
 {
     public class LoginSender : ILoginSender
     {
-        private readonly IMessageService messageService;
+        private readonly IMessageService _messageService;
 
         public LoginSender(IMessageService messageService)
         {
-            this.messageService = messageService;
+            _messageService = messageService;
         }
 
         public void Success(Player player, string token)
@@ -20,7 +20,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             loginMessage.Reason = 0;
             loginMessage.Token = token;
 
-            messageService.Send(player, "login", "login", loginMessage);
+            _messageService.Send(player, "login", "login", loginMessage);
         }
 
         public void Fail(Player player, int reason)
@@ -30,7 +30,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             loginMessage.Reason = 0;
             loginMessage.Token = null;
 
-            messageService.Send(player, "login", "login", loginMessage);
+            _messageService.Send(player, "login", "login", loginMessage);
         }
 
         public void Fail(ClientConnection connection, int reason)
@@ -40,7 +40,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             loginMessage.Reason = reason;
             loginMessage.Token = null;
 
-            messageService.Send(connection, "login", "login", loginMessage);
+            _messageService.Send(connection, "login", "login", loginMessage);
         }
 
         public void SignupSuccess(ClientConnection connection, string token)
@@ -50,7 +50,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             signupMessage.Token = token;
             signupMessage.Reason = 0;
 
-            messageService.Send(connection, "login", "signup", signupMessage);
+            _messageService.Send(connection, "login", "signup", signupMessage);
         }
 
         public void SignupFail(ClientConnection connection, int reason)
@@ -60,7 +60,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             signupMessage.Token = null;
             signupMessage.Reason = reason;
 
-            messageService.Send(connection, "login", "signup", signupMessage);
+            _messageService.Send(connection, "login", "signup", signupMessage);
         }
     }
 

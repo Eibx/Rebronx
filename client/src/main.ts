@@ -1,12 +1,14 @@
 import Vue from 'vue';
+
+import PlayerService from './services/player.service';
+
 import Chat from './components/Chat.vue';
 import Login from './components/Login.vue';
 import World from './components/World.vue';
-import Inventory from './components/Inventory.vue';
-import AreaOverview from './components/Area.vue';
-import Store from './components/Store.vue';
 
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+
+PlayerService.setup();
 
 new Vue({ el: 'chat', render: r => r(Chat) });
 new Vue({ el: 'login', render: r => r(Login) });

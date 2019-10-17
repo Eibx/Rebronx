@@ -3,11 +3,11 @@ using System.Security.Cryptography;
 
 namespace Rebronx.Server.Helpers
 {
-    public class PBKDF2
+    public class Pbkdf2
     {
         public const int SaltByteSize = 24;
-        public const int HashByteSize = 20; // to match the size of the PBKDF2-HMAC-SHA-1 hash 
-        public const int Pbkdf2Iterations = 1000;
+        public const int HashByteSize = 20; // to match the size of the PBKDF2-HMAC-SHA-1 hash
+        public const int Pbkdf2Iterations = 10000;
         public const int IterationIndex = 0;
         public const int SaltIndex = 1;
         public const int Pbkdf2Index = 2;
@@ -44,6 +44,13 @@ namespace Rebronx.Server.Helpers
                 diff |= (uint)(a[i] ^ b[i]);
             }
             return diff == 0;
+        }
+
+        public static int GetHashIterations(string hash)
+        {
+            char[] delimiter = { ':' };
+            var split = hash.Split(delimiter);
+            return Int32.Parse(split[IterationIndex]);
         }
 
         private static byte[] GetPbkdf2Bytes(string password, byte[] salt, int iterations, int outputBytes)

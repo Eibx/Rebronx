@@ -7,7 +7,7 @@ namespace Rebronx.Server.Systems.Map.Services
 {
     public class MapService : IMapService
     {
-        private Dictionary<int, MapNode> map;
+        private Dictionary<int, MapNode> _map;
 
         public MapService()
         {
@@ -15,29 +15,29 @@ namespace Rebronx.Server.Systems.Map.Services
 
             MapData mapData = JsonConvert.DeserializeObject<MapData>(mapFile);
 
-            map = new Dictionary<int, MapNode>();
+            _map = new Dictionary<int, MapNode>();
             foreach(var node in mapData.Nodes)
             {
                 if (node == null)
                     continue;
 
-                map.Add(node.Id, node);
+                _map.Add(node.Id, node);
             }
         }
 
         public Dictionary<int, MapNode> GetMap()
         {
-            return map;
+            return _map;
         }
 
         public MapNode GetNode(int node)
         {
-            if (!map.ContainsKey(node))
+            if (!_map.ContainsKey(node))
             {
                 return null;
             }
 
-            return map[node];
+            return _map[node];
         }
     }
 }

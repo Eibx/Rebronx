@@ -5,11 +5,11 @@ namespace Rebronx.Server.Repositories
 {
     public class CreditRepository : ICreditRepository
     {
-        private readonly IDatabaseService databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public CreditRepository(IDatabaseService databaseService)
         {
-            this.databaseService = databaseService;
+            _databaseService = databaseService;
         }
 
         public long GetCredits(Player player)

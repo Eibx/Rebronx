@@ -13,11 +13,11 @@ namespace Rebronx.Server.Systems.Inventory
     {
         private const string Component = "inventory";
 
-        private readonly IInventoryService inventoryService;
+        private readonly IInventoryService _inventoryService;
 
         public InventorySystem(IInventoryService inventoryService)
         {
-            this.inventoryService = inventoryService;
+            _inventoryService = inventoryService;
         }
 
         public void Run(IList<Message> messages)
@@ -45,7 +45,7 @@ namespace Rebronx.Server.Systems.Inventory
 
             if (inputMessage != null && message?.Player != null)
             {
-                inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
+                _inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
             }
         }
 
@@ -55,7 +55,7 @@ namespace Rebronx.Server.Systems.Inventory
 
             if (inputMessage != null && message?.Player != null)
             {
-                inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
+                _inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
             }
         }
 
@@ -65,7 +65,7 @@ namespace Rebronx.Server.Systems.Inventory
 
             if (inputMessage != null && message?.Player != null)
             {
-                inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
+                _inventoryService.MoveItem(message.Player.Id, inputMessage.From, inputMessage.To);
             }
         }
     }

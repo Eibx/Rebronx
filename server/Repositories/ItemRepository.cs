@@ -8,11 +8,11 @@ namespace Rebronx.Server.Repositories
 {
     public class ItemRepository : IItemRepository
     {
-        private Dictionary<int, Item> items;
+        private Dictionary<int, Item> _items;
 
         public ItemRepository()
         {
-            items = new Dictionary<int, Item>();
+            _items = new Dictionary<int, Item>();
 
             //DataResult<Item> output = JsonConvert.DeserializeObject<DataResult<Item>>(File.ReadAllText("../data/items.json"));
 
@@ -24,7 +24,7 @@ namespace Rebronx.Server.Repositories
 
         public Item GetItem(int id)
         {
-            return items.ContainsKey(id) ? items[id] : null;
+            return _items.ContainsKey(id) ? _items[id] : null;
         }
 
         public List<EquipmentSlot> GetEquipmentSlots(int itemId)

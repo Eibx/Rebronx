@@ -7,18 +7,18 @@ namespace Rebronx.Server.Repositories
 {
     public class PositionRepository : IPositionRepository
     {
-        private readonly IDatabaseService databaseService;
-        private readonly ISocketRepository socketRepository;
+        private readonly IDatabaseService _databaseService;
+        private readonly ISocketRepository _socketRepository;
 
         public PositionRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
         {
-            this.databaseService = databaseService;
-            this.socketRepository = socketRepository;
+            _databaseService = databaseService;
+            _socketRepository = socketRepository;
         }
 
         public void SetPlayerPosition(Player player, int node)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
 
             connection.Execute(
                 "UPDATE players SET node = @node WHERE id = @id",
@@ -30,7 +30,7 @@ namespace Rebronx.Server.Repositories
 
         public List<Player> GetPlayersByPosition(int node)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
 
             var players = connection.Query<Player>(
                 "SELECT * FROM players WHERE node = @node",
@@ -38,7 +38,7 @@ namespace Rebronx.Server.Repositories
                     node
                 });
 
-            return players.Where(x => socketRepository.IsPlayerOnline(x.Id)).ToList();
+            return players.Where(x => _socketRepository.IsPlayerOnline(x.Id)).ToList();
         }
     }
 }

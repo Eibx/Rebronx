@@ -7,37 +7,37 @@ namespace Rebronx.Server.Repositories
 {
 	public class SocketRepository : ISocketRepository
     {
-        private readonly Dictionary<Guid, ClientConnection> sockets;
-        private readonly BiDictionary<int, Guid> playerSocketDictionary;
+        private readonly Dictionary<Guid, ClientConnection> _sockets;
+        private readonly BiDictionary<int, Guid> _playerSocketDictionary;
 
         public SocketRepository()
         {
-            sockets = new Dictionary<Guid, ClientConnection>();
-            playerSocketDictionary = new BiDictionary<int, Guid>();
+            _sockets = new Dictionary<Guid, ClientConnection>();
+            _playerSocketDictionary = new BiDictionary<int, Guid>();
         }
 
         public ClientConnection GetConnection(Guid connectionId)
         {
-            sockets.TryGetValue(connectionId, out var connection);
+            _sockets.TryGetValue(connectionId, out var connection);
 
             return connection;
         }
 
         public ClientConnection GetConnection(int playerId)
         {
-            playerSocketDictionary.TryGetByFirst(playerId, out var connectionId);
+            _playerSocketDictionary.TryGetByFirst(playerId, out var connectionId);
 
             return GetConnection(connectionId);
         }
 
         public bool IsPlayerOnline(int playerId)
         {
-            return playerSocketDictionary.ContainsByFirst(playerId);
+            return _playerSocketDictionary.ContainsByFirst(playerId);
         }
 
         public int? GetPlayerId(Guid connectionId)
         {
-            if (playerSocketDictionary.TryGetBySecond(connectionId, out var playerId))
+            if (_playerSocketDictionary.TryGetBySecond(connectionId, out var playerId))
             {
                 return playerId;
             }
@@ -47,44 +47,44 @@ namespace Rebronx.Server.Repositories
 
         public List<ClientConnection> GetAllConnections()
         {
-            return sockets.Select(x => x.Value).ToList();
+            return _sockets.Select(x => x.Value).ToList();
         }
 
         public void AddConnection(int playerId, ClientConnection connection)
         {
-            if (playerSocketDictionary.ContainsByFirst(playerId))
+            if (_playerSocketDictionary.ContainsByFirst(playerId))
             {
-                playerSocketDictionary.RemoveByFirst(playerId);
+                _playerSocketDictionary.RemoveByFirst(playerId);
             }
 
-            playerSocketDictionary.Add(playerId, connection.Id);
+            _playerSocketDictionary.Add(playerId, connection.Id);
 
-            if (!sockets.ContainsKey(connection.Id))
-                sockets.Add(connection.Id, connection);
+            if (!_sockets.ContainsKey(connection.Id))
+                _sockets.Add(connection.Id, connection);
         }
 
         public void AddUnauthorizedConnection(ClientConnection connection)
         {
-            sockets.Add(connection.Id, connection);
+            _sockets.Add(connection.Id, connection);
         }
 
         public void RemoveConnection(Guid connectionId)
         {
-            if (sockets.ContainsKey(connectionId))
-                sockets.Remove(connectionId);
+            if (_sockets.ContainsKey(connectionId))
+                _sockets.Remove(connectionId);
 
-            if (playerSocketDictionary.ContainsBySecond(connectionId))
-                playerSocketDictionary.RemoveBySecond(connectionId);
+            if (_playerSocketDictionary.ContainsBySecond(connectionId))
+                _playerSocketDictionary.RemoveBySecond(connectionId);
         }
 
         public void RemoveConnection(int playerId)
         {
-            if (playerSocketDictionary.TryGetByFirst(playerId, out var connectionId))
+            if (_playerSocketDictionary.TryGetByFirst(playerId, out var connectionId))
             {
-                if (sockets.ContainsKey(connectionId))
+                if (_sockets.ContainsKey(connectionId))
                 {
-                    sockets[connectionId].Client.Close();
-                    sockets.Remove(connectionId);
+                    _sockets[connectionId].Client.Close();
+                    _sockets.Remove(connectionId);
                 }
             }
         }

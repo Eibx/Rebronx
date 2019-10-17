@@ -16,13 +16,13 @@ namespace Rebronx.Server.Services
 {
     public class ConnectionService : IConnectionService
     {
-        private readonly IUserRepository playerRepository;
-        private readonly ISocketRepository socketRepository;
-        private readonly ITokenRepository tokenRepository;
-        private readonly IPositionRepository movementRepository;
-        private readonly IJoinSender joinSender;
-        private readonly ILoginSender loginSender;
-        private readonly ILobbySender lobbySender;
+        private readonly IUserRepository _playerRepository;
+        private readonly ISocketRepository _socketRepository;
+        private readonly ITokenRepository _tokenRepository;
+        private readonly IPositionRepository _movementRepository;
+        private readonly IJoinSender _joinSender;
+        private readonly ILoginSender _loginSender;
+        private readonly ILobbySender _lobbySender;
 
         public ConnectionService(
             IUserRepository playerRepository,
@@ -33,13 +33,13 @@ namespace Rebronx.Server.Services
             ILoginSender loginSender,
             ILobbySender lobbySender)
         {
-            this.socketRepository = socketRepository;
-            this.playerRepository = playerRepository;
-            this.tokenRepository = tokenRepository;
-            this.movementRepository = movementRepository;
-            this.joinSender = joinSender;
-            this.loginSender = loginSender;
-            this.lobbySender = lobbySender;
+            _socketRepository = socketRepository;
+            _playerRepository = playerRepository;
+            _tokenRepository = tokenRepository;
+            _movementRepository = movementRepository;
+            _joinSender = joinSender;
+            _loginSender = loginSender;
+            _lobbySender = lobbySender;
         }
 
         public List<Message> ConvertToMessages(List<WebSocketMessage> messages)
@@ -60,10 +60,10 @@ namespace Rebronx.Server.Services
                 }
 
                 Player player = null;
-                var playerId = socketRepository.GetPlayerId(message.Connection.Id);
+                var playerId = _socketRepository.GetPlayerId(message.Connection.Id);
 
                 if (playerId != null)
-                    player = playerRepository.GetPlayerById(playerId.Value);
+                    player = _playerRepository.GetPlayerById(playerId.Value);
 
                 if (player == null)
                     return output;
@@ -96,10 +96,10 @@ namespace Rebronx.Server.Services
 
             if (!string.IsNullOrEmpty(loginData.Token))
             {
-                player = playerRepository.GetPlayerByToken(loginData.Token);
+                player = _playerRepository.GetPlayerByToken(loginData.Token);
 
                 if (player == null) {
-                    loginSender.Fail(loginMessage.Connection, 4002);
+                    _loginSender.Fail(loginMessage.Connection, 4002);
                     return;
                 }
 
@@ -107,15 +107,15 @@ namespace Rebronx.Server.Services
             }
             else
             {
-                player = playerRepository.GetPlayerByLogin(loginData.Username, loginData.Password);
+                player = _playerRepository.GetPlayerByLogin(loginData.Username, loginData.Password);
 
                 if (player == null) {
-                    loginSender.Fail(loginMessage.Connection, 4001);
+                    _loginSender.Fail(loginMessage.Connection, 4001);
                     return;
                 }
 
                 token = GenerateToken();
-                tokenRepository.SetPlayerToken(player, token);
+                _tokenRepository.SetPlayerToken(player, token);
             }
 
             SendPlayerInformation(player, loginMessage.Connection, token);
@@ -139,17 +139,17 @@ namespace Rebronx.Server.Services
             if (signupData.Username.Length <= 3)
                 reason = 1002;
 
-            if (playerRepository.GetPlayerByName(signupData.Username) != null)
+            if (_playerRepository.GetPlayerByName(signupData.Username) != null)
                 reason = 1003;
 
             if (reason > 0)
             {
-                loginSender.SignupFail(signupMessage.Connection, reason);
+                _loginSender.SignupFail(signupMessage.Connection, reason);
                 return;
             }
 
             var name = signupData.Username;
-            var hash = PBKDF2.HashPassword(signupData.Password);
+            var hash = Pbkdf2.HashPassword(signupData.Password);
             var previousToken = string.Empty;
             var token = string.Empty;
 
@@ -161,35 +161,35 @@ namespace Rebronx.Server.Services
                 if (token == previousToken)
                     throw new Exception("Same Token generated twice! Shouldn't statistically happen");
             }
-            while (playerRepository.GetPlayerByToken(token) != null);
+            while (_playerRepository.GetPlayerByToken(token) != null);
 
-            playerRepository.CreateNewPlayer(name, hash, token);
+            _playerRepository.CreateNewPlayer(name, hash, token);
 
-            var player = playerRepository.GetPlayerByToken(token);
+            var player = _playerRepository.GetPlayerByToken(token);
 
             SendPlayerInformation(player, signupMessage.Connection, token);
         }
 
         public void HandleDeadPlayers()
         {
-            var connections = socketRepository.GetAllConnections();
+            var connections = _socketRepository.GetAllConnections();
             var timeouts = connections.Where(x => x.Client == null || x.IsTimedOut()).ToList();
 
             foreach (var timeout in timeouts)
             {
                 Player player = null;
-                var playerId = socketRepository.GetPlayerId(timeout.Id);
+                var playerId = _socketRepository.GetPlayerId(timeout.Id);
                 if (playerId.HasValue)
                 {
-                    player = playerRepository.GetPlayerById(playerId.Value);
+                    player = _playerRepository.GetPlayerById(playerId.Value);
                 }
 
                 Console.WriteLine($"Connection removed: {timeout.Id} - {timeout.LastMessage}");
-                socketRepository.RemoveConnection(timeout.Id);
+                _socketRepository.RemoveConnection(timeout.Id);
 
                 if (player != null)
                 {
-                    lobbySender.Update(player.Node);
+                    _lobbySender.Update(player.Node);
                 }
             }
         }
@@ -202,11 +202,11 @@ namespace Rebronx.Server.Services
             //Send lobby information
             //Maybe just make a "JoinSender" that does all that.
 
-            socketRepository.AddConnection(player.Id, connection);
-            movementRepository.SetPlayerPosition(player, player.Node);
+            _socketRepository.AddConnection(player.Id, connection);
+            _movementRepository.SetPlayerPosition(player, player.Node);
 
-            loginSender.Success(player, token);
-            joinSender.Join(player);
+            _loginSender.Success(player, token);
+            _joinSender.Join(player);
         }
 
         private string GenerateToken() {

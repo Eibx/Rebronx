@@ -29,7 +29,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var container = new LightInject.ServiceContainer();
+        var container = new ServiceContainer();
 
         //Services
         container.RegisterSingleton<Application, Application>();

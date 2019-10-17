@@ -8,11 +8,11 @@ namespace Rebronx.Server.Systems.Map
     public class MapSystem : IMapSystem
     {
         private const string Component = "map";
-        private readonly IWebSocketCore webSocketCore;
+        private readonly IWebSocketCore _webSocketCore;
 
         public MapSystem(IWebSocketCore webSocketCore)
         {
-            this.webSocketCore = webSocketCore;
+            _webSocketCore = webSocketCore;
         }
 
         public void Run(IList<Message> messages)

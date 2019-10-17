@@ -12,13 +12,13 @@ namespace Rebronx.Server.Systems.Movement
     public class MovementSystem : System, IMovementSystem
     {
         private const string Component = "movement";
-        private readonly IMovementSender movementSender;
-        private readonly ILobbySender lobbySender;
-        private readonly IPositionRepository movementRepository;
+        private readonly IMovementSender _movementSender;
+        private readonly ILobbySender _lobbySender;
+        private readonly IPositionRepository _movementRepository;
 
-        private readonly IMapService mapService;
+        private readonly IMapService _mapService;
 
-        private readonly Dictionary<int, MovementDistination> movements;
+        private readonly Dictionary<int, MovementDistination> _movements;
 
         public MovementSystem(
             IMovementSender movementSender,
@@ -26,12 +26,12 @@ namespace Rebronx.Server.Systems.Movement
             IPositionRepository movementRepository,
             IMapService mapService)
         {
-            this.movementSender = movementSender;
-            this.lobbySender = lobbySender;
-            this.movementRepository = movementRepository;
-            this.mapService = mapService;
+            _movementSender = movementSender;
+            _lobbySender = lobbySender;
+            _movementRepository = movementRepository;
+            _mapService = mapService;
 
-            this.movements = new Dictionary<int, MovementDistination>();
+            _movements = new Dictionary<int, MovementDistination>();
         }
 
         public void Run(IList<Message> messages)
@@ -42,16 +42,16 @@ namespace Rebronx.Server.Systems.Movement
                     MessageMove(message);
             }
 
-            foreach (var item in movements.ToList())
+            foreach (var item in _movements.ToList())
             {
                 if (item.Value.TravelTime <= DateTimeOffset.Now.ToUnixTimeMilliseconds())
                 {
-                    movementRepository.SetPlayerPosition(item.Value.Player, item.Value.Node);
-                    movementSender.SetPosition(item.Value.Player, item.Value.Node);
-                    movements.Remove(item.Key);
+                    _movementRepository.SetPlayerPosition(item.Value.Player, item.Value.Node);
+                    _movementSender.SetPosition(item.Value.Player, item.Value.Node);
+                    _movements.Remove(item.Key);
 
-                    lobbySender.Update(item.Value.Player.Node);
-                    lobbySender.Update(item.Value.Node);
+                    _lobbySender.Update(item.Value.Player.Node);
+                    _lobbySender.Update(item.Value.Node);
                 }
             }
         }
@@ -75,8 +75,8 @@ namespace Rebronx.Server.Systems.Movement
             float totalCost = 0.0f;
             for (int i = 1; i < moveMessage.Nodes.Count; i++)
             {
-                var previousNode = mapService.GetNode(moveMessage.Nodes[i-1]);
-                var currentNode = mapService.GetNode(moveMessage.Nodes[i]);
+                var previousNode = _mapService.GetNode(moveMessage.Nodes[i-1]);
+                var currentNode = _mapService.GetNode(moveMessage.Nodes[i]);
 
                 if (previousNode == null || currentNode == null)
                     return;
@@ -91,14 +91,14 @@ namespace Rebronx.Server.Systems.Movement
             //TODO: Look at this.
             long travelTimeInMs = (long)totalCost * 1000;
 
-            movements[message.Player.Id] = new MovementDistination() {
+            _movements[message.Player.Id] = new MovementDistination() {
                 Node = moveMessage.Nodes.Last(),
                 TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTimeInMs,
                 Player = player
             };
 
             // Start move and actual move
-            movementSender.StartMove(message.Player, travelTimeInMs);
+            _movementSender.StartMove(message.Player, moveMessage.Nodes, travelTimeInMs);
         }
     }
 

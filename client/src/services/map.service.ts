@@ -1,3 +1,5 @@
+import DataService from './data.service'
+
 class MapService {
     private map = require('../../../data/map.json');
     private pathfinder: any = null;
@@ -12,7 +14,7 @@ class MapService {
         let path = require('ngraph.path');
         let createGraph = require('ngraph.graph');
 
-        var graph = createGraph();
+        const graph = createGraph();
 
         for (let i = 0; i < this.map.nodes.length; i++) {
             const node = this.map.nodes[i];
@@ -94,13 +96,15 @@ class MapService {
         return output.reverse();
     }
 
-    public setActivePath(paths: number[]) {
+    public setActivePath(paths: number[], moveTime: number) {
         this.startTravelTime = new Date().getTime();
-        this.endTravelTime = new Date().getTime() + 10000;
+        this.endTravelTime = this.startTravelTime + moveTime;
+
+        console.log("end travel time", this.endTravelTime, moveTime);
 
         this.activePath = [];
         this.totalCost = 0;
-        
+
         this.activePath.push({ id: paths[0], cost: 0 });
 
         for (let i = 1; i < paths.length; i++) {
@@ -155,6 +159,10 @@ class MapService {
             travel: percentage,
             index: index
         }
+    }
+
+    public startTravel(path: number[]): void {
+        DataService.send("movement", "move", { nodes: path });
     }
 }
 

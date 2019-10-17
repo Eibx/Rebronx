@@ -16,38 +16,38 @@ namespace Rebronx.Server.Services
 {
     public class WebSocketCore : IWebSocketCore
     {
-        private readonly ISocketRepository socketRepository;
-        private const int TEXT_FRAME = 129;
-        private const int BINARY_FRAME = 64;
-        List<ConnectingClient> connectingClients;
-        TcpListener server;
-        X509Certificate serverCertificate;
+        private readonly ISocketRepository _socketRepository;
+        private const int TextFrame = 129;
+        private const int BinaryFrame = 64;
+        List<ConnectingClient> _connectingClients;
+        TcpListener _server;
+        X509Certificate _serverCertificate;
 
         public WebSocketCore(ISocketRepository socketRepository)
         {
-            this.socketRepository = socketRepository;
+            _socketRepository = socketRepository;
 
-            serverCertificate = new X509Certificate2("../rebronx.p12", "1", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+            _serverCertificate = new X509Certificate2("../rebronx.p12", "1", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
 
-            server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
-            server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
-            server.Start();
+            _server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
+            _server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
+            _server.Start();
 
-            connectingClients = new List<ConnectingClient>();
+            _connectingClients = new List<ConnectingClient>();
         }
 
         public void GetNewConnections()
         {
-            while (server.Pending())
+            while (_server.Pending())
             {
                 Console.WriteLine("accepting connection?");
 
-                var client = server.AcceptTcpClient();
+                var client = _server.AcceptTcpClient();
 
                 SslStream sslStream = new SslStream(client.GetStream(), true);
-                sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls13, true);
+                sslStream.AuthenticateAsServer(_serverCertificate, false, SslProtocols.Tls13, true);
 
-                connectingClients.Add(new ConnectingClient()
+                _connectingClients.Add(new ConnectingClient()
                 {
                     TcpClient = client,
                     Stream = sslStream,
@@ -62,7 +62,7 @@ namespace Rebronx.Server.Services
         {
             List<WebSocketMessage> output = new List<WebSocketMessage>();
 
-            var sockets = socketRepository.GetAllConnections();
+            var sockets = _socketRepository.GetAllConnections();
 
             for (int i = 0; i < sockets.Count; i++)
             {
@@ -93,7 +93,7 @@ namespace Rebronx.Server.Services
                 if (!data.Any())
                     continue;
 
-                if (data[0] == TEXT_FRAME)
+                if (data[0] == TextFrame)
                 {
                     ulong size = 0;
                     int payloadIndex = 0;
@@ -216,15 +216,15 @@ namespace Rebronx.Server.Services
 
         private void HandleHttpConnection()
         {
-            for (int i = 0; i < connectingClients.Count; i++)
+            for (int i = 0; i < _connectingClients.Count; i++)
             {
-                var connection = connectingClients[i];
+                var connection = _connectingClients[i];
 
                 string httpRequest = GetHttpRequest(connection);
 
                 if (connection.IsTimeout() || !connection.TcpClient.Connected || httpRequest == null)
                 {
-                    connectingClients.RemoveAt(i);
+                    _connectingClients.RemoveAt(i);
                     i--;
                     continue;
                 }
@@ -245,12 +245,12 @@ namespace Rebronx.Server.Services
                         LastMessage = DateTime.Now
                     };
 
-                    socketRepository.AddUnauthorizedConnection(clientConnection);
+                    _socketRepository.AddUnauthorizedConnection(clientConnection);
                 }
 
-                if (i <= connectingClients.Count - 1)
+                if (i <= _connectingClients.Count - 1)
                 {
-                    connectingClients.RemoveAt(i);
+                    _connectingClients.RemoveAt(i);
                     i--;
                 }
             }

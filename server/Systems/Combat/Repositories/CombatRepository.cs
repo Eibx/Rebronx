@@ -6,11 +6,11 @@ namespace Rebronx.Server.Systems.Combat.Repositories
 {
     public class CombatRepository : ICombatRepository
     {
-        private readonly IDatabaseService databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public CombatRepository(IDatabaseService databaseService)
         {
-            this.databaseService = databaseService;
+            _databaseService = databaseService;
         }
 
         public CombatStats GetCombatStats(int playerId)

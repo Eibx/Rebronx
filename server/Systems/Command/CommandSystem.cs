@@ -7,11 +7,11 @@ namespace Rebronx.Server.Systems.Command
     public class CommandSystem : System, ICommandSystem
     {
         private const string Component = "command";
-        private readonly IInventoryService inventoryService;
+        private readonly IInventoryService _inventoryService;
 
         public CommandSystem(IInventoryService inventoryService)
         {
-            this.inventoryService = inventoryService;
+            _inventoryService = inventoryService;
         }
 
         public void Run(IList<Message> messages)
@@ -32,7 +32,7 @@ namespace Rebronx.Server.Systems.Command
                 if (!int.TryParse(inputMessage.Arguments[0], out var itemId))
                     return;
 
-                inventoryService.AddItem(message.Player.Id, itemId, 1);
+                _inventoryService.AddItem(message.Player.Id, itemId, 1);
             }
         }
     }

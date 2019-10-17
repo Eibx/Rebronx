@@ -8,5 +8,6 @@ namespace Rebronx.Server.Repositories
         Player GetPlayerByLogin(string name, string password);
         Player GetPlayerByToken(string token);
         void RemovePlayer(int playerId);
+        void UpdateHash(int playerId, string hash);
     }
 }

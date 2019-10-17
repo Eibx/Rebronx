@@ -7,11 +7,11 @@ namespace Rebronx.Server.Repositories
 {
     public class CooldownRepository : ICooldownRepository
     {
-        private readonly IDatabaseService databaseService;
+        private readonly IDatabaseService _databaseService;
 
         public CooldownRepository(IDatabaseService databaseService)
         {
-            this.databaseService = databaseService;
+            _databaseService = databaseService;
         }
 
         public long? GetCooldown(Player player, string type)
@@ -33,7 +33,7 @@ namespace Rebronx.Server.Repositories
 
         public long? GetAbsoluteCooldown(Player player, string type)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
 
             return connection.ExecuteScalar<long?>(
                 "SELECT time FROM cooldowns WHERE playerId = @playerId AND type = @type",
@@ -45,7 +45,7 @@ namespace Rebronx.Server.Repositories
 
         public void SetAbsoluteCooldown(Player player, string type, long unixtime)
         {
-            var connection = databaseService.GetConnection();
+            var connection = _databaseService.GetConnection();
 
             connection.Execute(
                 "INSERT INTO cooldowns (playerId, type, time) values (@id, @type, @time) ON CONFLICT (playerId, time) DO UPDATE SET time = @time;",
