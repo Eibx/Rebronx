@@ -5,7 +5,7 @@
         </ul>
         <div class="chat__input">
             <input
-                class="w-full px-3 p-1 bg-gray-600 text-gray-900"
+                class="w-full px-1 p-1 bg-gray-600 text-gray-900"
                 type="text"
                 v-on:keyup.enter="send"
                 v-on:keyup.esc="blur"

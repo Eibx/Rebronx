@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<configuration>
+    <appSettings>
+        <add key="CertificatePath" value="../rebronx.p12" />
+        <add key="CertificatePassword" value="1" />
+    </appSettings>
+    <connectionStrings>
+        <add name="Default" connectionString="Host=localhost;Username=rebronx_role;Database=rebronx_database;" />
+    </connectionStrings>
+</configuration>

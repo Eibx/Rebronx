@@ -123,12 +123,12 @@ class RenderService {
 
         const geometry = new THREE.BufferGeometry();
         geometry.addAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const material = new THREE.LineBasicMaterial({color: 0xeeeeee, linewidth: 3});
+        const material = new THREE.LineBasicMaterial({ color: 0xeeeeee, linewidth: 3 });
         this.activePathMesh = new THREE.Line(geometry, material);
 
         const geometry2 = new THREE.BufferGeometry();
         geometry2.addAttribute('position', new THREE.BufferAttribute(positions2, 3));
-        const material2 = new THREE.LineBasicMaterial({color: 0x999999, linewidth: 3});
+        const material2 = new THREE.LineBasicMaterial({ color: 0x999999, linewidth: 3 });
         this.activePathFullMesh = new THREE.Line(geometry2, material2);
 
         this.scene.add(this.activePathFullMesh);
@@ -143,7 +143,7 @@ class RenderService {
             let coneColor = this.cones[id].material.color;
 
             if (WorldStore.currentNode.toString() === id)
-                coneColor.setHex(0xFF0000);
+                coneColor.setHex(0x6C75E0);
             else
                 coneColor.setHex(0xE06C75);
         }

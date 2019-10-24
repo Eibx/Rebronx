@@ -7,6 +7,7 @@ import WorldStore from '../stores/world.store'
 class PlayerService {
     public setup() {
         DataService.subscribe('join', (type: string, data: any) => {
+            PlayerStore.isAuthenticated = true;
             PlayerStore.name = data.name;
             PlayerStore.bits = data.credits;
             WorldStore.currentNode = data.node;
@@ -28,6 +29,4 @@ class PlayerService {
     }
 }
 
-const playerStores = new PlayerService();
-
-export default playerStores;
+export default new PlayerService();

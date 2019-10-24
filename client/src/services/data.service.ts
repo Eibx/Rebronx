@@ -30,7 +30,7 @@ class DataService {
     }
 
     open(callback: Function) {
-        this.websocket = new WebSocket("wss://localhost:21220");
+        this.websocket = new WebSocket("wss://" + window.location.hostname + ":21220");
         this.websocket.onmessage = (msg) => { this.onData(msg) };
         this.websocket.onopen = () => {
             callback({ type: 'open' });

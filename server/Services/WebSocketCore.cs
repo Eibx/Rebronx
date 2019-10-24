@@ -17,19 +17,20 @@ namespace Rebronx.Server.Services
     public class WebSocketCore : IWebSocketCore
     {
         private readonly ISocketRepository _socketRepository;
+        private readonly List<ConnectingClient> _connectingClients;
+        private readonly TcpListener _server;
+        private readonly X509Certificate _serverCertificate;
+
         private const int TextFrame = 129;
-        private const int BinaryFrame = 64;
-        List<ConnectingClient> _connectingClients;
-        TcpListener _server;
-        X509Certificate _serverCertificate;
+        private const int CloseFrame = 136;
 
         public WebSocketCore(ISocketRepository socketRepository)
         {
             _socketRepository = socketRepository;
 
-            _serverCertificate = new X509Certificate2("../rebronx.p12", "1", X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+            _serverCertificate = new X509Certificate2(System.Configuration.ConfigurationManager.AppSettings["CertificatePath"], System.Configuration.ConfigurationManager.AppSettings["CertificatePassword"], X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
 
-            _server = new TcpListener(IPAddress.Parse("127.0.0.1"), 21220);
+            _server = new TcpListener(IPAddress.Any, 21220);
             _server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
             _server.Start();
 
@@ -40,8 +41,6 @@ namespace Rebronx.Server.Services
         {
             while (_server.Pending())
             {
-                Console.WriteLine("accepting connection?");
-
                 var client = _server.AcceptTcpClient();
 
                 SslStream sslStream = new SslStream(client.GetStream(), true);
@@ -66,15 +65,15 @@ namespace Rebronx.Server.Services
 
             for (int i = 0; i < sockets.Count; i++)
             {
-                var s = sockets[i];
+                var socket = sockets[i];
 
                 List<byte> data = new List<byte>();
 
-                while (s.Client.Client.Poll(1000, SelectMode.SelectRead))
+                while (socket.TcpClient.Client.Poll(1000, SelectMode.SelectRead))
                 {
                     byte[] buffer = new byte[1024];
 
-                    var received = s.Stream.Read(buffer, 0, buffer.Length);
+                    var received = socket.Stream.Read(buffer, 0, buffer.Length);
 
                     if (received == 0)
                         break;
@@ -82,9 +81,9 @@ namespace Rebronx.Server.Services
                     data.AddRange(buffer.Take(received));
                 }
 
-                if (s.IsTimedOut())
+                if (socket.IsTimedOut())
                 {
-                    Console.WriteLine("Dead connection (" + s.Id + ")");
+                    Console.WriteLine("Dead connection (" + socket.Id + ")");
                     sockets.RemoveAt(i);
                     i--;
                     continue;
@@ -93,58 +92,60 @@ namespace Rebronx.Server.Services
                 if (!data.Any())
                     continue;
 
-                if (data[0] == TextFrame)
+                if (data[0] != TextFrame)
+                    continue;
+
+                ulong size = 0;
+                var payloadIndex = 0;
+                var mask = new byte[4];
+
+                if (data[1] <= 253)
                 {
-                    ulong size = 0;
-                    int payloadIndex = 0;
-                    byte[] mask = new byte[4];
+                    size = (data[1] - 128u);
+                    mask = data.Skip(2).Take(4).ToArray();
+                    payloadIndex = 6;
+                }
+                else if (data[1] == 254)
+                {
+                    size = BitConverter.ToUInt16(data.ToArray(), 2);
+                    mask = data.Skip(4).Take(4).ToArray();
+                    payloadIndex = 8;
+                }
+                else if (data[1] == 255)
+                {
+                    size = BitConverter.ToUInt64(data.ToArray(), 2);
+                    mask = data.Skip(10).Take(4).ToArray();
+                    payloadIndex = 14;
+                }
 
-                    if (data[1] <= 253)
-                    {
-                        size = (data[1] - 128u);
-                        mask = data.Skip(2).Take(4).ToArray();
-                        payloadIndex = 6;
-                    }
-                    else if (data[1] == 254)
-                    {
-                        size = BitConverter.ToUInt16(data.ToArray(), 2);
-                        mask = data.Skip(4).Take(4).ToArray();
-                        payloadIndex = 8;
-                    }
-                    else if (data[1] == 255)
-                    {
-                        size = BitConverter.ToUInt64(data.ToArray(), 2);
-                        mask = data.Skip(10).Take(4).ToArray();
-                        payloadIndex = 14;
-                    }
+                var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
+                for (var j = 0; j < payload.Length; j++)
+                {
+                    payload[j] = (byte)(payload[j] ^ mask[j % 4]);
+                }
 
-                    var payload = data.Skip(payloadIndex).Take((int)size).ToArray();
-                    for (int j = 0; j < payload.Length; j++)
-                    {
-                        payload[j] = (byte)(payload[j] ^ mask[j % 4]);
-                    }
+                var jsonData = Encoding.ASCII.GetString(payload, 0, payload.Count());
+                if (jsonData == "ping")
+                {
+                    socket.LastMessage = DateTime.Now;
+                    Send(socket.Stream, "pong");
+                    continue;
+                }
 
-                    var jsondata = Encoding.ASCII.GetString(payload, 0, payload.Count());
-                    WebSocketMessage wsMessage = null;
+                WebSocketMessage wsMessage = null;
+                try
+                {
+                    wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsonData);
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
 
-                    if (jsondata == "ping")
-                    {
-                        s.LastMessage = DateTime.Now;
-                        Send(s.Stream, "pong");
-                        continue;
-                    }
-
-                    try
-                    {
-                        wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsondata);
-                    }
-                    catch (Exception) { }
-
-                    if (wsMessage != null && wsMessage.HasData())
-                    {
-                        wsMessage.Connection = s;
-                        output.Add(wsMessage);
-                    }
+                if (wsMessage != null && wsMessage.HasData())
+                {
+                    wsMessage.Connection = socket;
+                    output.Add(wsMessage);
                 }
             }
 
@@ -153,37 +154,34 @@ namespace Rebronx.Server.Services
 
         public void Send(SslStream stream, string data)
         {
-            List<byte> bytes = new List<byte>();
+            var bytes = new List<byte> { TextFrame };
 
-            //text frame
-            bytes.Add(129);
+            var dataBytes = Encoding.UTF8.GetBytes(data).ToList();
 
-            var databytes = Encoding.UTF8.GetBytes(data).ToList();
-
-            if (databytes.Count <= 125)
+            if (dataBytes.Count <= 125)
             {
-                bytes.Add((byte)databytes.Count);
-                bytes.AddRange(databytes);
+                bytes.Add((byte)dataBytes.Count);
+                bytes.AddRange(dataBytes);
             }
-            else if (databytes.Count <= 65535)
+            else if (dataBytes.Count <= 65535)
             {
                 bytes.Add(126);
-                bytes.Add((byte)((databytes.Count() >> 8) & 255));
-                bytes.Add((byte)((databytes.Count()) & 255));
-                bytes.AddRange(databytes);
+                bytes.Add((byte)((dataBytes.Count() >> 8) & 255));
+                bytes.Add((byte)((dataBytes.Count()) & 255));
+                bytes.AddRange(dataBytes);
             }
             else
             {
                 bytes.Add(127);
-                bytes.Add((byte)((databytes.Count() >> 56) & 255));
-                bytes.Add((byte)((databytes.Count() >> 48) & 255));
-                bytes.Add((byte)((databytes.Count() >> 40) & 255));
-                bytes.Add((byte)((databytes.Count() >> 32) & 255));
-                bytes.Add((byte)((databytes.Count() >> 24) & 255));
-                bytes.Add((byte)((databytes.Count() >> 16) & 255));
-                bytes.Add((byte)((databytes.Count() >> 8) & 255));
-                bytes.Add((byte)((databytes.Count()) & 255));
-                bytes.AddRange(databytes);
+                bytes.Add((byte)((dataBytes.Count() >> 56) & 255));
+                bytes.Add((byte)((dataBytes.Count() >> 48) & 255));
+                bytes.Add((byte)((dataBytes.Count() >> 40) & 255));
+                bytes.Add((byte)((dataBytes.Count() >> 32) & 255));
+                bytes.Add((byte)((dataBytes.Count() >> 24) & 255));
+                bytes.Add((byte)((dataBytes.Count() >> 16) & 255));
+                bytes.Add((byte)((dataBytes.Count() >> 8) & 255));
+                bytes.Add((byte)((dataBytes.Count()) & 255));
+                bytes.AddRange(dataBytes);
             }
 
             try
@@ -199,28 +197,28 @@ namespace Rebronx.Server.Services
 
         private void SendClose(Socket socket, int reason)
         {
-            List<byte> bytes = new List<byte>();
+            var bytes = new List<byte>
+            {
+                CloseFrame,
 
-            //close frame
-            bytes.Add(136);
+                //length
+                2,
 
-            //length
-            bytes.Add(2);
-
-            //code/reason 4001
-            bytes.Add(15);
-            bytes.Add(161);
+                //code/reason 4001 - TODO: Send Reason
+                15,
+                161
+            };
 
             socket.Send(bytes.ToArray());
         }
 
         private void HandleHttpConnection()
         {
-            for (int i = 0; i < _connectingClients.Count; i++)
+            for (var i = 0; i < _connectingClients.Count; i++)
             {
                 var connection = _connectingClients[i];
 
-                string httpRequest = GetHttpRequest(connection);
+                var httpRequest = GetHttpRequest(connection);
 
                 if (connection.IsTimeout() || !connection.TcpClient.Connected || httpRequest == null)
                 {
@@ -233,14 +231,14 @@ namespace Rebronx.Server.Services
 
                 if (httpHeaders.ContainsKey("Sec-WebSocket-Key"))
                 {
-                    byte[] responseBytes = CreateConnectionResponse(httpHeaders);
+                    var responseBytes = CreateConnectionResponse(httpHeaders);
 
                     connection.Stream.Write(responseBytes, 0, responseBytes.Length);
 
                     var clientConnection = new ClientConnection()
                     {
                         Id = Guid.NewGuid(),
-                        Client = connection.TcpClient,
+                        TcpClient = connection.TcpClient,
                         Stream = connection.Stream,
                         LastMessage = DateTime.Now
                     };
@@ -256,23 +254,26 @@ namespace Rebronx.Server.Services
             }
         }
 
-        private string GetHttpRequest(ConnectingClient connectingClient)
+        private static string GetHttpRequest(ConnectingClient connectingClient)
         {
-            string output = string.Empty;
+            var output = string.Empty;
 
             while (connectingClient.TcpClient.Client.Poll(1000, SelectMode.SelectRead))
             {
                 if (!connectingClient.TcpClient.Connected)
                     return null;
 
-                byte[] buffer = new byte[1024];
+                var buffer = new byte[1024];
+                var received = 0;
 
-                int received = 0;
                 try
                 {
                     received = connectingClient.Stream.Read(buffer, 0, buffer.Length);
                 }
-                catch (System.IO.IOException) {}
+                catch (System.IO.IOException)
+                {
+                    // ignored
+                }
 
                 if (received == 0)
                     break;
@@ -284,7 +285,7 @@ namespace Rebronx.Server.Services
             return output;
         }
 
-        private byte[] CreateConnectionResponse(Dictionary<string, string> headers)
+        private static byte[] CreateConnectionResponse(Dictionary<string, string> headers)
         {
             var webSocketKey = headers["Sec-WebSocket-Key"];
 
@@ -299,7 +300,7 @@ namespace Rebronx.Server.Services
             return responseBytes;
         }
 
-        private Dictionary<string, string> GetHttpHeaders(string data)
+        private static Dictionary<string, string> GetHttpHeaders(string data)
         {
             var headers = new Dictionary<string, string>();
 
@@ -319,11 +320,11 @@ namespace Rebronx.Server.Services
                     continue;
                 }
 
-                int split = line.IndexOf(":");
-                if (split > -1)
+                var splitIndex = line.IndexOf(":", StringComparison.Ordinal);
+                if (splitIndex > -1)
                 {
-                    var propertyKey = line.Substring(0, split);
-                    var propertyValue = line.Substring(split + 1);
+                    var propertyKey = line.Substring(0, splitIndex);
+                    var propertyValue = line.Substring(splitIndex + 1);
                     headers.Add(propertyKey, propertyValue.Trim());
                 }
             }
@@ -331,15 +332,14 @@ namespace Rebronx.Server.Services
             return headers;
         }
 
-        private byte[] Hash(string input)
+        private static byte[] Hash(string input)
         {
-            using (var sha1 = SHA1.Create())
-            {
-                return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
-            }
+            using var sha1 = SHA1.Create();
+
+            return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
         }
 
-        private string GetQueryString(string line, string name)
+        private static string GetQueryString(string line, string name)
         {
             return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
         }

@@ -6,7 +6,7 @@ namespace Rebronx.Server.Models
 {
     public class ClientConnection {
         public Guid Id { get; set; }
-        public TcpClient Client { get; set; }
+        public TcpClient TcpClient { get; set; }
         public SslStream Stream { get; set; }
         public DateTime LastMessage { get; set; }
 

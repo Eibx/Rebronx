@@ -1,16 +1,45 @@
 <template>
-    <div class="login-component" v-if="isVisible">
-        <div class="flex flex-col">
-            <div class="">
-                <input type="text" placeholder="username" v-model="username" v-on:keyup.enter="login" />
+    <div class="login-component w-1/4 mx-auto pt-10" v-if="isVisible">
+        <h1 class="text-4xl text-gray-100">Rebronx</h1>
+        <div class="flex flex-col mb-5">
+            <div class="mb-1">
+                <input
+                    type="text"
+                    placeholder="username"
+                    v-model="username"
+                    v-on:keyup.enter="login"
+                    class="bg-gray-400 px-1"
+                />
             </div>
-            <div class="">
-                <input type="password" placeholder="password" v-model="password" v-on:keyup.enter="login" />
+            <div class="mb-1">
+                <input
+                    type="password"
+                    placeholder="password"
+                    v-model="password"
+                    v-on:keyup.enter="login"
+                    class="bg-gray-400 px-1"
+                />
             </div>
-            <div class="">
-                <input type="button" v-on:click="login" value="login" />
-                <input type="button" v-on:click="register" value="register" />
+            <div class="mb-1">
+                <input
+                    type="button"
+                    v-on:click="login"
+                    value="login"
+                    class="mr-1 px-1"
+                />
+                <input
+                    type="button"
+                    v-on:click="register"
+                    value="register"
+                    class="mr-1 px-1"
+                />
             </div>
+        </div>
+        <div v-if="showErrorMessage" class="mb-5 text-red-600 text-sm">
+            Username and password doesn't match
+        </div>
+        <div class="mb-5 text-gray-600 text-sm">
+            You only need username and password to register
         </div>
     </div>
 </template>
@@ -22,15 +51,18 @@ import DataService from '../services/data.service'
 
 @Component({ name: 'login' })
 export default class Login extends Vue {
-    public isVisible = true;
-    public username = "";
-    public password = "";
-    
+    public isVisible: boolean = true;
+    public showErrorMessage: boolean = false;
+    public username: string = "";
+    public password: string = "";
+
     created() {
         DataService.subscribe('login', (type:string, data:any) => {
             if (data.success == true) {
                 this.isVisible = false;
                 window.localStorage.setItem("token", data.token);
+            } else {
+                this.showErrorMessage = true;
             }
         });
 
@@ -46,7 +78,7 @@ export default class Login extends Vue {
             });
         }
     }
-    
+
     login() {
         var username = this.username;
         var password = this.password;
@@ -79,9 +111,5 @@ export default class Login extends Vue {
 
 <style scoped>
 .login-component {
-    width:500px;
-    height:400px;
-    position:absolute;
-    z-index: 100;
 }
 </style>

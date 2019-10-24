@@ -83,7 +83,7 @@ namespace Rebronx.Server.Repositories
             {
                 if (_sockets.ContainsKey(connectionId))
                 {
-                    _sockets[connectionId].Client.Close();
+                    _sockets[connectionId].TcpClient.Close();
                     _sockets.Remove(connectionId);
                 }
             }

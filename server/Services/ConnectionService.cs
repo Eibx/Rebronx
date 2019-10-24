@@ -173,7 +173,7 @@ namespace Rebronx.Server.Services
         public void HandleDeadPlayers()
         {
             var connections = _socketRepository.GetAllConnections();
-            var timeouts = connections.Where(x => x.Client == null || x.IsTimedOut()).ToList();
+            var timeouts = connections.Where(x => x.TcpClient == null || x.IsTimedOut()).ToList();
 
             foreach (var timeout in timeouts)
             {

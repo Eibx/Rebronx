@@ -1,5 +1,5 @@
 <template>
-    <div class="map-component bg-gray-900" ref="canvasContainer" v-on:mousemove="updateCoordinates" v-on:click="click"></div>
+    <div class="map-component" ref="canvasContainer" v-on:mousemove="updateCoordinates" v-on:click="click"></div>
 </template>
 
 <script lang="ts">
