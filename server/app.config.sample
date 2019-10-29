@@ -5,6 +5,6 @@
         <add key="CertificatePassword" value="1" />
     </appSettings>
     <connectionStrings>
-        <add name="Default" connectionString="Host=localhost;Username=rebronx_role;Database=rebronx_database;" />
+        <add name="Default" connectionString="Host=localhost;Username=rebronx;Database=rebronx;" />
     </connectionStrings>
 </configuration>

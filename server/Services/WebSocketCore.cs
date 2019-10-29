@@ -28,7 +28,9 @@ namespace Rebronx.Server.Services
         {
             _socketRepository = socketRepository;
 
-            _serverCertificate = new X509Certificate2(System.Configuration.ConfigurationManager.AppSettings["CertificatePath"], System.Configuration.ConfigurationManager.AppSettings["CertificatePassword"], X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+            var certPath = System.Configuration.ConfigurationManager.AppSettings["CertificatePath"];
+            var certExportPassword = System.Configuration.ConfigurationManager.AppSettings["CertificatePassword"];
+            _serverCertificate = new X509Certificate2(certPath, certExportPassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
 
             _server = new TcpListener(IPAddress.Any, 21220);
             _server.Server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, 1);
@@ -43,7 +45,7 @@ namespace Rebronx.Server.Services
             {
                 var client = _server.AcceptTcpClient();
 
-                SslStream sslStream = new SslStream(client.GetStream(), true);
+                var sslStream = new SslStream(client.GetStream(), true);
                 sslStream.AuthenticateAsServer(_serverCertificate, false, SslProtocols.Tls13, true);
 
                 _connectingClients.Add(new ConnectingClient()
@@ -59,19 +61,19 @@ namespace Rebronx.Server.Services
 
         public List<WebSocketMessage> PollMessages()
         {
-            List<WebSocketMessage> output = new List<WebSocketMessage>();
+            var output = new List<WebSocketMessage>();
 
             var sockets = _socketRepository.GetAllConnections();
 
-            for (int i = 0; i < sockets.Count; i++)
+            for (var i = 0; i < sockets.Count; i++)
             {
                 var socket = sockets[i];
 
-                List<byte> data = new List<byte>();
+                var data = new List<byte>();
 
                 while (socket.TcpClient.Client.Poll(1000, SelectMode.SelectRead))
                 {
-                    byte[] buffer = new byte[1024];
+                    var buffer = new byte[1024];
 
                     var received = socket.Stream.Read(buffer, 0, buffer.Length);
 
@@ -311,22 +313,15 @@ namespace Rebronx.Server.Services
             foreach (var line in lines)
             {
                 if (line.StartsWith("GET /"))
-                {
-                    var token = GetQueryString(line, "u");
-
-                    if (token != null)
-                        headers.Add("Username", token);
-
                     continue;
-                }
 
                 var splitIndex = line.IndexOf(":", StringComparison.Ordinal);
-                if (splitIndex > -1)
-                {
-                    var propertyKey = line.Substring(0, splitIndex);
-                    var propertyValue = line.Substring(splitIndex + 1);
-                    headers.Add(propertyKey, propertyValue.Trim());
-                }
+                if (splitIndex == -1)
+                    continue;
+
+                var propertyKey = line.Substring(0, splitIndex);
+                var propertyValue = line.Substring(splitIndex + 1);
+                headers.Add(propertyKey, propertyValue.Trim());
             }
 
             return headers;
@@ -335,13 +330,7 @@ namespace Rebronx.Server.Services
         private static byte[] Hash(string input)
         {
             using var sha1 = SHA1.Create();
-
             return sha1.ComputeHash(Encoding.UTF8.GetBytes(input));
-        }
-
-        private static string GetQueryString(string line, string name)
-        {
-            return line.Split(' ')?.Skip(1)?.Take(1).FirstOrDefault()?.Split('?').LastOrDefault()?.Split('&').FirstOrDefault(x => x.StartsWith(name))?.Split('=').LastOrDefault();
         }
     }
 

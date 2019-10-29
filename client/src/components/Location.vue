@@ -15,11 +15,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import DataService from '../services/data.service.js'
+import { Component, Vue } from 'vue-property-decorator';
 
 @Component({ name: 'location' })
 export default class Location extends Vue {
-    
+
 }
 </script>

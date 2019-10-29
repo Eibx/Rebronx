@@ -22,12 +22,12 @@ namespace Rebronx.Server.Repositories
         {
             var connection = _databaseService.GetConnection();
             connection.Execute(
-                "INSERT INTO players (name, hash, token) VALUES (@name, @hash, @token)",
+                "INSERT INTO players (name, hash, token, node) VALUES (@name, @hash, @token, @node)",
                 new {
                     name,
-                    position = 1,
                     hash,
                     token,
+                    node = 1,
                 });
         }
 

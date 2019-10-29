@@ -18,19 +18,16 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import DataService from '../services/data.service';
 import Component from 'vue-class-component';
-import WorldStore from '../stores/world.store';
+import {dataService} from '@/services/data.service';
 
 @Component({ name: 'chat' })
 export default class Chat extends Vue {
     public message: string = "";
     public msgs: any[] = [];
 
-    private worldStore = WorldStore;
-
     created() {
-        DataService.subscribe('lobby', (type: string, data: any) => {
+        dataService.subscribe('lobby', (type: string, data: any) => {
             if (type === "chat") {
                 this.msgs.push(data.message);
             }
@@ -52,9 +49,9 @@ export default class Chat extends Vue {
                 if (commandType === undefined)
                     return;
 
-                DataService.send('command', commandType, { arguments: commandArguments });
+                dataService.send('command', commandType, { arguments: commandArguments });
             } else {
-                DataService.send('chat', 'say', { message: this.message });
+                dataService.send('chat', 'say', { message: this.message });
             }
 
             this.message = "";

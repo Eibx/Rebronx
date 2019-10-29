@@ -38,6 +38,12 @@
         <div v-if="showErrorMessage" class="mb-5 text-red-600 text-sm">
             Username and password doesn't match
         </div>
+        <div v-if="showConnectionIssue" class="mb-5 text-red-600 text-sm">
+            Cannot connect to server
+        </div>
+        <div v-if="showConnecting" class="mb-5 text-gray-600 text-sm">
+            Connecting...
+        </div>
         <div class="mb-5 text-gray-600 text-sm">
             You only need username and password to register
         </div>
@@ -47,17 +53,19 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import DataService from '../services/data.service'
+import {dataService} from '@/services/data.service'
 
 @Component({ name: 'login' })
 export default class Login extends Vue {
-    public isVisible: boolean = true;
+    public isVisible: boolean = false;
     public showErrorMessage: boolean = false;
+    public showConnectionIssue: boolean = false;
+    public showConnecting: boolean = false;
     public username: string = "";
     public password: string = "";
 
     created() {
-        DataService.subscribe('login', (type:string, data:any) => {
+        dataService.subscribe('login', (type:string, data:any) => {
             if (data.success == true) {
                 this.isVisible = false;
                 window.localStorage.setItem("token", data.token);
@@ -66,29 +74,36 @@ export default class Login extends Vue {
             }
         });
 
-        var token = window.localStorage.getItem('token');
+        const token = window.localStorage.getItem('token');
         if (token) {
-            DataService.open((data: any) => {
+            this.showConnecting = true;
+            dataService.open((data: any) => {
                 if (data.type == 'error') {
-                    console.error('error connect to server');
+                    this.showConnecting = false;
+                    this.showErrorMessage = true;
+                    this.isVisible = true;
                 } else if (data.type == 'open') {
-                    DataService.send('login', 'login', { token: token });
-                    DataService.startPing();
+                    dataService.send('login', 'login', { token: token });
+                    dataService.startPing();
                 }
             });
+        } else {
+            this.isVisible = true;
         }
+
+        setTimeout(() => { this.isVisible = true; }, 1000)
     }
 
     login() {
         var username = this.username;
         var password = this.password;
 
-        DataService.open(function (data: any) {
+        dataService.open(function (data: any) {
             if (data.type == 'error') {
                 console.error('error connect to server');
             } else if (data.type == 'open') {
-                DataService.send('login', 'login', { username: username, password: password });
-                DataService.startPing();
+                dataService.send('login', 'login', { username: username, password: password });
+                dataService.startPing();
             }
         });
     }
@@ -97,12 +112,12 @@ export default class Login extends Vue {
         var username = this.username;
         var password = this.password;
 
-        DataService.open(function (data: any) {
+        dataService.open(function (data: any) {
             if (data.type == 'error') {
                 console.error('error connect to server');
             } else if (data.type == 'open') {
-                DataService.send('login', 'signup', { username: username, password: password });
-                DataService.startPing();
+                dataService.send('login', 'signup', { username: username, password: password });
+                dataService.startPing();
             }
         });
     }

@@ -1,4 +1,4 @@
-import DataService from './data.service'
+import {dataService} from "@/services/data.service";
 
 class MapService {
     private map = require('../../../data/map.json');
@@ -162,8 +162,8 @@ class MapService {
     }
 
     public startTravel(path: number[]): void {
-        DataService.send("movement", "move", { nodes: path });
+        dataService.send("movement", "move", { nodes: path });
     }
 }
 
-export default new MapService();
+export const mapService = new MapService();

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import GLTFLoader from 'three-gltf-loader'
-import mapService from './map.service';
-import WorldStore from "@/stores/world.store";
+import {mapService} from './map.service';
+import {worldStore} from "@/stores/world.store";
 
 class RenderService {
     public camera: any = null;
@@ -34,10 +34,12 @@ class RenderService {
             this.scene.add(this.camera);
             this.scene.add(this.mapModel.scene);
 
+            // Setup light
             let light = new THREE.PointLight(0xffffff, 1, 1000);
             light.position.set(50, 50, 50);
             this.scene.add(light);
 
+            // Location cones
             const nodes = mapService.getAllLocations();
             for (let i = 0; i < nodes.length; i++) {
                 const node = nodes[i];
@@ -50,6 +52,7 @@ class RenderService {
                 this.scene.add(cone);
             }
 
+            // Render
             this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             this.renderer.setPixelRatio(window.devicePixelRatio);
             this.renderer.setSize(this.canvasW, this.canvasH);
@@ -142,7 +145,7 @@ class RenderService {
         for (let id in this.cones) {
             let coneColor = this.cones[id].material.color;
 
-            if (WorldStore.currentNode.toString() === id)
+            if (worldStore.currentNode.toString() === id)
                 coneColor.setHex(0x6C75E0);
             else
                 coneColor.setHex(0xE06C75);
@@ -188,4 +191,4 @@ class RenderService {
     }
 }
 
-export default new RenderService();
+export const renderService = new RenderService();

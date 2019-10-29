@@ -46,5 +46,17 @@ namespace Rebronx.Server.Repositories
                     id = player.Id
                 });
         }
+
+        public bool IsTokenAvailable(string token)
+        {
+            var connection = _databaseService.GetConnection();
+            var count = connection.ExecuteScalar<int>(
+                "SELECT COUNT(1) FROM players WHERE token = @token",
+                new {
+                    token
+                });
+
+            return count == 0;
+        }
     }
 }

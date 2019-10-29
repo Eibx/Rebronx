@@ -71,4 +71,4 @@ class DataService {
     }
 }
 
-export default new DataService();
+export const dataService = new DataService();

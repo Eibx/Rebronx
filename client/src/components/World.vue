@@ -5,10 +5,9 @@
 <script lang="ts">
 import Vue from 'vue'
 import Component from 'vue-class-component';
-import RenderService from '../services/render.service'
-import MapService from '../services/map.service'
-
-import WorldStore from '../stores/world.store';
+import {renderService} from '@/services/render.service'
+import {mapService} from '@/services/map.service'
+import {worldStore} from '@/stores/world.store';
 
 @Component({ name: "world" })
 export default class World extends Vue {
@@ -19,36 +18,34 @@ export default class World extends Vue {
     private from: number | null = null;
     private to: number | null = null;
 
-    public worldStore = WorldStore;
-
     created() {
         this.renderMap();
 
         window.addEventListener("resize", () => {
-            RenderService.resize();
+            renderService.resize();
         });
     }
 
     async renderMap() {
-        let canvas = await RenderService.setup();
+        let canvas = await renderService.setup();
         this.$refs.canvasContainer.appendChild(canvas);
     }
 
     updateCoordinates(event: MouseEvent) {
-        RenderService.onMouseMove(event);
+        renderService.onMouseMove(event);
     }
 
     click() {
-        let cursor = RenderService.cursorPosition;
+        let cursor = renderService.cursorPosition;
 
-        const location = MapService.getCloseLocation(cursor.x, cursor.y);
+        const location = mapService.getCloseLocation(cursor.x, cursor.y);
 
         if (location == null)
             return;
 
-        let path = MapService.getShortestPath(this.worldStore.currentNode, location.id);
+        let path = mapService.getShortestPath(worldStore.currentNode, location.id);
 
-        MapService.startTravel(path);
+        mapService.startTravel(path);
     }
 }
 </script>

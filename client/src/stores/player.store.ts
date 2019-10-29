@@ -4,6 +4,4 @@ class PlayerStore {
     public bits: number = 0;
 }
 
-const playerStore = new PlayerStore();
-
-export default playerStore;
+export const playerStore = new PlayerStore();

@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Rebronx.Server.Systems.Inventory;
-using Rebronx.Server.Systems.Inventory.Repositories;
-using Rebronx.Server.Systems.Inventory.Senders;
-using Rebronx.Server.Enums;
 using Rebronx.Server.Systems.Inventory.Services;
 
 namespace Rebronx.Server.Systems.Inventory
@@ -39,7 +34,7 @@ namespace Rebronx.Server.Systems.Inventory
             }
         }
 
-        public void ReorderInventory(Message message)
+        private void ReorderInventory(Message message)
         {
             var inputMessage = GetData<ReorderInventoryMessage>(message);
 
@@ -49,7 +44,7 @@ namespace Rebronx.Server.Systems.Inventory
             }
         }
 
-        public void EquipItem(Message message)
+        private void EquipItem(Message message)
         {
             var inputMessage = GetData<EquipItemMessage>(message);
 
@@ -59,7 +54,7 @@ namespace Rebronx.Server.Systems.Inventory
             }
         }
 
-        public void UnequipItem(Message message)
+        private void UnequipItem(Message message)
         {
             var inputMessage = GetData<EquipItemMessage>(message);
 

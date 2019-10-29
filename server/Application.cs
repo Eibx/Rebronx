@@ -7,12 +7,14 @@ using Rebronx.Server.Systems.Map;
 using Rebronx.Server.Systems.Movement;
 using Rebronx.Server.Systems.Store;
 using Rebronx.Server.Systems.Command;
+using Rebronx.Server.Systems.Login;
 
 public class Application
 {
     private readonly IWebSocketCore _webSocketCore;
     private readonly IConnectionService _connectionService;
 
+    private readonly ILoginSystem _loginSystem;
     private readonly ICommandSystem _commandSystem;
     private readonly IMapSystem _mapSystem;
     private readonly IMovementSystem _movementSystem;
@@ -24,6 +26,7 @@ public class Application
         IWebSocketCore webSocketCore,
         IConnectionService connectionService,
 
+        ILoginSystem loginSystem,
         ICommandSystem commandSystem,
         IMapSystem mapSystem,
         IMovementSystem movementSystem,
@@ -42,6 +45,7 @@ public class Application
         _storeSystem = storeSystem;
         _combatSystem = combatSystem;
         _inventorySystem = inventorySystem;
+        _loginSystem = loginSystem;
     }
 
     public void Run()
@@ -55,6 +59,7 @@ public class Application
             var socketMessages = _webSocketCore.PollMessages();
             var playerMessages = _connectionService.ConvertToMessages(socketMessages);
 
+            _loginSystem.Run(playerMessages);
             _commandSystem.Run(playerMessages);
             _mapSystem.Run(playerMessages);
             _movementSystem.Run(playerMessages);

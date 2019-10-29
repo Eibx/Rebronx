@@ -38,8 +38,10 @@ public class Program
         container.RegisterSingleton<IMessageService, MessageService>();
         container.RegisterSingleton<IDatabaseService, DatabaseService>();
         container.RegisterSingleton<IInventoryService, InventoryService>();
+        container.RegisterSingleton<ITokenService, TokenService>();
 
-        //Components
+        //Systems
+        container.RegisterSingleton<ILoginSystem, LoginSystem>();
         container.RegisterSingleton<ICommandSystem, CommandSystem>();
         container.RegisterSingleton<IMapSystem, MapSystem>();
         container.RegisterSingleton<IMovementSystem, MovementSystem>();
@@ -65,7 +67,6 @@ public class Program
         container.RegisterSingleton<ISocketRepository, SocketRepository>();
         container.RegisterSingleton<IPositionRepository, PositionRepository>();
         container.RegisterSingleton<ITokenRepository, TokenRepository>();
-        //container.RegisterSingleton<ICooldownRepository, CooldownRepository>();
         container.RegisterSingleton<ICombatRepository, CombatRepository>();
         container.RegisterSingleton<IInventoryRepository, InventoryRepository>();
         container.RegisterSingleton<IItemRepository, ItemRepository>();

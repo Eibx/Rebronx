@@ -1,11 +1,5 @@
-import Vue from 'vue';
-
-class Store {
+class WorldStore {
     public currentNode: number = 0;
-
-
 }
 
-const WorldStore = Vue.observable(new Store());
-
-export default WorldStore;
+export const worldStore = new WorldStore();

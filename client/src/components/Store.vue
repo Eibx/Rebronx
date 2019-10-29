@@ -36,9 +36,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
-import DataService from '../services/data.service'
-import RenderService from '../services/render.service'
+import { Component, Vue } from 'vue-property-decorator';
+import {dataService} from '@/services/data.service'
 
 @Component({
     name: 'store'
@@ -46,11 +45,8 @@ import RenderService from '../services/render.service'
 export default class Store extends Vue {
     public image: string =  "";
 
-    created() {
-    }
-    
     buy(item: any, amount: number) {
-        DataService.send('store', 'buy', { store: 0, item: item, amount: amount });
+        dataService.send('store', 'buy', { store: 0, item: item, amount: amount });
     }
 }
 </script>
