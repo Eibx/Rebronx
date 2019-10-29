@@ -1,12 +1,14 @@
 import Vue from 'vue';
 
-import PlayerService from './services/player.service';
-
 import App from "@/App.vue";
+
+import {playerService} from './services/player.service';
+import {loginService} from "@/services/login.service";
 
 Vue.config.productionTip = false;
 
-PlayerService.setup();
+loginService.setup();
+playerService.setup();
 
 new Vue({ el: 'app', render: r => r(App) });
 

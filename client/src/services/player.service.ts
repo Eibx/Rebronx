@@ -24,9 +24,6 @@ class PlayerService {
             }
         });
     }
-
-    constructor() {
-    }
 }
 
-export default new PlayerService();
+export const playerService = new PlayerService();
