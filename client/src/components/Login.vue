@@ -8,7 +8,7 @@
                     placeholder="username"
                     v-model="username"
                     v-on:keyup.enter="login"
-                    class="bg-gray-400 px-1"
+                    class="bg-gray-200 placeholder-gray-600 text-gray-900 px-1"
                 />
             </div>
             <div class="mb-1">
@@ -17,7 +17,7 @@
                     placeholder="password"
                     v-model="password"
                     v-on:keyup.enter="login"
-                    class="bg-gray-400 px-1"
+                    class="bg-gray-200 placeholder-gray-600 text-gray-900 px-1"
                 />
             </div>
             <div class="mb-1">
@@ -25,13 +25,13 @@
                     type="button"
                     v-on:click="login"
                     value="login"
-                    class="mr-1 px-1"
+                    class="bg-gray-200 text-gray-900 mr-1 px-1"
                 />
                 <input
                     type="button"
                     v-on:click="register"
                     value="register"
-                    class="mr-1 px-1"
+                    class="bg-gray-200 text-gray-900 mr-1 px-1"
                 />
             </div>
         </div>
