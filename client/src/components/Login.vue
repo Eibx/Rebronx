@@ -1,51 +1,59 @@
 <template>
-    <div class="login-component w-1/4 mx-auto pt-10">
-        <h1 class="text-4xl text-gray-100">Rebronx</h1>
-        <div class="flex flex-col mb-5">
-            <div class="mb-1">
-                <input
-                    type="text"
-                    placeholder="username"
-                    v-model="username"
-                    v-on:keyup.enter="login"
-                    class="bg-gray-200 placeholder-gray-600 text-gray-900 px-1"
-                />
+    <div class="w-800px p-16 mx-auto">
+        <div class="bg-gray-800 py-8 mx-auto">
+            <h1 class="text-3xl text-gray-200 px-8 mb-2">Rebronx</h1>
+            <div class="flex">
+                <div class="w-1/2 px-8 border-r">
+                    <div class="flex flex-col mb-5">
+                        <div class="mb-3">
+                            <input
+                                    type="text"
+                                    placeholder="username"
+                                    v-model="username"
+                                    v-on:keyup.enter="login"
+                                    class="w-full"
+                            />
+                        </div>
+                        <div class="mb-3">
+                            <input
+                                    type="password"
+                                    placeholder="password"
+                                    v-model="password"
+                                    v-on:keyup.enter="login"
+                                    class="w-full"
+                            />
+                        </div>
+                        <div class="mb-1 flex">
+                            <input
+                                    type="button"
+                                    v-on:click="login"
+                                    value="login"
+                                    class="w-1/2 mr-3"
+                            />
+                            <input
+                                    type="button"
+                                    v-on:click="register"
+                                    value="register"
+                                    class="w-1/2"
+                            />
+                        </div>
+                    </div>
+                    <div v-if="showLoginIssue" class="mb-5 text-red-500 text-sm">
+                        Username and password doesn't match
+                    </div>
+                    <div v-if="showConnectionIssue" class="mb-5 text-red-500 text-sm">
+                        Cannot connect to server
+                    </div>
+                    <div v-if="isConnecting" class="mb-5 text-gray-600 text-sm">
+                        Connecting...
+                    </div>
+                </div>
+                <div class="w-1/2 px-8">
+                    <div class="mb-5 text-gray-300 text-sm">
+                        You only need username and password to register
+                    </div>
+                </div>
             </div>
-            <div class="mb-1">
-                <input
-                    type="password"
-                    placeholder="password"
-                    v-model="password"
-                    v-on:keyup.enter="login"
-                    class="bg-gray-200 placeholder-gray-600 text-gray-900 px-1"
-                />
-            </div>
-            <div class="mb-1">
-                <input
-                    type="button"
-                    v-on:click="login"
-                    value="login"
-                    class="bg-gray-200 text-gray-900 mr-1 px-1"
-                />
-                <input
-                    type="button"
-                    v-on:click="register"
-                    value="register"
-                    class="bg-gray-200 text-gray-900 mr-1 px-1"
-                />
-            </div>
-        </div>
-        <div v-if="showLoginIssue" class="mb-5 text-red-600 text-sm">
-            Username and password doesn't match
-        </div>
-        <div v-if="showConnectionIssue" class="mb-5 text-red-600 text-sm">
-            Cannot connect to server
-        </div>
-        <div v-if="isConnecting" class="mb-5 text-gray-600 text-sm">
-            Connecting...
-        </div>
-        <div class="mb-5 text-gray-600 text-sm">
-            You only need username and password to register
         </div>
     </div>
 </template>
@@ -85,6 +93,4 @@ export default class Login extends Vue {
 </script>
 
 <style scoped>
-.login-component {
-}
 </style>

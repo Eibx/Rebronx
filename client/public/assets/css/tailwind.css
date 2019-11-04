@@ -1,2 +1,55 @@
 @tailwind base;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'Fira Code';
+    src: url('/assets/fonts/firacode.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+h1,h2,h3,h4,h5,h6 {
+    font-family: "Fira Code";
+}
+
+input[type=text],
+input[type=password] {
+    @apply .bg-gray-200;
+    @apply .text-gray-900;
+    @apply .border-l-4;
+    @apply .border-gray-600;
+    @apply .px-1;
+
+    @apply .text-sm;
+
+    height:30px;
+    line-height:30px;
+}
+
+input[type=text]::placeholder,
+input[type=password]::placeholder {
+    @apply .text-gray-700;
+}
+
+input[type=button],
+input[type=submit],
+button {
+    @apply .bg-gray-200;
+    @apply .text-gray-900;
+    @apply .border-l-4;
+    @apply .border-gray-600;
+    @apply .px-1;
+
+    @apply .text-sm;
+
+    height:30px;
+    line-height:30px;
+}
+
+input[type=button]:active,
+input[type=submit]:active,
+button:active {
+    @apply .bg-gray-200;
+    @apply .border-gray-700;
+    @apply .text-gray-900;
+}
