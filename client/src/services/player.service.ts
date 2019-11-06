@@ -3,6 +3,7 @@ import {mapService} from './map.service'
 import {renderService} from './render.service'
 import {playerStore} from '../stores/player.store'
 import {worldStore} from '../stores/world.store'
+import {pathRenderService} from "@/services/path-render.service";
 
 class PlayerService {
     public setup() {
@@ -20,7 +21,7 @@ class PlayerService {
 
             if (type === 'movement') {
                 mapService.setActivePath(data.nodes, data.movetime);
-                renderService.setActivePath(data.nodes);
+                pathRenderService.setActivePath(data.nodes);
             }
         });
     }

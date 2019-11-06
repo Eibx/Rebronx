@@ -18,7 +18,7 @@ export default class World extends Vue {
     private from: number | null = null;
     private to: number | null = null;
 
-    created() {
+    mounted() {
         this.renderMap();
 
         window.addEventListener("resize", () => {
@@ -26,12 +26,12 @@ export default class World extends Vue {
         });
     }
 
-    async renderMap() {
-        let canvas = await renderService.setup();
+    private renderMap() {
+        let canvas = renderService.setup();
         this.$refs.canvasContainer.appendChild(canvas);
     }
 
-    updateCoordinates(event: MouseEvent) {
+    private updateCoordinates(event: MouseEvent) {
         renderService.onMouseMove(event);
     }
 
