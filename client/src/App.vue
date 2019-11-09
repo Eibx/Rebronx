@@ -7,7 +7,7 @@
         <div v-else>
             <world />
 
-            <lobby />
+            <location />
             <chat />
         </div>
     </div>
@@ -19,6 +19,7 @@
     import Login from "@/components/Login.vue";
     import World from "@/components/World.vue";
     import Lobby from "@/components/Lobby.vue";
+    import Location from "@/components/Location.vue";
     import Chat from "@/components/Chat.vue";
     import {playerStore} from "@/stores/player.store";
 
@@ -27,7 +28,7 @@
         components: {
             Login,
             World,
-            Lobby,
+            Location,
             Chat
         },
     })

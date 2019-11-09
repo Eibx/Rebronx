@@ -14,14 +14,14 @@ namespace Rebronx.Server.Systems.Chat.Senders
 
         public void Say(Player player, string message)
         {
-            var chatMessage = new SendChatMessage();
+            var chatMessage = new ChatResponse();
             chatMessage.Message = $"{player.Name}: {message}";
 
             _messageService.SendPosition(player.Node, "lobby", "chat", chatMessage);
         }
     }
 
-    public class SendChatMessage
+    public class ChatResponse
     {
         public string Message { get; set; }
     }

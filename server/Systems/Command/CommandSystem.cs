@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Systems.Inventory.Services;
 
 namespace Rebronx.Server.Systems.Command
 {
     public class CommandSystem : System, ICommandSystem
     {
-        private const string Component = "command";
         private readonly IInventoryService _inventoryService;
 
         public CommandSystem(IInventoryService inventoryService)
@@ -16,16 +16,16 @@ namespace Rebronx.Server.Systems.Command
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.Component == Component))
+            foreach (var message in messages.Where(m => m.System == SystemNames.Command))
             {
                 if (message.Type == "give")
-                    MessageSay(message);
+                    ProcessGiveRequest(message);
             }
         }
 
-        public void MessageSay(Message message)
+        public void ProcessGiveRequest(Message message)
         {
-            var inputMessage = GetData<InputCommandMessage>(message);
+            var inputMessage = GetData<CommandRequest>(message);
 
             if (inputMessage != null)
             {
@@ -37,7 +37,7 @@ namespace Rebronx.Server.Systems.Command
         }
     }
 
-    public class InputCommandMessage
+    public class CommandRequest
     {
         public List<string> Arguments { get; set; }
     }

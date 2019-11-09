@@ -19,14 +19,14 @@ namespace Rebronx.Server.Services
             _socketRepository = socketRepository;
         }
 
-        public void Send<T>(ClientConnection connection, string component, string type, T data)
+        public void Send<T>(ClientConnection connection, string system, string type, T data)
         {
             var json = string.Empty;
 
             try
             {
                 var settings = new JsonSerializerSettings {ContractResolver = new LowercaseContractResolver()};
-                json = JsonConvert.SerializeObject(new {component, type, data}, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new {component = system, type, data}, Formatting.None, settings);
             }
             catch
             {
@@ -39,14 +39,14 @@ namespace Rebronx.Server.Services
                 _webSocketCore.Send(stream, json);
         }
 
-        public void Send<T>(Player player, string component, string type, T data)
+        public void Send<T>(Player player, string system, string type, T data)
         {
             var json = string.Empty;
 
             try
             {
                 var settings = new JsonSerializerSettings {ContractResolver = new LowercaseContractResolver()};
-                json = JsonConvert.SerializeObject(new {component, type, data}, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new {component = system, type, data}, Formatting.None, settings);
             }
             catch
             {
@@ -59,14 +59,14 @@ namespace Rebronx.Server.Services
                 _webSocketCore.Send(connection.Stream, json);
         }
 
-        public void SendPosition<T>(int node, string component, string type, T data)
+        public void SendPosition<T>(int node, string system, string type, T data)
         {
             var json = string.Empty;
 
             try
             {
                 var settings = new JsonSerializerSettings {ContractResolver = new LowercaseContractResolver()};
-                json = JsonConvert.SerializeObject(new {component, type, data}, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new {component = system, type, data}, Formatting.None, settings);
             }
             catch
             {
@@ -83,14 +83,14 @@ namespace Rebronx.Server.Services
             }
         }
 
-        public void SendAll<T>(string component, string type, T data)
+        public void SendAll<T>(string system, string type, T data)
         {
             var json = string.Empty;
 
             try
             {
                 var settings = new JsonSerializerSettings {ContractResolver = new LowercaseContractResolver()};
-                json = JsonConvert.SerializeObject(new {component, type, data}, Formatting.None, settings);
+                json = JsonConvert.SerializeObject(new {component = system, type, data}, Formatting.None, settings);
             }
             catch
             {

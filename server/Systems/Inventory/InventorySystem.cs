@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Systems.Inventory.Services;
 
 namespace Rebronx.Server.Systems.Inventory
 {
     public class InventorySystem : System, IInventorySystem
     {
-        private const string Component = "inventory";
-
         private readonly IInventoryService _inventoryService;
 
         public InventorySystem(IInventoryService inventoryService)
@@ -17,26 +16,26 @@ namespace Rebronx.Server.Systems.Inventory
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.Component == Component))
+            foreach (var message in messages.Where(m => m.System == SystemNames.Inventory))
             {
                 if (message.Type == "reorder")
                 {
-                    ReorderInventory(message);
+                    ProcessReorderRequest(message);
                 }
                 else if (message.Type == "equip")
                 {
-                    EquipItem(message);
+                    ProcessEquiptRequest(message);
                 }
                 else if (message.Type == "unequip")
                 {
-                    UnequipItem(message);
+                    ProcessUnequipRequest(message);
                 }
             }
         }
 
-        private void ReorderInventory(Message message)
+        private void ProcessReorderRequest(Message message)
         {
-            var inputMessage = GetData<ReorderInventoryMessage>(message);
+            var inputMessage = GetData<ReorderInventoryRequest>(message);
 
             if (inputMessage != null && message?.Player != null)
             {
@@ -44,9 +43,9 @@ namespace Rebronx.Server.Systems.Inventory
             }
         }
 
-        private void EquipItem(Message message)
+        private void ProcessEquiptRequest(Message message)
         {
-            var inputMessage = GetData<EquipItemMessage>(message);
+            var inputMessage = GetData<EquipItemRequest>(message);
 
             if (inputMessage != null && message?.Player != null)
             {
@@ -54,9 +53,9 @@ namespace Rebronx.Server.Systems.Inventory
             }
         }
 
-        private void UnequipItem(Message message)
+        private void ProcessUnequipRequest(Message message)
         {
-            var inputMessage = GetData<EquipItemMessage>(message);
+            var inputMessage = GetData<EquipItemRequest>(message);
 
             if (inputMessage != null && message?.Player != null)
             {
@@ -65,13 +64,13 @@ namespace Rebronx.Server.Systems.Inventory
         }
     }
 
-    public class ReorderInventoryMessage
+    public class ReorderInventoryRequest
     {
         public int From { get; set; }
         public int To { get; set; }
     }
 
-    public class EquipItemMessage
+    public class EquipItemRequest
     {
         public int From { get; set; }
         public int? To { get; set; }

@@ -1,17 +1,17 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Repositories;
 using Rebronx.Server.Services;
 
-namespace Rebronx.Server.Systems.Lobby.Senders
+namespace Rebronx.Server.Systems.Location.Senders
 {
-    public class LobbySender : ILobbySender
+    public class LocationSender : ILocationSender
     {
         private readonly IPositionRepository _positionRepository;
         private readonly IMessageService _messageService;
 
-        public LobbySender(IPositionRepository positionRepository, IMessageService messageService)
+        public LocationSender(IPositionRepository positionRepository, IMessageService messageService)
         {
             _positionRepository = positionRepository;
             _messageService = messageService;
@@ -21,15 +21,15 @@ namespace Rebronx.Server.Systems.Lobby.Senders
         {
             var players = _positionRepository.GetPlayersByPosition(node);
 
-            var sendLobbyMessage = new SendLobbyMessage() {
+            var sendLocationMessage = new LocationResponse() {
                 Players = players.Select(p => new LobbyPlayer(p)).ToList()
             };
 
-            _messageService.SendPosition(node, "lobby", "lobby", sendLobbyMessage);
+            _messageService.SendPosition(node, SystemNames.Location, "location", sendLocationMessage);
         }
     }
 
-    public class SendLobbyMessage
+    public class LocationResponse
     {
         public List<LobbyPlayer> Players { get; set; }
     }

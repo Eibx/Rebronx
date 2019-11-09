@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Systems.Chat;
 using Rebronx.Server.Systems.Chat.Senders;
 
@@ -8,7 +9,6 @@ namespace Rebronx.Server.Systems.Chat
 {
     public class ChatSystem : System, IChatSystem
     {
-        private const string Component = "chat";
         private readonly IChatSender _chatSender;
 
         public ChatSystem(IChatSender chatSender)
@@ -18,16 +18,16 @@ namespace Rebronx.Server.Systems.Chat
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.Component == Component))
+            foreach (var message in messages.Where(m => m.System == SystemNames.Chat))
             {
                 if (message.Type == "say")
                     MessageSay(message);
             }
         }
 
-        public void MessageSay(Message message)
+        private void MessageSay(Message message)
         {
-            var inputMessage = GetData<InputChatMessage>(message);
+            var inputMessage = GetData<ChatRequest>(message);
 
             if (inputMessage != null && message?.Player != null)
             {
@@ -36,7 +36,7 @@ namespace Rebronx.Server.Systems.Chat
             }
         }
     }
-    public class InputChatMessage
+    public class ChatRequest
     {
         public string Message { get; set; } = "";
     }

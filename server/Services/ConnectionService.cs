@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories;
-using Rebronx.Server.Systems.Lobby.Senders;
+using Rebronx.Server.Systems.Location.Senders;
 
 namespace Rebronx.Server.Services
 {
@@ -11,16 +11,16 @@ namespace Rebronx.Server.Services
     {
         private readonly IUserRepository _playerRepository;
         private readonly ISocketRepository _socketRepository;
-        private readonly ILobbySender _lobbySender;
+        private readonly ILocationSender _locationSender;
 
         public ConnectionService(
             IUserRepository playerRepository,
             ISocketRepository socketRepository,
-            ILobbySender lobbySender)
+            ILocationSender locationSender)
         {
             _socketRepository = socketRepository;
             _playerRepository = playerRepository;
-            _lobbySender = lobbySender;
+            _locationSender = locationSender;
         }
 
         public List<Message> ConvertToMessages(List<WebSocketMessage> messages)
@@ -35,7 +35,7 @@ namespace Rebronx.Server.Services
                     {
                         Player = null,
                         Connection = message.Connection,
-                        Component = message.Component,
+                        System = message.Component,
                         Type = message.Type,
                         Data = message.Data
                     });
@@ -56,7 +56,7 @@ namespace Rebronx.Server.Services
                 output.Add(new Message
                 {
                     Player = player,
-                    Component = message.Component,
+                    System = message.Component,
                     Type = message.Type,
                     Data = message.Data
                 });
@@ -85,7 +85,7 @@ namespace Rebronx.Server.Services
 
                 if (player != null)
                 {
-                    _lobbySender.Update(player.Node);
+                    _locationSender.Update(player.Node);
                 }
             }
         }

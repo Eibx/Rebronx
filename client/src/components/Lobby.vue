@@ -14,11 +14,6 @@ export default class Lobby extends Vue {
     public players: any[] = [];
 
     created() {
-        dataService.subscribe('lobby', (type: string, data: any) => {
-            if (type == "lobby") {
-                this.players = data.players;
-            }
-        });
     }
 }
 </script>

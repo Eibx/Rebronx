@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Repositories;
 using Rebronx.Server.Systems.Inventory.Services;
 
@@ -8,7 +9,6 @@ namespace Rebronx.Server.Systems.Store
 {
     public class StoreSystem : System, IStoreSystem
     {
-        private const string Component = "store";
         private readonly IInventoryService _inventoryService;
         private readonly IItemRepository _itemRepository;
 
@@ -20,14 +20,14 @@ namespace Rebronx.Server.Systems.Store
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.Component == Component))
+            foreach (var message in messages.Where(m => m.System == SystemNames.Store))
             {
                 if (message.Type == "buy")
-                    MessageBuy(message);
+                    ProcessBuyRequest(message);
             }
         }
 
-        public void MessageBuy(Message message)
+        public void ProcessBuyRequest(Message message)
         {
             var inputMessage = GetData<InputBuyMessage>(message);
 

@@ -1,4 +1,3 @@
-using System;
 using LightInject;
 using Rebronx.Server.Services;
 using Rebronx.Server.Repositories;
@@ -6,16 +5,13 @@ using Rebronx.Server.Systems.Chat;
 using Rebronx.Server.Systems.Map;
 using Rebronx.Server.Systems.Movement;
 using Rebronx.Server.Systems.Inventory;
-using Rebronx.Server.Systems.Join;
 using Rebronx.Server.Systems.Login;
-using Rebronx.Server.Systems.Lobby;
 using Rebronx.Server.Systems.Combat;
 using Rebronx.Server.Systems.Store;
 using Rebronx.Server.Systems.Chat.Senders;
 using Rebronx.Server.Systems.Inventory.Senders;
 using Rebronx.Server.Systems.Join.Senders;
 using Rebronx.Server.Systems.Login.Senders;
-using Rebronx.Server.Systems.Lobby.Senders;
 using Rebronx.Server.Systems.Map.Senders;
 using Rebronx.Server.Systems.Movement.Senders;
 using Rebronx.Server.Systems.Combat.Senders;
@@ -24,6 +20,7 @@ using Rebronx.Server.Systems.Combat.Repositories;
 using Rebronx.Server.Systems.Inventory.Repositories;
 using Rebronx.Server.Systems.Inventory.Services;
 using Rebronx.Server.Systems.Command;
+using Rebronx.Server.Systems.Location.Senders;
 
 public class Program
 {
@@ -55,7 +52,7 @@ public class Program
         container.RegisterSingleton<IInventorySender, InventorySender>();
         container.RegisterSingleton<IJoinSender, JoinSender>();
         container.RegisterSingleton<ILoginSender, LoginSender>();
-        container.RegisterSingleton<ILobbySender, LobbySender>();
+        container.RegisterSingleton<ILocationSender, LocationSender>();
         container.RegisterSingleton<IMapSender, MapSender>();
         container.RegisterSingleton<IMovementSender, MovementSender>();
         container.RegisterSingleton<ICombatSender, CombatSender>();

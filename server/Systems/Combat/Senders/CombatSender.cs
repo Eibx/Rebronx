@@ -18,7 +18,7 @@ namespace Rebronx.Server.Systems.Combat.Senders
         public void AttackerReport(Player player, int damage)
         {
             var connection = _socketRepository.GetConnection(player.Id);
-            var combatReport = new SendCombatReport() {
+            var combatReport = new CombatReportResponse() {
                 Damage = damage
             };
             _messageService.Send(connection, "combat", "attacker", combatReport);
@@ -27,14 +27,14 @@ namespace Rebronx.Server.Systems.Combat.Senders
         public void VictimReport(Player player, int damage)
         {
             var connection = _socketRepository.GetConnection(player.Id);
-            var combatReport = new SendCombatReport() {
+            var combatReport = new CombatReportResponse() {
                 Damage = damage
             };
             _messageService.Send(connection, "combat", "victim", combatReport);
         }
     }
 
-    public class SendCombatReport
+    public class CombatReportResponse
     {
         public int Damage { get; set; }
     }

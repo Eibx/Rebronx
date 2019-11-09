@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Helpers;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories;
@@ -12,8 +13,6 @@ namespace Rebronx.Server.Systems.Login
 {
     public class LoginSystem : System, ILoginSystem
     {
-        private const string Component = "login";
-
         private readonly IUserRepository _userRepository;
         private readonly ILoginSender _loginSender;
         private readonly ITokenRepository _tokenRepository;
@@ -42,23 +41,23 @@ namespace Rebronx.Server.Systems.Login
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.Component == Component))
+            foreach (var message in messages.Where(m => m.System == SystemNames.Login))
             {
                 switch (message.Type)
                 {
                     case "login":
-                        Login(message as UnauthorizedMessage);
+                        ProcessLoginRequest(message as UnauthorizedMessage);
                         break;
                     case "signup":
-                        Signup(message as UnauthorizedMessage);
+                        ProcessSignupRequest(message as UnauthorizedMessage);
                         break;
                 }
             }
         }
 
-        private void Login(UnauthorizedMessage loginMessage)
+        private void ProcessLoginRequest(UnauthorizedMessage loginMessage)
         {
-            var loginData = GetData<LoginMessage>(loginMessage);
+            var loginData = GetData<LoginRequest>(loginMessage);
 
             if (loginData == null)
                 return;
@@ -95,9 +94,9 @@ namespace Rebronx.Server.Systems.Login
             SendPlayerInformation(player, loginMessage.Connection, token);
         }
 
-        private void Signup(UnauthorizedMessage signupMessage)
+        private void ProcessSignupRequest(UnauthorizedMessage signupMessage)
         {
-            var signupData = GetData<SignupMessage>(signupMessage);
+            var signupData = GetData<SignupRequest>(signupMessage);
 
             if (signupData == null)
                 return;
@@ -141,14 +140,14 @@ namespace Rebronx.Server.Systems.Login
         }
     }
 
-    public class LoginMessage
+    public class LoginRequest
     {
         public string Username { get; set; }
         public string Password { get; set; }
         public string Token { get; set; }
     }
 
-    public class SignupMessage
+    public class SignupRequest
     {
         public string Username { get; set; }
         public string Password { get; set; }

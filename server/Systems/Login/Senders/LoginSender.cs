@@ -15,7 +15,7 @@ namespace Rebronx.Server.Systems.Login.Senders
 
         public void Success(Player player, string token)
         {
-            var loginMessage = new SendLoginMessage();
+            var loginMessage = new LoginResponse();
             loginMessage.Success = true;
             loginMessage.Reason = 0;
             loginMessage.Token = token;
@@ -25,7 +25,7 @@ namespace Rebronx.Server.Systems.Login.Senders
 
         public void Fail(Player player, int reason)
         {
-            var loginMessage = new SendLoginMessage();
+            var loginMessage = new LoginResponse();
             loginMessage.Success = false;
             loginMessage.Reason = 0;
             loginMessage.Token = null;
@@ -35,7 +35,7 @@ namespace Rebronx.Server.Systems.Login.Senders
 
         public void Fail(ClientConnection connection, int reason)
         {
-            var loginMessage = new SendLoginMessage();
+            var loginMessage = new LoginResponse();
             loginMessage.Success = false;
             loginMessage.Reason = reason;
             loginMessage.Token = null;
@@ -45,7 +45,7 @@ namespace Rebronx.Server.Systems.Login.Senders
 
         public void SignupSuccess(ClientConnection connection, string token)
         {
-            var signupMessage = new SendSignupMessage();
+            var signupMessage = new SignupResponse();
             signupMessage.Success = true;
             signupMessage.Token = token;
             signupMessage.Reason = 0;
@@ -55,7 +55,7 @@ namespace Rebronx.Server.Systems.Login.Senders
 
         public void SignupFail(ClientConnection connection, int reason)
         {
-            var signupMessage = new SendSignupMessage();
+            var signupMessage = new SignupResponse();
             signupMessage.Success = true;
             signupMessage.Token = null;
             signupMessage.Reason = reason;
@@ -64,14 +64,14 @@ namespace Rebronx.Server.Systems.Login.Senders
         }
     }
 
-    public class SendLoginMessage
+    public class LoginResponse
     {
         public bool Success { get; set; }
         public int Reason { get; set; }
         public string Token { get; set; }
     }
 
-    public class SendSignupMessage
+    public class SignupResponse
     {
         public bool Success { get; set; }
         public int Reason { get; set; }
