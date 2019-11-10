@@ -1,5 +1,10 @@
 <template>
-
+    <div class="c-window inventory-window">
+        <div class="c-window__bar">Inventory</div>
+        <div class="c-window__content">
+            Empty inventory
+        </div>
+    </div>
 </template>
 
 <script lang="ts">
@@ -21,3 +26,12 @@ export default class Inventory extends Vue {
 
 }
 </script>
+<style>
+    .inventory-window {
+        position:absolute;
+        top:20px;
+        left:20px;
+        width:400px;
+        height:300px;
+    }
+</style>

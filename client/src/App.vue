@@ -9,6 +9,7 @@
 
             <location />
             <chat />
+            <inventory />
         </div>
     </div>
 </template>
@@ -22,10 +23,12 @@
     import Location from "@/components/Location.vue";
     import Chat from "@/components/Chat.vue";
     import {playerStore} from "@/stores/player.store";
+    import Inventory from "@/components/Inventory.vue";
 
     @Component({
         name: 'app',
         components: {
+            Inventory,
             Login,
             World,
             Location,
@@ -36,6 +39,3 @@
         public playerStore = playerStore;
     }
 </script>
-
-<style scoped lang="less">
-</style>

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "tailwind": "tailwind build ./public/assets/css/tailwind.css -o ./public/build/output.css",
+    "tailwind": "tailwind build ./tailwind.css -o ./public/css/output.css",
     "serve": "npm run tailwind & vue-cli-service serve",
     "build": "npm run tailwind & vue-cli-service build"
   },
