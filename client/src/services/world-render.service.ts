@@ -41,7 +41,7 @@ class WorldRenderService {
                 let geometry = new THREE.ConeGeometry(0.20, 1.0, 4);
                 let material = new THREE.MeshBasicMaterial({ color: 0x00000000 });
                 let cone = new THREE.Mesh(geometry, material);
-                cone.position.set(node.x, 0.5, -node.y);
+                cone.position.set(node.x, 0.5, node.y);
 
                 this.cones[parseInt(node.id)] = cone;
                 renderService.scene.add(cone);

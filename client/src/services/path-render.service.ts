@@ -24,7 +24,7 @@ class PathRenderService {
             const node = mapService.getNode(paths[i]);
 
             if (node)
-                this.activePath.push({ x: node.x, y: -node.y });
+                this.activePath.push({ x: node.x, y: node.y });
         }
 
         function createPath(color: string, lineWidth: number) : THREE.Line {
@@ -37,7 +37,7 @@ class PathRenderService {
 
                 positions[i*3] = node.x;
                 positions[i*3+1] = 0.1;
-                positions[i*3+2] = -node.y;
+                positions[i*3+2] = node.y;
             }
 
             const geometry = new THREE.BufferGeometry();

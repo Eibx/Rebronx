@@ -1,7 +1,4 @@
 import * as THREE from 'three'
-import GLTFLoader from 'three-gltf-loader'
-import {mapService} from './map.service';
-import {worldStore} from "@/stores/world.store";
 import {worldRenderService} from "@/services/world-render.service";
 import {pathRenderService} from "@/services/path-render.service";
 
@@ -34,18 +31,6 @@ class RenderService {
         this.renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(this.canvasW, this.canvasH);
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-        let light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set( 5, 2, 0 );
-        light.castShadow = true;
-        this.scene.add( light );
-
-        light.shadow.mapSize.width = 512;  // default
-        light.shadow.mapSize.height = 512; // default
-        light.shadow.camera.near = 0.5;    // default
-        light.shadow.camera.far = 500;     // default
 
         this.renderer.setClearColor(0x000000, 0);
 
@@ -73,7 +58,7 @@ class RenderService {
         let intersects = new THREE.Vector3();
         this.raycaster.ray.intersectPlane(this.plane, intersects);
 
-        this.cursorPosition = new THREE.Vector2(intersects.x, -intersects.z);
+        this.cursorPosition = new THREE.Vector2(intersects.x, intersects.z);
     }
 
     public render() {
