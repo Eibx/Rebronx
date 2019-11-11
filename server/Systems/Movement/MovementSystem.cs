@@ -69,7 +69,7 @@ namespace Rebronx.Server.Systems.Movement
                 return;
 
             var nodes = moveMessage.Nodes;
-            if (nodes.Count < 2)
+            if (nodes.Count < 2 || nodes.Count > 50)
                 return;
 
             var playerNode = message.Player.Node;

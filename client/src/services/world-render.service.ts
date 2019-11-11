@@ -5,7 +5,6 @@ import {worldStore} from "@/stores/world.store";
 import {renderService} from "@/services/render.service";
 
 const tailwindConfig = require('@/../tailwind.config.js');
-console.log(tailwindConfig);
 
 class WorldRenderService {
     public mapModel: any = null;

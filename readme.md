@@ -2,7 +2,7 @@
 > A Persistent Browser-based game
 
 Rebronx is a game side-project I work on from time to time.
-It's a cyber-themed game based around organized crime with permadeath.
+It's a cyber-themed game based around organized crime.
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365 -node
 openssl pkcs12 -export -inkey key.pem -in cert.pem -out rebronx.p12 -password pass:1
 ```
 
-*Note that browsers will still not trust these certificates.*  
+*Note that browsers will still not trust these certificates.*
 *So after we get the server and site running - make exceptions for https://localhost:8080 and https://localhost:21220.*
 
 Go to `Rebronx.Server` and run:
