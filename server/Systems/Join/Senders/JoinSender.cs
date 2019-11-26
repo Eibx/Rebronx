@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Inventory.Senders;
@@ -33,7 +35,7 @@ namespace Rebronx.Server.Systems.Join.Senders
 
                 _messageService.Send(player, SystemNames.Join, "join", joinMessage);
                 _locationSender.Update(position);
-                _inventorySender.SendInventory(player);
+                //_inventorySender.SendInventory(player);
             }
 
         }

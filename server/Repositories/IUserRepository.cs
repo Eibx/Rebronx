@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Rebronx.Server.Repositories
 {
     public interface IUserRepository

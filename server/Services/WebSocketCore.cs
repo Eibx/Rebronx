@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
@@ -21,8 +22,8 @@ namespace Rebronx.Server.Services
         private readonly TcpListener _server;
         private readonly X509Certificate _serverCertificate;
 
-        private const int TextFrame = 129;
-        private const int CloseFrame = 136;
+        private const byte TextFrame = 129;
+        private const byte CloseFrame = 136;
 
         public WebSocketCore(ISocketRepository socketRepository)
         {
@@ -44,9 +45,10 @@ namespace Rebronx.Server.Services
             while (_server.Pending())
             {
                 var client = _server.AcceptTcpClient();
+                client.Client.NoDelay = true;
 
                 var sslStream = new SslStream(client.GetStream(), true);
-                sslStream.AuthenticateAsServer(_serverCertificate, false, SslProtocols.Tls13, true);
+                sslStream.AuthenticateAsServer(_serverCertificate, false, SslProtocols.Tls13, false);
 
                 _connectingClients.Add(new ConnectingClient()
                 {
@@ -71,7 +73,7 @@ namespace Rebronx.Server.Services
 
                 var data = new List<byte>();
 
-                while (socket.TcpClient.Client.Poll(1000, SelectMode.SelectRead))
+                while (socket.TcpClient.Client.Poll(10, SelectMode.SelectRead))
                 {
                     var buffer = new byte[1024];
 
@@ -103,19 +105,19 @@ namespace Rebronx.Server.Services
 
                 if (data[1] <= 253)
                 {
-                    size = (data[1] - 128u);
+                    size = (data[1]);
                     mask = data.Skip(2).Take(4).ToArray();
                     payloadIndex = 6;
                 }
                 else if (data[1] == 254)
                 {
-                    size = BitConverter.ToUInt16(data.ToArray(), 2);
+                    size = BitConverter.ToUInt16(data.ToArray(), 1);
                     mask = data.Skip(4).Take(4).ToArray();
                     payloadIndex = 8;
                 }
                 else if (data[1] == 255)
                 {
-                    size = BitConverter.ToUInt64(data.ToArray(), 2);
+                    size = BitConverter.ToUInt64(data.ToArray(), 1);
                     mask = data.Skip(10).Take(4).ToArray();
                     payloadIndex = 14;
                 }
@@ -126,13 +128,16 @@ namespace Rebronx.Server.Services
                     payload[j] = (byte)(payload[j] ^ mask[j % 4]);
                 }
 
-                var jsonData = Encoding.ASCII.GetString(payload, 0, payload.Count());
+                var jsonData = Encoding.UTF8.GetString(payload, 0, payload.Count());
+
                 if (jsonData == "ping")
                 {
                     socket.LastMessage = DateTime.Now;
                     Send(socket.Stream, "pong");
                     continue;
                 }
+
+                Console.WriteLine(jsonData);
 
                 WebSocketMessage wsMessage = null;
                 try
@@ -188,7 +193,7 @@ namespace Rebronx.Server.Services
 
             try
             {
-                stream.Write(bytes.ToArray());
+                stream.WriteAsync(bytes.ToArray());
             }
             catch (SocketException e)
             {
@@ -235,7 +240,14 @@ namespace Rebronx.Server.Services
                 {
                     var responseBytes = CreateConnectionResponse(httpHeaders);
 
-                    connection.Stream.Write(responseBytes, 0, responseBytes.Length);
+                    try
+                    {
+                        connection.Stream.WriteAsync(responseBytes, 0, responseBytes.Length);
+                    }
+                    catch (IOException)
+                    {
+                        // ignore
+                    }
 
                     var clientConnection = new ClientConnection()
                     {
@@ -246,12 +258,12 @@ namespace Rebronx.Server.Services
                     };
 
                     _socketRepository.AddUnauthorizedConnection(clientConnection);
-                }
 
-                if (i <= _connectingClients.Count - 1)
-                {
-                    _connectingClients.RemoveAt(i);
-                    i--;
+                    if (i <= _connectingClients.Count - 1)
+                    {
+                        _connectingClients.RemoveAt(i);
+                        i--;
+                    }
                 }
             }
         }
@@ -272,7 +284,7 @@ namespace Rebronx.Server.Services
                 {
                     received = connectingClient.Stream.Read(buffer, 0, buffer.Length);
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                     // ignored
                 }
@@ -280,9 +292,10 @@ namespace Rebronx.Server.Services
                 if (received == 0)
                     break;
 
-                var message = Encoding.ASCII.GetString(buffer, 0, received);
+                var message = Encoding.UTF8.GetString(buffer, 0, received);
                 output += message;
             }
+
 
             return output;
         }
@@ -298,7 +311,7 @@ namespace Rebronx.Server.Services
                            "Upgrade: websocket\r\n" +
                            "Connection: Upgrade\r\n" +
                            "Sec-WebSocket-Accept: " + wsKeyResult + "\r\n\r\n";
-            var responseBytes = Encoding.ASCII.GetBytes(response);
+            var responseBytes = Encoding.UTF8.GetBytes(response);
             return responseBytes;
         }
 

@@ -10,7 +10,7 @@ namespace Rebronx.Server.Repositories
         private readonly IDatabaseService _databaseService;
         private readonly ISocketRepository _socketRepository;
 
-        public PositionRepository(IDatabaseService databaseService, ISocketRepository socketRepository)
+        public PositionRepository(IDatabaseService databaseService, ISocketRepository socketRepository, IUserRepository userRepository)
         {
             _databaseService = databaseService;
             _socketRepository = socketRepository;
@@ -26,6 +26,7 @@ namespace Rebronx.Server.Repositories
                     id = player.Id,
                     node
                 });
+            connection.Close();
         }
 
         public List<Player> GetPlayersByPosition(int node)
@@ -37,6 +38,7 @@ namespace Rebronx.Server.Repositories
                 new {
                     node
                 });
+            connection.Close();
 
             return players.Where(x => _socketRepository.IsPlayerOnline(x.Id)).ToList();
         }

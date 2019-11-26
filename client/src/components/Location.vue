@@ -12,8 +12,8 @@
                 <ul class="c-context-menu absolute border-2 border-gray-600 text-sm select-none" v-if="playerActiveContext && playerActiveContext === player.id">
                     <li class="bg-gray-800 hover:bg-gray-700 cursor-pointer border-b-2 border-gray-900 px-2" v-on:click="">Show player information</li>
                     <li class="bg-gray-800 hover:bg-gray-700 cursor-pointer border-b-2 border-gray-900 px-2">Message</li>
-                    <li class="bg-red-800 hover:bg-red-900 cursor-pointer border-gray-900 px-2" v-if="!selectAttackMenu" @click="selectAttackMenu = true">Attack player</li>
-                    <li class="cursor-pointer border-gray-900 flex" v-if="selectAttackMenu">
+                    <li class="bg-red-800 hover:bg-red-900 cursor-pointer border-gray-900 px-2" v-show="!selectAttackMenu" @click="selectAttackMenu = true">Attack player</li>
+                    <li class="cursor-pointer border-gray-900 flex" v-show="selectAttackMenu">
                         <div class="bg-gray-800 hover:bg-gray-700 flex-1 px-2" v-on:click="selectAttackMenu = false">Cancel</div>
                         <div class="bg-red-800 hover:bg-red-900 flex-1 px-2" v-on:click="selectAttackMenu = false">Attack</div>
                     </li>

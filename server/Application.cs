@@ -1,12 +1,16 @@
+using System;
+using System.Diagnostics;
 using System.Threading;
 using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Chat;
+using Rebronx.Server.Systems.Chat.Senders;
 using Rebronx.Server.Systems.Combat;
 using Rebronx.Server.Systems.Inventory;
 using Rebronx.Server.Systems.Map;
 using Rebronx.Server.Systems.Movement;
 using Rebronx.Server.Systems.Store;
 using Rebronx.Server.Systems.Command;
+using Rebronx.Server.Systems.Location.Senders;
 using Rebronx.Server.Systems.Login;
 
 public class Application
@@ -22,6 +26,11 @@ public class Application
     private readonly IStoreSystem _storeSystem;
     private readonly ICombatSystem _combatSystem;
     private readonly IInventorySystem _inventorySystem;
+
+    private readonly ILocationSender _locationSender;
+    private readonly IChatSender _chatSender;
+
+
     public Application(
         IWebSocketCore webSocketCore,
         IConnectionService connectionService,
@@ -33,7 +42,10 @@ public class Application
         IChatSystem chatSystem,
         IStoreSystem storeSystem,
         ICombatSystem combatSystem,
-        IInventorySystem inventorySystem)
+        IInventorySystem inventorySystem,
+
+        ILocationSender locationSender,
+        IChatSender chatSender)
     {
         _webSocketCore = webSocketCore;
         _connectionService = connectionService;
@@ -46,29 +58,45 @@ public class Application
         _combatSystem = combatSystem;
         _inventorySystem = inventorySystem;
         _loginSystem = loginSystem;
+
+        _locationSender = locationSender;
+        _chatSender = chatSender;
     }
 
     public void Run()
     {
+        var stopwatch = new Stopwatch();
 	    while (true)
         {
-            _webSocketCore.GetNewConnections();
+            try
+            {
+                _webSocketCore.GetNewConnections();
 
-            _connectionService.HandleDeadPlayers();
+                _connectionService.HandleDeadPlayers();
 
-            var socketMessages = _webSocketCore.PollMessages();
-            var playerMessages = _connectionService.ConvertToMessages(socketMessages);
+                var socketMessages = _webSocketCore.PollMessages();
+                var playerMessages = _connectionService.ConvertToMessages(socketMessages);
 
-            _loginSystem.Run(playerMessages);
-            _commandSystem.Run(playerMessages);
-            _mapSystem.Run(playerMessages);
-            _movementSystem.Run(playerMessages);
-            _chatSystem.Run(playerMessages);
-            _storeSystem.Run(playerMessages);
-            _combatSystem.Run(playerMessages);
-            _inventorySystem.Run(playerMessages);
+                _loginSystem.Run(playerMessages);
+                _commandSystem.Run(playerMessages);
+                _mapSystem.Run(playerMessages);
+                _movementSystem.Run(playerMessages);
+                _chatSystem.Run(playerMessages);
+                _storeSystem.Run(playerMessages);
+                _combatSystem.Run(playerMessages);
+                _inventorySystem.Run(playerMessages);
 
-            Thread.Sleep(1);
+                _locationSender.Execute();
+                _chatSender.Execute();
+
+                Thread.Sleep(1);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("===== EXCEPTION =====");
+                Console.WriteLine(e.ToString());
+                Console.WriteLine("=====================");
+            }
         }
     }
 }

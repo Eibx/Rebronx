@@ -29,6 +29,7 @@ namespace Rebronx.Server.Repositories
                     token,
                     node = 1,
                 });
+            connection.Close();
         }
 
         public void RemovePlayer(int playerId)
@@ -39,6 +40,7 @@ namespace Rebronx.Server.Repositories
                 new {
                     id = playerId,
                 });
+            connection.Close();
         }
 
         public Player GetPlayerByName(string name)
@@ -49,6 +51,7 @@ namespace Rebronx.Server.Repositories
                 new {
                     name,
                 });
+            connection.Close();
 
             return player;
         }
@@ -61,6 +64,7 @@ namespace Rebronx.Server.Repositories
                 new {
                     name
                 });
+            connection.Close();
 
             if (data == null)
                 return null;
@@ -89,6 +93,7 @@ namespace Rebronx.Server.Repositories
                 new {
                     token = token,
                 });
+            connection.Close();
 
             return player;
         }
@@ -101,6 +106,7 @@ namespace Rebronx.Server.Repositories
                 new {
                     id = playerId,
                 });
+            connection.Close();
 
             return player;
         }
@@ -115,6 +121,7 @@ namespace Rebronx.Server.Repositories
                     id = playerId,
                     hash
                 });
+            connection.Close();
         }
     }
 }

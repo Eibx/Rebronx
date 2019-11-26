@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Helpers;
@@ -133,7 +135,7 @@ namespace Rebronx.Server.Systems.Login
         private void SendPlayerInformation(Player player, ClientConnection connection, string token)
         {
             _socketRepository.AddConnection(player.Id, connection);
-            _positionRepository.SetPlayerPosition(player, player.Node);
+            //_positionRepository.SetPlayerPosition(player, player.Node);
 
             _loginSender.Success(player, token);
             _joinSender.Join(player);
