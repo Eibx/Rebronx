@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Helpers;
@@ -8,8 +7,8 @@ using Rebronx.Server.Models;
 using Rebronx.Server.Repositories;
 using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Join.Senders;
+using Rebronx.Server.Systems.Location.Senders;
 using Rebronx.Server.Systems.Login.Senders;
-using Rebronx.Server.Systems.Movement.Senders;
 
 namespace Rebronx.Server.Systems.Login
 {
@@ -22,6 +21,10 @@ namespace Rebronx.Server.Systems.Login
         private readonly IPositionRepository _positionRepository;
         private readonly IJoinSender _joinSender;
         private readonly ISocketRepository _socketRepository;
+        private readonly ILocationSender _locationSender;
+
+        private readonly List<Message> _previousLoginMessages = new List<Message>();
+        private const int MessagesPerTick = 10;
 
         public LoginSystem(
             IUserRepository userRepository,
@@ -30,7 +33,8 @@ namespace Rebronx.Server.Systems.Login
             ITokenService tokenService,
             IJoinSender joinSender,
             ISocketRepository socketRepository,
-            IPositionRepository positionRepository)
+            IPositionRepository positionRepository,
+            ILocationSender locationSender)
         {
             _userRepository = userRepository;
             _loginSender = loginSender;
@@ -39,20 +43,36 @@ namespace Rebronx.Server.Systems.Login
             _joinSender = joinSender;
             _socketRepository = socketRepository;
             _positionRepository = positionRepository;
+            _locationSender = locationSender;
         }
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.System == SystemNames.Login))
+            var loginMessages = messages.Where(m => m.System == SystemTypes.Login).ToList();
+
+            loginMessages.InsertRange(0, _previousLoginMessages);
+            _previousLoginMessages.Clear();
+
+            foreach (var message in loginMessages.Take(MessagesPerTick))
             {
                 switch (message.Type)
                 {
-                    case "login":
+                    case SystemTypes.LoginTypes.Login:
                         ProcessLoginRequest(message as UnauthorizedMessage);
                         break;
-                    case "signup":
+                    case SystemTypes.LoginTypes.Signup:
                         ProcessSignupRequest(message as UnauthorizedMessage);
                         break;
+                }
+            }
+
+            if (loginMessages.Count > MessagesPerTick)
+            {
+                _previousLoginMessages.AddRange(loginMessages.Skip(MessagesPerTick));
+                foreach (var message in _previousLoginMessages)
+                {
+                    if (message is UnauthorizedMessage unauthorizedMessage)
+                        unauthorizedMessage.Connection.LastMessage = DateTime.Now;
                 }
             }
         }
@@ -139,6 +159,7 @@ namespace Rebronx.Server.Systems.Login
 
             _loginSender.Success(player, token);
             _joinSender.Join(player);
+            _locationSender.Update(player.Node);
         }
     }
 

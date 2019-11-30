@@ -23,7 +23,10 @@ namespace Rebronx.Server.Services
         private readonly X509Certificate _serverCertificate;
 
         private const byte TextFrame = 129;
+        private const byte BinaryFrame = 130;
         private const byte CloseFrame = 136;
+        private const byte PingFrame = 137;
+        private const byte PongFrame = 138;
 
         public WebSocketCore(ISocketRepository socketRepository)
         {
@@ -42,6 +45,8 @@ namespace Rebronx.Server.Services
 
         public void GetNewConnections()
         {
+            int newConnections = 0;
+
             while (_server.Pending())
             {
                 var client = _server.AcceptTcpClient();
@@ -56,6 +61,11 @@ namespace Rebronx.Server.Services
                     Stream = sslStream,
                     Connected = DateTime.Now
                 });
+
+                newConnections++;
+
+                if (newConnections > 10)
+                    break;
             }
 
             HandleHttpConnection();
@@ -96,7 +106,7 @@ namespace Rebronx.Server.Services
                 if (!data.Any())
                     continue;
 
-                if (data[0] != TextFrame)
+                if (data[0] != BinaryFrame)
                     continue;
 
                 ulong size = 0;
@@ -128,66 +138,60 @@ namespace Rebronx.Server.Services
                     payload[j] = (byte)(payload[j] ^ mask[j % 4]);
                 }
 
-                var jsonData = Encoding.UTF8.GetString(payload, 0, payload.Count());
+                var jsonData = Encoding.UTF8.GetString(payload, 2, payload.Count()-2);
 
                 if (jsonData == "ping")
                 {
                     socket.LastMessage = DateTime.Now;
-                    Send(socket.Stream, "pong");
                     continue;
                 }
 
                 Console.WriteLine(jsonData);
 
-                WebSocketMessage wsMessage = null;
-                try
+                WebSocketMessage message = new WebSocketMessage
                 {
-                    wsMessage = JsonConvert.DeserializeObject<WebSocketMessage>(jsonData);
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
+                    System = payload[0],
+                    Type = payload[1],
+                    Data = jsonData
+                };
 
-                if (wsMessage != null && wsMessage.HasData())
+                if (message.HasData())
                 {
-                    wsMessage.Connection = socket;
-                    output.Add(wsMessage);
+                    message.Connection = socket;
+                    output.Add(message);
                 }
             }
 
             return output;
         }
 
-        public void Send(SslStream stream, string data)
+        public void Send(SslStream stream, byte[] dataBytes)
         {
-            var bytes = new List<byte> { TextFrame };
+            var bytes = new List<byte> { BinaryFrame };
 
-            var dataBytes = Encoding.UTF8.GetBytes(data).ToList();
-
-            if (dataBytes.Count <= 125)
+            if (dataBytes.Length <= 125)
             {
-                bytes.Add((byte)dataBytes.Count);
+                bytes.Add((byte)dataBytes.Length);
                 bytes.AddRange(dataBytes);
             }
-            else if (dataBytes.Count <= 65535)
+            else if (dataBytes.Length <= 65535)
             {
                 bytes.Add(126);
-                bytes.Add((byte)((dataBytes.Count() >> 8) & 255));
-                bytes.Add((byte)((dataBytes.Count()) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 8) & 255));
+                bytes.Add((byte)((dataBytes.Length) & 255));
                 bytes.AddRange(dataBytes);
             }
             else
             {
                 bytes.Add(127);
-                bytes.Add((byte)((dataBytes.Count() >> 56) & 255));
-                bytes.Add((byte)((dataBytes.Count() >> 48) & 255));
-                bytes.Add((byte)((dataBytes.Count() >> 40) & 255));
-                bytes.Add((byte)((dataBytes.Count() >> 32) & 255));
-                bytes.Add((byte)((dataBytes.Count() >> 24) & 255));
-                bytes.Add((byte)((dataBytes.Count() >> 16) & 255));
-                bytes.Add((byte)((dataBytes.Count() >> 8) & 255));
-                bytes.Add((byte)((dataBytes.Count()) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 56) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 48) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 40) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 32) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 24) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 16) & 255));
+                bytes.Add((byte)((dataBytes.Length >> 8) & 255));
+                bytes.Add((byte)((dataBytes.Length) & 255));
                 bytes.AddRange(dataBytes);
             }
 
@@ -202,21 +206,15 @@ namespace Rebronx.Server.Services
             }
         }
 
-        private void SendClose(Socket socket, int reason)
+        private void SendClose(SslStream stream, short reason)
         {
-            var bytes = new List<byte>
+            var reasonBytes = BitConverter.GetBytes(reason);
+            var bytes = new byte[]
             {
-                CloseFrame,
-
-                //length
-                2,
-
-                //code/reason 4001 - TODO: Send Reason
-                15,
-                161
+                CloseFrame, 2, reasonBytes[0], reasonBytes[1]
             };
 
-            socket.Send(bytes.ToArray());
+            stream.WriteAsync(bytes);
         }
 
         private void HandleHttpConnection()
@@ -356,20 +354,20 @@ namespace Rebronx.Server.Services
 
         public bool IsTimeout()
         {
-            return (Connected.AddSeconds(5) < DateTime.Now);
+            return (Connected.AddSeconds(30) < DateTime.Now);
         }
     }
 
     public class WebSocketMessage
     {
         public ClientConnection Connection { get; set; }
-        public string Component { get; set; }
-        public string Type { get; set; }
+        public byte System { get; set; }
+        public byte Type { get; set; }
         public string Data { get; set; }
 
         public bool HasData()
         {
-            return !string.IsNullOrEmpty(Component) && !string.IsNullOrEmpty(Type) && !string.IsNullOrEmpty(Data);
+            return System > 0 && Type > 0 && !string.IsNullOrEmpty(Data);
         }
     }
 }

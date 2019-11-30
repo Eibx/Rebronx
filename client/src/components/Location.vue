@@ -28,6 +28,7 @@
     import Component from 'vue-class-component';
     import {dataService} from "@/services/data.service";
     import ContextMenu from "@/components/shared/ContextMenu.vue";
+    import {SystemTypes} from "@/typegen";
 
     @Component({
         name: "location",
@@ -43,15 +44,14 @@
         public selectAttackMenu: boolean = false;
 
         created() {
-            dataService.subscribe('location', (type: string, data: any) => {
-                if (type == "location") {
+            dataService.subscribe(SystemTypes.Location, (type: number, data: any) => {
+                if (type == SystemTypes.LocationTypes.PlayersUpdate) {
                     this.players = data.players;
                 }
             });
         }
 
         public hideContextMenu() {
-            console.log("?");
             this.playerActiveContext = null;
         }
 

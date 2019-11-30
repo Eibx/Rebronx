@@ -1,4 +1,5 @@
 using System;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Models;
 using Rebronx.Server.Services;
 
@@ -20,7 +21,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             loginMessage.Reason = 0;
             loginMessage.Token = token;
 
-            _messageService.Send(player, "login", "login", loginMessage);
+            _messageService.Send(player, SystemTypes.Login, SystemTypes.LoginTypes.Login, loginMessage);
         }
 
         public void Fail(Player player, int reason)
@@ -30,7 +31,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             loginMessage.Reason = 0;
             loginMessage.Token = null;
 
-            _messageService.Send(player, "login", "login", loginMessage);
+            _messageService.Send(player, SystemTypes.Login, SystemTypes.LoginTypes.Login, loginMessage);
         }
 
         public void Fail(ClientConnection connection, int reason)
@@ -40,7 +41,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             loginMessage.Reason = reason;
             loginMessage.Token = null;
 
-            _messageService.Send(connection, "login", "login", loginMessage);
+            _messageService.Send(connection, SystemTypes.Login, SystemTypes.LoginTypes.Login, loginMessage);
         }
 
         public void SignupSuccess(ClientConnection connection, string token)
@@ -50,7 +51,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             signupMessage.Token = token;
             signupMessage.Reason = 0;
 
-            _messageService.Send(connection, "login", "signup", signupMessage);
+            _messageService.Send(connection, SystemTypes.Login, SystemTypes.LoginTypes.Signup, signupMessage);
         }
 
         public void SignupFail(ClientConnection connection, int reason)
@@ -60,7 +61,7 @@ namespace Rebronx.Server.Systems.Login.Senders
             signupMessage.Token = null;
             signupMessage.Reason = reason;
 
-            _messageService.Send(connection, "login", "signup", signupMessage);
+            _messageService.Send(connection, SystemTypes.Login, SystemTypes.LoginTypes.Signup, signupMessage);
         }
     }
 

@@ -4,8 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Repositories;
+using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Location.Senders;
-using Rebronx.Server.Systems.Map.Services;
 using Rebronx.Server.Systems.Movement.Senders;
 
 namespace Rebronx.Server.Systems.Movement
@@ -36,11 +36,11 @@ namespace Rebronx.Server.Systems.Movement
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.System == SystemNames.Movement))
+            foreach (var message in messages.Where(m => m.System == SystemTypes.Movement))
             {
                 switch (message.Type)
                 {
-                    case "move":
+                    case SystemTypes.MovementTypes.Move:
                         ProcessMovementRequest(message);
                         break;
                 }

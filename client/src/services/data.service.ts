@@ -7,24 +7,25 @@ class DataService {
         this.websocket = null;
     }
 
-    onData(message: any) {
-        if (message.data == "pong")
-            return;
+    async onData(message: MessageEvent) {
 
-        console.log("received:", message.data);
+        let arrayBuffer = await message.data.arrayBuffer();
+        let buffer = new Uint8Array(arrayBuffer);
 
-        let baseMessage = null;
-
+        const system = buffer[0];
+        const type = buffer[1];
+        let data = "";
         try {
-            baseMessage = JSON.parse(message.data);
-        } catch(e) {
+            data = JSON.parse(new TextDecoder().decode(buffer.slice(2)));
+            console.log("received: ", "system:" + system, "type:" + type, data);
+        } catch (e) {
             return;
         }
 
-        const subscriptions = this.subscribers[baseMessage.component];
+        const subscriptions = this.subscribers[system];
         if (subscriptions) {
             for (let i = 0; i < subscriptions.length; i++) {
-                subscriptions[i](baseMessage.type, baseMessage.data);
+                subscriptions[i](type, data);
             }
         }
     }
@@ -34,7 +35,7 @@ class DataService {
             this.websocket.close();
 
         this.websocket = new WebSocket("wss://" + window.location.hostname + ":21220");
-        this.websocket.onmessage = (msg) => { this.onData(msg) };
+        this.websocket.onmessage = (msg: MessageEvent) => { this.onData(msg) };
         this.websocket.onopen = () => {
             callback({ type: 'open' });
         };
@@ -53,21 +54,30 @@ class DataService {
         }, 5000);
     }
 
-    subscribe(name: string, callback: Function) {
-        if (this.subscribers[name])
-            this.subscribers[name].push(callback);
+    subscribe(system: number, callback: (type: number, data: any) => void) {
+        if (this.subscribers[system])
+            this.subscribers[system].push(callback);
         else
-            this.subscribers[name] = [callback];
+            this.subscribers[system] = [callback];
     }
 
-    send(component: string, type: string, data: object) {
+    send(system: number, type: number, data: object) {
         try {
-            var jsonData = JSON.stringify(data);
-            var json = JSON.stringify({ component: component, type: type, data: jsonData });
-            console.log("sent: ", json);
+            let jsonData = JSON.stringify(data);
+            console.log("sent: ", "system:" + system, "type:" + type, jsonData);
+
+            const typeBytes = new Uint8Array(2);
+            typeBytes[0] = system;
+            typeBytes[1] = type;
+
+            const dataBytes = new TextEncoder().encode(jsonData);
+
+            const bytes = new Uint8Array(typeBytes.length + dataBytes.length);
+            bytes.set(typeBytes, 0);
+            bytes.set(dataBytes, 2);
 
             if (this.websocket !== null)
-                this.websocket.send(json);
+                this.websocket.send(bytes);
         } catch (e) {
             console.error(e);
         }

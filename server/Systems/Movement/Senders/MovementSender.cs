@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Services;
 
 namespace Rebronx.Server.Systems.Movement.Senders
@@ -20,7 +21,7 @@ namespace Rebronx.Server.Systems.Movement.Senders
                 MoveTime = moveTime
             };
 
-            _messageService.Send(player, "player", "movement", movementMessage);
+            _messageService.Send(player, SystemTypes.Movement, SystemTypes.MovementTypes.StartMove, movementMessage);
         }
 
         public void SetPosition(Player player, int newNode)
@@ -30,7 +31,7 @@ namespace Rebronx.Server.Systems.Movement.Senders
                 Node = newNode
             };
 
-            _messageService.Send(player, "player", "position", movementMessage);
+            _messageService.Send(player, SystemTypes.Movement, SystemTypes.MovementTypes.MoveDone, movementMessage);
 
         }
     }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Rebronx.Server.Models;
 
-namespace Rebronx.Server.Systems.Map.Services
+namespace Rebronx.Server.Services
 {
     public interface IMapService
     {

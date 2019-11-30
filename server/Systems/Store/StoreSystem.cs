@@ -20,10 +20,9 @@ namespace Rebronx.Server.Systems.Store
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.System == SystemNames.Store))
+            foreach (var message in messages.Where(m => m.System == SystemTypes.Store))
             {
-                if (message.Type == "buy")
-                    ProcessBuyRequest(message);
+
             }
         }
 

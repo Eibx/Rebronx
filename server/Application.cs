@@ -6,10 +6,10 @@ using Rebronx.Server.Systems.Chat;
 using Rebronx.Server.Systems.Chat.Senders;
 using Rebronx.Server.Systems.Combat;
 using Rebronx.Server.Systems.Inventory;
-using Rebronx.Server.Systems.Map;
 using Rebronx.Server.Systems.Movement;
 using Rebronx.Server.Systems.Store;
 using Rebronx.Server.Systems.Command;
+using Rebronx.Server.Systems.Join.Senders;
 using Rebronx.Server.Systems.Location.Senders;
 using Rebronx.Server.Systems.Login;
 
@@ -20,7 +20,6 @@ public class Application
 
     private readonly ILoginSystem _loginSystem;
     private readonly ICommandSystem _commandSystem;
-    private readonly IMapSystem _mapSystem;
     private readonly IMovementSystem _movementSystem;
     private readonly IChatSystem _chatSystem;
     private readonly IStoreSystem _storeSystem;
@@ -29,6 +28,7 @@ public class Application
 
     private readonly ILocationSender _locationSender;
     private readonly IChatSender _chatSender;
+    private readonly IJoinSender _joinSender;
 
 
     public Application(
@@ -37,7 +37,6 @@ public class Application
 
         ILoginSystem loginSystem,
         ICommandSystem commandSystem,
-        IMapSystem mapSystem,
         IMovementSystem movementSystem,
         IChatSystem chatSystem,
         IStoreSystem storeSystem,
@@ -45,13 +44,13 @@ public class Application
         IInventorySystem inventorySystem,
 
         ILocationSender locationSender,
-        IChatSender chatSender)
+        IChatSender chatSender,
+        IJoinSender joinSender)
     {
         _webSocketCore = webSocketCore;
         _connectionService = connectionService;
 
         _commandSystem = commandSystem;
-        _mapSystem = mapSystem;
         _movementSystem = movementSystem;
         _chatSystem = chatSystem;
         _storeSystem = storeSystem;
@@ -61,11 +60,11 @@ public class Application
 
         _locationSender = locationSender;
         _chatSender = chatSender;
+        _joinSender = joinSender;
     }
 
     public void Run()
     {
-        var stopwatch = new Stopwatch();
 	    while (true)
         {
             try
@@ -79,7 +78,6 @@ public class Application
 
                 _loginSystem.Run(playerMessages);
                 _commandSystem.Run(playerMessages);
-                _mapSystem.Run(playerMessages);
                 _movementSystem.Run(playerMessages);
                 _chatSystem.Run(playerMessages);
                 _storeSystem.Run(playerMessages);
@@ -88,6 +86,8 @@ public class Application
 
                 _locationSender.Execute();
                 _chatSender.Execute();
+                _joinSender.Execute();
+
 
                 Thread.Sleep(1);
             }

@@ -15,19 +15,12 @@ namespace Rebronx.Server.Services
 
         public string GenerateUniqueToken()
         {
-            var token = GenerateToken();
-
-            while (!_tokenRepository.IsTokenAvailable(token))
-            {
-                token = GenerateToken();
-            }
-
-            return token;
+            return GenerateToken();
         }
 
         private string GenerateToken()
         {
-            var bytes = new byte[32];
+            var bytes = new byte[64];
             var rnd = RandomNumberGenerator.Create();
             rnd.GetBytes(bytes);
             return Convert.ToBase64String(bytes);

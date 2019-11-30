@@ -1,4 +1,5 @@
 import {dataService} from './data.service'
+import {SystemTypes} from "@/typegen";
 
 export enum LoginStatus {
     NoStatus = 0,
@@ -20,13 +21,13 @@ class LoginService {
                 if (data.type == 'error') {
                     this.state = LoginStatus.ConnectionError;
                 } else if (data.type == 'open') {
-                    dataService.send('login', 'login', { token: token });
+                    dataService.send(SystemTypes.Login, SystemTypes.LoginTypes.Login, { token: token });
                     dataService.startPing();
                 }
             });
         }
 
-        dataService.subscribe('login', (type:string, data:any) => {
+        dataService.subscribe(SystemTypes.Login, (type:number, data:any) => {
             if (data.success == true) {
                 window.localStorage.setItem("token", data.token);
             } else {
@@ -47,7 +48,7 @@ class LoginService {
             if (data.type == 'error') {
                 this.state = LoginStatus.ConnectionError;
             } else if (data.type == 'open') {
-                dataService.send('login', 'login', { username: username, password: password });
+                dataService.send(SystemTypes.Login, SystemTypes.LoginTypes.Login, { username: username, password: password });
                 dataService.startPing();
             }
         });
@@ -60,7 +61,7 @@ class LoginService {
             if (data.type == 'error') {
                 this.state = LoginStatus.ConnectionError;
             } else if (data.type == 'open') {
-                dataService.send('login', 'signup', { username: username, password: password });
+                dataService.send(SystemTypes.Login, SystemTypes.LoginTypes.Signup, { username: username, password: password });
                 dataService.startPing();
             }
         });

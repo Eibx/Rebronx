@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Newtonsoft.Json;
 using Rebronx.Server.Models;
@@ -21,7 +24,7 @@ namespace Rebronx.Server.Services
             _socketRepository = socketRepository;
         }
 
-        public void Send<T>(ClientConnection connection, string system, string type, T data)
+        public void Send<T>(ClientConnection connection, byte system, byte type, T data)
         {
             var json = Serialize(system, type, data);
 
@@ -31,7 +34,7 @@ namespace Rebronx.Server.Services
                 _webSocketCore.Send(stream, json);
         }
 
-        public void Send<T>(Player player, string system, string type, T data)
+        public void Send<T>(Player player, byte system, byte type, T data)
         {
             var json = Serialize(system, type, data);
 
@@ -41,7 +44,7 @@ namespace Rebronx.Server.Services
                 _webSocketCore.Send(connection.Stream, json);
         }
 
-        public void SendPosition<T>(int node, string system, string type, T data)
+        public void SendPosition<T>(int node, byte system, byte type, T data)
         {
             var json = Serialize(system, type, data);
 
@@ -54,7 +57,7 @@ namespace Rebronx.Server.Services
             }
         }
 
-        public void SendAll<T>(string system, string type, T data)
+        public void SendAll<T>(byte system, byte type, T data)
         {
             var json = Serialize(system, type, data);
 
@@ -67,21 +70,24 @@ namespace Rebronx.Server.Services
             }
         }
 
-        private string Serialize<T>(string system, string type, T data)
+        private byte[] Serialize<T>(byte system, byte type, T data)
         {
             var json = string.Empty;
 
             try
             {
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                json = JsonSerializer.Serialize(new { component = system, type, data }, options);
+                json = JsonSerializer.Serialize(data, options);
             }
             catch
             {
                 // ignored
             }
 
-            return json;
+            List<byte> bytes = new List<byte> { system, type };
+            bytes.AddRange(Encoding.UTF8.GetBytes(json));
+
+            return bytes.ToArray();
         }
     }
 }

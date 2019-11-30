@@ -38,6 +38,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import {dataService} from '@/services/data.service'
+import {SystemTypes} from "@/typegen";
 
 @Component({
     name: 'store'
@@ -46,7 +47,7 @@ export default class Store extends Vue {
     public image: string =  "";
 
     buy(item: any, amount: number) {
-        dataService.send('store', 'buy', { store: 0, item: item, amount: amount });
+        dataService.send(SystemTypes.Store, 0, { store: 0, item: item, amount: amount });
     }
 }
 </script>

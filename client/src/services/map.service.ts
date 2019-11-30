@@ -1,4 +1,5 @@
 import {dataService} from "@/services/data.service";
+import {SystemTypes} from "@/typegen";
 
 class MapService {
     private map = require('../../../data/map.json');
@@ -100,8 +101,6 @@ class MapService {
         this.startTravelTime = new Date().getTime();
         this.endTravelTime = this.startTravelTime + moveTime;
 
-        console.log("end travel time", this.endTravelTime, moveTime);
-
         this.activePath = [];
         this.totalCost = 0;
 
@@ -162,7 +161,7 @@ class MapService {
     }
 
     public startTravel(path: number[]): void {
-        dataService.send("movement", "move", { nodes: path });
+        dataService.send(SystemTypes.Movement, SystemTypes.MovementTypes.Move, { nodes: path });
     }
 }
 

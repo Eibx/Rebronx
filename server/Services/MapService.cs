@@ -3,7 +3,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Rebronx.Server.Models;
 
-namespace Rebronx.Server.Systems.Map.Services
+namespace Rebronx.Server.Services
 {
     public class MapService : IMapService
     {

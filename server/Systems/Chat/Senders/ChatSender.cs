@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Helpers;
 using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Chat.Senders;
@@ -32,7 +33,7 @@ namespace Rebronx.Server.Systems.Chat.Senders
             {
                 var chatMessage = new ChatResponse();
                 chatMessage.Message = message.Item2;
-                _messageService.SendPosition(message.Item1.Node, "lobby", "chat", chatMessage);
+                _messageService.SendPosition(message.Item1.Node, SystemTypes.Location, SystemTypes.LocationTypes.Chat, chatMessage);
             }
 
             _messages.Clear();

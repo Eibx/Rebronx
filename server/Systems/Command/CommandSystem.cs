@@ -16,9 +16,9 @@ namespace Rebronx.Server.Systems.Command
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.System == SystemNames.Command))
+            foreach (var message in messages.Where(m => m.System == SystemTypes.Command))
             {
-                if (message.Type == "give")
+                if (message.Type == SystemTypes.CommandTypes.Give)
                     ProcessGiveRequest(message);
             }
         }

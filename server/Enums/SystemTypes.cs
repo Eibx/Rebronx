@@ -1,0 +1,58 @@
+namespace Rebronx.Server.Enums
+{
+    public static class SystemTypes
+    {
+        public const byte Chat = 1;
+        public const byte Combat = 2;
+        public const byte Command = 3;
+        public const byte Inventory = 4;
+        public const byte Join = 5;
+        public const byte Location = 6;
+        public const byte Login = 7;
+        public const byte Map = 8;
+        public const byte Movement = 9;
+        public const byte Store = 10;
+
+        public static class ChatTypes
+        {
+            public const byte Say = 1;
+        }
+
+        public static class LocationTypes
+        {
+            public const byte Chat = 1;
+            public static byte PlayersUpdate = 2;
+        }
+
+        public static class CombatTypes
+        {
+            public const byte Attack = 1;
+            public const byte AttckerReport = 2;
+            public const byte VictimReport = 3;
+
+        }
+
+        public static class CommandTypes
+        {
+            public const byte Give = 1;
+        }
+
+        public static class JoinTypes
+        {
+            public const byte Join = 1;
+        }
+
+        public class LoginTypes
+        {
+            public const byte Login = 1;
+            public const byte Signup = 2;
+        }
+
+        public class MovementTypes
+        {
+            public const byte Move = 1;
+            public const byte StartMove = 2;
+            public const byte MoveDone = 3;
+        }
+    }
+}

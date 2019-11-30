@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Inventory.Repositories;
 
@@ -23,7 +24,7 @@ namespace Rebronx.Server.Systems.Inventory.Senders
 
             List<List<int>> data = inventory.Select(x => new List<int> { x.Id, x.Count, x.Slot }).ToList();
 
-            _messageService.Send(player, "inventory", "update", data);
+            //_messageService.Send(player, SystemTypes.Inventory, , data);
         }
     }
 }

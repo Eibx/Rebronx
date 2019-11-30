@@ -20,6 +20,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component';
 import {dataService} from '@/services/data.service';
+import {SystemTypes} from "@/typegen";
 
 @Component({ name: 'chat' })
 export default class Chat extends Vue {
@@ -27,8 +28,8 @@ export default class Chat extends Vue {
     public msgs: any[] = [];
 
     created() {
-        dataService.subscribe('lobby', (type: string, data: any) => {
-            if (type === "chat") {
+        dataService.subscribe(SystemTypes.Location, (type: number, data: any) => {
+            if (type === SystemTypes.LocationTypes.Chat) {
                 this.msgs.push(data.message);
             }
         });
@@ -43,15 +44,15 @@ export default class Chat extends Vue {
     send() {
         if (this.message.length > 0) {
             if (this.message.indexOf('/') == 0) {
-                var commandArguments = this.message.split(' ');
-                var commandType = commandArguments.shift();
+                const commandArguments = this.message.split(' ');
+                const commandType = commandArguments.shift();
 
                 if (commandType === undefined)
                     return;
 
-                dataService.send('command', commandType, { arguments: commandArguments });
+                dataService.send(SystemTypes.Command, SystemTypes.CommandTypes.Command, { command: commandType, arguments: commandArguments });
             } else {
-                dataService.send('chat', 'say', { message: this.message });
+                dataService.send(SystemTypes.Chat, SystemTypes.ChatTypes.Say, { message: this.message });
             }
 
             this.message = "";

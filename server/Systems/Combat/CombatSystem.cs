@@ -26,9 +26,9 @@ namespace Rebronx.Server.Systems.Combat
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.System == SystemNames.Combat))
+            foreach (var message in messages.Where(m => m.System == SystemTypes.Combat))
             {
-                if (message.Type == "attack")
+                if (message.Type == SystemTypes.CombatTypes.Attack)
                     ProcessAttackRequest(message);
             }
         }

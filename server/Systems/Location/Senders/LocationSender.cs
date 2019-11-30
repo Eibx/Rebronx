@@ -16,7 +16,7 @@ namespace Rebronx.Server.Systems.Location.Senders
 
         private readonly HashSet<int> _nodesToUpdate = new HashSet<int>();
 
-        private readonly TickGate _gate = new TickGate(1);
+        private readonly TickGate _gate = new TickGate(100);
 
         public LocationSender(IPositionRepository positionRepository, IMessageService messageService)
         {
@@ -37,7 +37,7 @@ namespace Rebronx.Server.Systems.Location.Senders
                     Players = players.Select(p => new LobbyPlayer(p)).ToList()
                 };
 
-                _messageService.SendPosition(node, SystemNames.Location, "location", sendLocationMessage);
+                _messageService.SendPosition(node, SystemTypes.Location, SystemTypes.LocationTypes.PlayersUpdate, sendLocationMessage);
             }
 
             _nodesToUpdate.Clear();

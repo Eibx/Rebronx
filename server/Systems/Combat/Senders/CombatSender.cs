@@ -1,4 +1,5 @@
 using System;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Repositories;
 using Rebronx.Server.Services;
 
@@ -21,7 +22,7 @@ namespace Rebronx.Server.Systems.Combat.Senders
             var combatReport = new CombatReportResponse() {
                 Damage = damage
             };
-            _messageService.Send(connection, "combat", "attacker", combatReport);
+            _messageService.Send(connection, SystemTypes.Combat, SystemTypes.CombatTypes.AttckerReport, combatReport);
         }
 
         public void VictimReport(Player player, int damage)
@@ -30,7 +31,7 @@ namespace Rebronx.Server.Systems.Combat.Senders
             var combatReport = new CombatReportResponse() {
                 Damage = damage
             };
-            _messageService.Send(connection, "combat", "victim", combatReport);
+            _messageService.Send(connection, SystemTypes.Combat, SystemTypes.CombatTypes.VictimReport, combatReport);
         }
     }
 

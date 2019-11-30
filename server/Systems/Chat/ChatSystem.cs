@@ -18,9 +18,9 @@ namespace Rebronx.Server.Systems.Chat
 
         public void Run(IList<Message> messages)
         {
-            foreach (var message in messages.Where(m => m.System == SystemNames.Chat))
+            foreach (var message in messages.Where(m => m.System == SystemTypes.Chat))
             {
-                if (message.Type == "say")
+                if (message.Type == SystemTypes.ChatTypes.Say)
                     MessageSay(message);
             }
         }

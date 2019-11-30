@@ -13,6 +13,7 @@ import Component from 'vue-class-component'
 import Window from '@/components/shared/Window.vue'
 
 import {dataService} from '../services/data.service'
+import {SystemTypes} from "@/typegen";
 
 
 @Component({
@@ -24,10 +25,8 @@ import {dataService} from '../services/data.service'
 export default class Inventory extends Vue {
 
     created() {
-        dataService.subscribe('inventory', (type:string, data:any) => {
-            if (type == "update") {
+        dataService.subscribe(SystemTypes.Inventory, (type:number, data:any) => {
 
-            }
         });
     }
 

@@ -7,6 +7,6 @@ namespace Rebronx.Server.Services
     {
         void GetNewConnections();
         List<WebSocketMessage> PollMessages();
-        void Send(SslStream client, string data);
+        void Send(SslStream client, byte[] data);
     }
 }

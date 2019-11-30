@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Rebronx.Server.Enums;
 using Rebronx.Server.Services;
@@ -13,6 +14,8 @@ namespace Rebronx.Server.Systems.Join.Senders
         private readonly ILocationSender _locationSender;
         private readonly IInventorySender _inventorySender;
 
+        private readonly HashSet<Player> _playersToUpdate = new HashSet<Player>();
+
         public JoinSender(IMessageService messageService, ILocationSender locationSender, IInventorySender inventorySender)
         {
             _messageService = messageService;
@@ -23,21 +26,25 @@ namespace Rebronx.Server.Systems.Join.Senders
         public void Join(Player player)
         {
             if (player != null)
+                _playersToUpdate.Add(player);
+        }
+
+        public void Execute()
+        {
+            foreach (var player in _playersToUpdate)
             {
-                var position = player.Node;
-                var joinMessage = new JoinResponse();
-                joinMessage.Id = player.Id;
-                joinMessage.Name = player.Name;
-                joinMessage.Node = player.Node;
+                var joinMessage = new JoinResponse
+                {
+                    Id = player.Id,
+                    Name = player.Name,
+                    Node = player.Node,
+                    Credits = 0
+                };
 
-                //TODO: Send credits - CreditRepository?
-                joinMessage.Credits = 0;
-
-                _messageService.Send(player, SystemNames.Join, "join", joinMessage);
-                _locationSender.Update(position);
-                //_inventorySender.SendInventory(player);
+                _messageService.Send(player, SystemTypes.Join, SystemTypes.JoinTypes.Join, joinMessage);
             }
 
+            _playersToUpdate.Clear();
         }
     }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories;
 using Rebronx.Server.Systems.Location.Senders;
@@ -30,13 +31,13 @@ namespace Rebronx.Server.Services
 
             foreach (var message in messages)
             {
-                if (message.Type == "login" || message.Type == "signup")
+                if (message.System == SystemTypes.Login)
                 {
                     output.Add(new UnauthorizedMessage
                     {
                         Player = null,
                         Connection = message.Connection,
-                        System = message.Component,
+                        System = message.System,
                         Type = message.Type,
                         Data = message.Data
                     });
@@ -57,7 +58,7 @@ namespace Rebronx.Server.Services
                 output.Add(new Message
                 {
                     Player = player,
-                    System = message.Component,
+                    System = message.System,
                     Type = message.Type,
                     Data = message.Data
                 });
