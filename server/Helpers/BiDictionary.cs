@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 
@@ -8,7 +9,7 @@ using System.Collections.Generic;
 /// </summary>
 /// <typeparam name="TFirst">The type of the "key"</typeparam>
 /// <typeparam name="TSecond">The type of the "value"</typeparam>
-public class BiDictionary<TFirst, TSecond>
+public class BiDictionary<TFirst, TSecond> : IEnumerable
 {
     IDictionary<TFirst, TSecond> _firstToSecond = new Dictionary<TFirst, TSecond>();
     IDictionary<TSecond, TFirst> _secondToFirst = new Dictionary<TSecond, TFirst>();
@@ -196,5 +197,10 @@ public class BiDictionary<TFirst, TSecond>
     {
         _firstToSecond.Clear();
         _secondToFirst.Clear();
+    }
+
+    public IEnumerator GetEnumerator()
+    {
+        return _firstToSecond.GetEnumerator();
     }
 }

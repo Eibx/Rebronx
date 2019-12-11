@@ -13,6 +13,8 @@ namespace Rebronx.Server.Enums
         public const byte Movement = 9;
         public const byte Store = 10;
 
+        public const byte Ping = 255;
+
         public static class ChatTypes
         {
             public const byte Say = 1;
@@ -26,10 +28,12 @@ namespace Rebronx.Server.Enums
 
         public static class CombatTypes
         {
-            public const byte Attack = 1;
-            public const byte AttckerReport = 2;
-            public const byte VictimReport = 3;
+            public const byte BeginAttack = 1;
 
+            public const byte ChangePosition = 2;
+            public const byte ChangeAttack = 3;
+
+            public const byte Report = 4;
         }
 
         public static class CommandTypes
