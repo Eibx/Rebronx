@@ -48,10 +48,15 @@ class DataService {
     }
 
     startPing() {
-        setInterval(() => {
-            if (this.websocket !== null)
-                this.websocket.send("ping");
-        }, 5000);
+        var worker = new Worker('interval.js');
+        worker.onmessage = (event) => {
+            if (event.data === 'tick' && this.websocket !== null) {
+                let pingBytes = new Uint8Array(1);
+                pingBytes[0] = 255;
+                this.websocket.send(pingBytes);
+            }
+        };
+        worker.postMessage({ start: true, ms: 5000 });
     }
 
     subscribe(system: number, callback: (type: number, data: any) => void) {

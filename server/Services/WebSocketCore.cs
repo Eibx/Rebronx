@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Newtonsoft.Json;
+using Rebronx.Server.Enums;
 using Rebronx.Server.Models;
 using Rebronx.Server.Repositories;
 
@@ -138,13 +139,13 @@ namespace Rebronx.Server.Services
                     payload[j] = (byte)(payload[j] ^ mask[j % 4]);
                 }
 
-                var jsonData = Encoding.UTF8.GetString(payload, 2, payload.Count()-2);
-
-                if (jsonData == "ping")
+                if (payload[0] == SystemTypes.Ping)
                 {
                     socket.LastMessage = DateTime.Now;
                     continue;
                 }
+
+                var jsonData = Encoding.UTF8.GetString(payload, 2, payload.Count()-2);
 
                 Console.WriteLine(jsonData);
 
