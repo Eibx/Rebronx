@@ -38,10 +38,9 @@ openssl pkcs12 -export -inkey key.pem -in cert.pem -out rebronx.p12 -password pa
 *Note that browsers will still not trust these certificates.*
 *So after we get the server and site running - make exceptions for https://localhost:8080 and https://localhost:21220.*
 
-Go to `Rebronx.Server` and run:
+Go to `server/` and run:
 
 ```shell
-dotnet restore
 dotnet build
 ```
 
@@ -53,23 +52,17 @@ sudo -i -u postgres psql -c "CREATE DATABASE rebronx;"
 sudo -i -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE rebronx to rebronx;"
 ```
 
-Go to `Rebronx.Server/Migration` and run:
+Go to `server/migration/` and run:
 
 ```shell
 psql -h localhost rebronx rebronx -f 000-init.sql
 ```
 
-Go to `Rebronx.UI` and run:
+Go to `client/` and run:
 
 ```shell
 npm install
-npm run dev
-```
-
-**Not needed for now**
-
-```shell
-echo "127.0.0.1  rebronx.test" | sudo tee -a /etc/hosts
+npm run serve
 ```
 
 ## Licensing
