@@ -9,6 +9,8 @@ namespace Rebronx.Server.Systems
 
             try
             {
+                // TODO: use System.Text.Json
+                // TODO: Remove Newtonsoft.Json.JsonConvert
                 return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(message.Data);
             }
             catch

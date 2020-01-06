@@ -29,12 +29,7 @@ namespace Rebronx.Server.Systems.Combat.Repositories
 
         public Fighter GetFighter(Fight combat, int playerId)
         {
-            var fighter = combat.AttackingSide.FirstOrDefault(x => x.Id == playerId);
-
-            if (fighter == null)
-                fighter = combat.DefendingSide.FirstOrDefault(x => x.Id == playerId);
-
-            return fighter;
+            return combat.Fighters.FirstOrDefault(x => x.Id == playerId);
         }
 
         public Fighter GetFighter(int playerId)
@@ -63,12 +58,7 @@ namespace Rebronx.Server.Systems.Combat.Repositories
         {
             _fights.Add(fight.Id, fight);
 
-            foreach (var player in fight.AttackingSide)
-            {
-                _fighters[player.Id] = fight;
-            }
-
-            foreach (var player in fight.DefendingSide)
+            foreach (var player in fight.Fighters)
             {
                 _fighters[player.Id] = fight;
             }
@@ -88,6 +78,8 @@ namespace Rebronx.Server.Systems.Combat.Repositories
                     if (_fighters.ContainsKey(playerId))
                         _fighters.Remove(playerId);
                 }
+
+                _fights.Remove(id);
             }
         }
     }

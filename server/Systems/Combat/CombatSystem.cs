@@ -12,13 +12,12 @@ namespace Rebronx.Server.Systems.Combat
 {
     public class CombatSystem : System, ICombatSystem
     {
-        private const string Component = "combat";
-        private Random _random;
+        private readonly Random _random;
         private readonly ICombatSender _combatSender;
         private readonly IUserRepository _userRepository;
         private readonly ICombatRepository _combatRepository;
 
-        private const int fightRoundTimer = 6;
+        private const int FightRoundTimer = 10;
 
         public CombatSystem(ICombatSender combatSender, IUserRepository userRepository, ICombatRepository combatRepository)
         {
@@ -79,12 +78,20 @@ namespace Rebronx.Server.Systems.Combat
                 return;
 
             // Create new combat
-            var activeCombat = new Fight(Guid.NewGuid());
-            activeCombat.NextRound = DateTime.Now.AddSeconds(fightRoundTimer*2);
-            activeCombat.AttackingSide.Add(new Fighter(attacker.Id, _random.Next(0, 4)));
-            activeCombat.DefendingSide.Add(new Fighter(victim.Id,  _random.Next(0, 4)));
+            var fight = new Fight(Guid.NewGuid());
+            fight.NextRound = DateTimeOffset.Now.AddSeconds(FightRoundTimer);
+            fight.Fighters.Add(new Fighter(attacker.Id, attacker.Name, _random.Next(0, 4), FighterSide.Attacking));
+            fight.Fighters.Add(new Fighter(victim.Id, victim.Name,  _random.Next(0, 4), FighterSide.Defending));
 
-            _combatRepository.AddFight(activeCombat);
+            _combatRepository.AddFight(fight);
+
+            _combatSender.UpdateFight(fight);
+
+            foreach (var fighter in fight.Fighters)
+            {
+                _combatSender.ChangeAttack(fighter);
+                _combatSender.ChangePosition(fighter);
+            }
         }
 
         private void ProcessChangePositionRequest(Message message)
@@ -99,8 +106,12 @@ namespace Rebronx.Server.Systems.Combat
 
             var fighter = _combatRepository.GetFighter(message.Player.Id);
 
-            if (fighter != null)
-                fighter.Position = inputMessage.Position;
+            if (fighter == null)
+                return;
+
+            fighter.Position = inputMessage.Position;
+
+            _combatSender.ChangePosition(fighter);
         }
 
         private void ProcessChangeAttackRequest(Message message)
@@ -110,16 +121,23 @@ namespace Rebronx.Server.Systems.Combat
             if (inputMessage == null)
                 return;
 
-            if (inputMessage.Pattern.Length != 4)
-                return;
-
-            if (inputMessage.Pattern.All(x => x == false))
+            if (inputMessage.Slot < 0 || inputMessage.Slot >= 4)
                 return;
 
             var fighter = _combatRepository.GetFighter(message.Player.Id);
 
-            if (fighter != null)
-                fighter.Pattern = inputMessage.Pattern;
+            if (fighter == null)
+                return;
+
+            var pattern = fighter.Pattern;
+
+            pattern[inputMessage.Slot] = inputMessage.Active;
+            if (pattern.All(x => x == false))
+                return;
+
+            fighter.Pattern = pattern;
+
+            _combatSender.ChangeAttack(fighter);
         }
 
         private void ProcessActiveCombats()
@@ -131,66 +149,79 @@ namespace Rebronx.Server.Systems.Combat
                 if (fight.NextRound > DateTime.Now)
                     continue;
 
-                var roundReportEntries = new List<RoundReportEntry>();
+                fight.Round++;
+                fight.NextRound = DateTime.Now.AddSeconds(FightRoundTimer);
 
-                fight.NextRound = DateTime.Now.AddSeconds(fightRoundTimer);
+                var attackers = fight.Fighters.Where(x => x.Side == FighterSide.Attacking).ToList();
+                var defenders = fight.Fighters.Where(x => x.Side == FighterSide.Defending).ToList();
 
-                foreach (var fighter in fight.DefendingSide)
+                var actions = new List<FighterAction>();
+                actions.AddRange(defenders.Select(x => GetFighterAction(x, attackers)));
+                actions.AddRange(attackers.Select(x => GetFighterAction(x, defenders)));
+
+                foreach (var attack in actions.SelectMany(x => x.Attacks.SelectMany(s => s.Damages)))
                 {
-                    var reports = FightOpponents(fighter, fight.AttackingSide);
-                    roundReportEntries.AddRange(reports);
+                    var victimFighter = fight.Fighters.FirstOrDefault(x => x.Id == attack.Victim);
+
+                    if (victimFighter == null)
+                        continue;
+
+                    victimFighter.Health -= attack.Damage;
                 }
 
-                foreach (var fighter in fight.AttackingSide)
+                _combatSender.Report(fight);
+
+                if (fight.Round >= 5)
                 {
-                    var reports = FightOpponents(fighter, fight.DefendingSide);
-                    roundReportEntries.AddRange(reports);
+                    _combatSender.EndFight(fight);
+                    fightsToDelete.Add(fight.Id);
                 }
             }
 
             _combatRepository.RemoveFights(fightsToDelete);
         }
 
-        private List<RoundReportEntry> FightOpponents(Fighter fighter, List<Fighter> opponents)
+        private FighterAction GetFighterAction(Fighter fighter, List<Fighter> opponents)
         {
-            var damagePoints = 10;
+            var action = new FighterAction();
+            action.Move = fighter.Position;
 
-            int patternSize = fighter.Pattern.Count(x => x == true);
+            var damagePoints = 10;
+            int patternSize = fighter.PatternSize;
 
             if (patternSize == 0)
                 patternSize = 4;
 
             var damagePercentage = 1d / patternSize;
-            var damage = damagePoints / damagePercentage;
+            var damage = damagePoints * damagePercentage;
 
-            var reportEntries = new List<RoundReportEntry>();
-            foreach (var opponent in opponents)
+            for (int i = 0; i < 4; i++)
             {
-                if (opponent.Position < 0 || opponent.Position > 3)
+                if (!fighter.IsAttackingPosition(i))
                     continue;
 
-                if (fighter.Pattern[opponent.Position] == false)
-                    continue;
-
-                reportEntries.Add(new RoundReportEntry()
+                var attackAction = new FighterAttack()
                 {
-                    Attacker = fighter.Id,
-                    Victim = opponent.Id,
-                    Damage = damage,
+                    Position = i,
                     DamagePercentage = damagePercentage
-                });
+                };
+
+                var opponentsAtPosition = opponents.Where(x => x.Position == i).ToList();
+
+                foreach (var opponent in opponentsAtPosition)
+                {
+                    attackAction.Damages.Add(new FighterAttackDamage()
+                    {
+                        Victim = opponent.Id,
+                        Damage = damage
+                    });
+                }
+
+                action.Attacks.Add(attackAction);
             }
 
-            return reportEntries;
+            return action;
         }
-    }
-
-    public class RoundReportEntry
-    {
-        public int Attacker { get; set; }
-        public int Victim { get; set; }
-        public double Damage { get; set; }
-        public double DamagePercentage { get; set; }
     }
 
     public class ChangePositionRequest
@@ -200,7 +231,8 @@ namespace Rebronx.Server.Systems.Combat
 
     public class ChangeAttackRequest
     {
-        public bool[] Pattern { get; set; }
+        public int Slot { get; set; }
+        public bool Active { get; set; }
     }
 
     public class AttackRequest

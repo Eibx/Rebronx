@@ -20,9 +20,12 @@ class SystemTypesEnum {
     };
 
     public CombatTypes = new class {
-        Attack: number = 1;
-        AttckerReport: number = 2;
-        VictimReport: number = 3;
+        BeginAttack: number = 1;
+        ChangePosition: number = 2;
+        ChangeAttack: number = 3;
+        Report: number = 4;
+        EndFight: number = 5;
+        UpdateFight: number = 6;
     };
 
     public CommandTypes = new class {

@@ -35,7 +35,7 @@ export default class Chat extends Vue {
         });
 
         window.addEventListener('chat-toggle', () => {
-            var elm = document.querySelector('.chat__input input') as HTMLElement;
+            let elm = document.querySelector('.chat__input input') as HTMLElement;
             if (elm !== null)
                 elm.focus();
         });

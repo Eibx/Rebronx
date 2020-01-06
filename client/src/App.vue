@@ -10,6 +10,7 @@
             <location />
             <chat />
             <inventory />
+            <combat />
         </div>
     </div>
 </template>
@@ -19,11 +20,11 @@
     import Component from "vue-class-component";
     import Login from "@/components/Login.vue";
     import World from "@/components/World.vue";
-    import Lobby from "@/components/Lobby.vue";
     import Location from "@/components/Location.vue";
     import Chat from "@/components/Chat.vue";
     import {playerStore} from "@/stores/player.store";
     import Inventory from "@/components/Inventory.vue";
+    import Combat from "@/components/Combat.vue";
 
     @Component({
         name: 'app',
@@ -32,7 +33,8 @@
             Login,
             World,
             Location,
-            Chat
+            Chat,
+            Combat
         },
     })
     export default class App extends Vue {

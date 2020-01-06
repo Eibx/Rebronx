@@ -1,10 +1,10 @@
 <template>
-    <div class="c-window bg-gray-800">
+    <div class="c-window bg-gray-800 shadow flex flex-col">
         <div class="bg-gray-700 flex items-center px-2 text-gray-500">
             <div class="flex-1">{{title}}</div>
             <div>&#10005;</div>
         </div>
-        <div class="p-2 text-gray-100">
+        <div class="text-gray-100 h-full">
             <slot />
         </div>
     </div>
@@ -28,7 +28,4 @@
     }
 </script>
 <style>
-    .c-window {
-        box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-    }
 </style>

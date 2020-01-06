@@ -3,7 +3,7 @@
         class="inventory-window"
         title="Inventory"
     >
-        Empty inventory
+        <div class="p-2">Empty inventory</div>
     </window>
 </template>
 

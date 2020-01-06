@@ -34,6 +34,8 @@ namespace Rebronx.Server.Enums
             public const byte ChangeAttack = 3;
 
             public const byte Report = 4;
+            public const byte EndFight = 5;
+            public const byte UpdateFight = 6;
         }
 
         public static class CommandTypes
