@@ -84,7 +84,6 @@ namespace Rebronx.Server.Systems.Combat
             fight.Fighters.Add(new Fighter(victim.Id, victim.Name,  _random.Next(0, 4), FighterSide.Defending));
 
             _combatRepository.AddFight(fight);
-
             _combatSender.UpdateFight(fight);
 
             foreach (var fighter in fight.Fighters)
@@ -159,17 +158,27 @@ namespace Rebronx.Server.Systems.Combat
                 actions.AddRange(defenders.Select(x => GetFighterAction(x, attackers)));
                 actions.AddRange(attackers.Select(x => GetFighterAction(x, defenders)));
 
-                foreach (var attack in actions.SelectMany(x => x.Attacks.SelectMany(s => s.Damages)))
+                foreach (var action in actions)
                 {
-                    var victimFighter = fight.Fighters.FirstOrDefault(x => x.Id == attack.Victim);
-
-                    if (victimFighter == null)
+                    var fighter = fight.Fighters.FirstOrDefault(x => x.Id == action.Fighter);
+                    if (fighter == null)
                         continue;
 
-                    victimFighter.Health -= attack.Damage;
+                    if (fighter.Health <= 0)
+                        continue;
+
+                    foreach (var attack in action.Attacks.SelectMany(x => x.Damages))
+                    {
+                        var victimFighter = fight.Fighters.FirstOrDefault(x => x.Id == attack.Victim);
+
+                        if (victimFighter == null)
+                            continue;
+
+                        victimFighter.Health -= attack.Damage;
+                    }
                 }
 
-                _combatSender.Report(fight);
+                _combatSender.Report(fight, actions);
 
                 if (fight.Round >= 5)
                 {

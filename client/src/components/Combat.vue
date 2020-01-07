@@ -75,8 +75,7 @@
 
         public attackPattern: boolean[] = [];
         public position: number = 0;
-        public opponents: any[] = [];
-        public allies: any[] = [];
+        public fighters: any[] = [];
 
         public nextRound: number = 0;
         public nextRoundTimer: number = 0;
@@ -89,15 +88,22 @@
             dataService.subscribe(SystemTypes.Combat, (type:number, data:any) => {
                 if (type === SystemTypes.CombatTypes.Report) {
                     this.showWindow = true;
-
                     this.nextRound = data.nextRound;
 
-                    this.opponents = data.opponents;
+                    for (let i = 0; i < data.actions.length; i++) {
+                        let action = data.actions[i];
 
-                    this.combatLog.push(`Round ${data.round}:`);
+                        let fighterId = action.fighter;
+                        let fighterName = this.getFighterName(action.fighter);
+                        let move = action.move;
+                        let attacks = action.attacks;
 
-                    for (let i = 0; i < data.entries.length; i++) {
-                        this.combatLog.push(data.entries[i]);
+                        for (let a = 0; a < attacks.length; a++) {
+                            let attack = attacks[a];
+
+
+                        }
+
                     }
                 }
 
@@ -106,6 +112,10 @@
                     this.combatLog = [];
                     this.nextRound = 0;
                     this.nextRoundTimer = 0;
+                }
+
+                if (type === SystemTypes.CombatTypes.UpdateFight) {
+                    this.fighters = data.fighters;
                 }
 
                 if (type === SystemTypes.CombatTypes.ChangeAttack) {
@@ -126,6 +136,15 @@
                     this.nextRoundTimer = timeLeft;
                 }
             }, 100);
+        }
+
+        public getFighterName(id: number): string {
+            let fighter = this.fighters.find(x => x.id == id);
+
+            if (!fighter)
+                return "";
+
+            return fighter.name;
         }
 
         public opponentAtPosition(position: number): boolean {

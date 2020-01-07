@@ -20,18 +20,11 @@ namespace Rebronx.Server.Systems.Combat.Senders
             _socketRepository = socketRepository;
         }
 
-        public void Report(Fight fight)
+        public void Report(Fight fight, List<FighterAction> actions)
         {
             var response = new CombatReportResponse();
-
-            foreach (var fighter in fight.Fighters)
-            {
-                var action = new CombatReportResponse.FighterAction();
-                action.Move = fighter.Position;
-
-                action.Attacks = new List<CombatReportResponse.FighterAttack>();
-
-            }
+            response.Actions = actions;
+            response.NextRound = fight.NextRound.ToUnixTimeMilliseconds();
 
             foreach (var playerId in fight.GetAllPlayerIds())
             {
@@ -129,6 +122,7 @@ namespace Rebronx.Server.Systems.Combat.Senders
 
     public class CombatReportResponse
     {
+        public double NextRound { get; set; }
         public List<FighterAction> Actions { get; set; }
     }
 
