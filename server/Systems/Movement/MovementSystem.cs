@@ -14,24 +14,22 @@ namespace Rebronx.Server.Systems.Movement
     {
         private readonly IMovementSender _movementSender;
         private readonly ILocationSender _locationSender;
-        private readonly IPositionRepository _movementRepository;
+        private readonly IMovementRepository _movementRepository;
+        private readonly IPositionRepository _positionRepository;
 
         private readonly IMapService _mapService;
-
-        private readonly Dictionary<int, MovementDestination> _movements;
 
         public MovementSystem(
             IMovementSender movementSender,
             ILocationSender locationSender,
-            IPositionRepository movementRepository,
-            IMapService mapService)
+            IMovementRepository movementRepository,
+            IMapService mapService, IPositionRepository positionRepository)
         {
             _movementSender = movementSender;
             _locationSender = locationSender;
             _movementRepository = movementRepository;
             _mapService = mapService;
-
-            _movements = new Dictionary<int, MovementDestination>();
+            _positionRepository = positionRepository;
         }
 
         public void Run(IList<Message> messages)
@@ -46,17 +44,20 @@ namespace Rebronx.Server.Systems.Movement
                 }
             }
 
-            foreach (var (key, movement) in _movements.ToList())
+            foreach (var (key, movement) in _movementRepository.GetAll())
             {
-                if (movement.TravelTime <= DateTimeOffset.Now.ToUnixTimeMilliseconds())
+                var traveledTime = (movement.StartTime + movement.TravelTime);
+                if (traveledTime <= DateTimeOffset.Now.ToUnixTimeMilliseconds())
                 {
-                    _movementRepository.SetPlayerPosition(movement.Player, movement.Node);
+                    var node = movement.Nodes.Last();
+                    _positionRepository.SetPlayerPosition(movement.Player, node);
 
-                    _movementSender.SetPosition(movement.Player, movement.Node);
-                    _movements.Remove(key);
+                    _movementRepository.Remove(key);
+
+                    _movementSender.SetPosition(movement.Player, node);
 
                     _locationSender.Update(movement.Player.Node);
-                    _locationSender.Update(movement.Node);
+                    _locationSender.Update(node);
                 }
             }
         }
@@ -78,7 +79,7 @@ namespace Rebronx.Server.Systems.Movement
             if (playerNode != nodes.First())
                 return;
 
-            float totalCost = 0.0f;
+            var totalCost = 0.0f;
             for (var i = 1; i < nodes.Count; i++)
             {
                 var previousNode = _mapService.GetNode(nodes[i-1]);
@@ -94,16 +95,18 @@ namespace Rebronx.Server.Systems.Movement
                 totalCost += connection.Cost;
             }
 
-            long travelTimeInMs = (long)totalCost * 1000;
+            var travelTimeInMs = (long)totalCost * 1000;
 
-            _movements[message.Player.Id] = new MovementDestination() {
-                Node = nodes.Last(),
-                TravelTime = DateTimeOffset.Now.ToUnixTimeMilliseconds() + travelTimeInMs,
+            var movement = new MovementDestination() {
+                Nodes = nodes,
+                StartTime = DateTimeOffset.Now.ToUnixTimeMilliseconds(),
+                TravelTime = travelTimeInMs,
                 Player = player
             };
 
-            // Start move and actual move
-            _movementSender.StartMove(message.Player, nodes, travelTimeInMs);
+            _movementRepository.Add(player.Id, movement);
+
+            _movementSender.StartMove(player);
         }
     }
 
@@ -114,7 +117,8 @@ namespace Rebronx.Server.Systems.Movement
 
     public class MovementDestination
     {
-        public int Node { get; set; }
+        public List<int> Nodes { get; set; }
+        public long StartTime { get; set; }
         public long TravelTime { get; set; }
         public Player Player { get; set; }
     }

@@ -28,15 +28,18 @@ class LoginService {
         }
 
         dataService.subscribe(SystemTypes.Login, (type:number, data:any) => {
-            if (data.success == true) {
-                window.localStorage.setItem("token", data.token);
-            } else {
-                if (data.reason === 4001)
-                    this.state = LoginStatus.LoginError;
-                else if (data.reason === 4002)
-                    this.state = LoginStatus.TokenError;
-                else
+            if (type == SystemTypes.LoginTypes.Login) {
+                if (data.success == true) {
+                    window.localStorage.setItem("token", data.token);
                     this.state = LoginStatus.NoStatus;
+                } else {
+                    if (data.reason === 4001)
+                        this.state = LoginStatus.LoginError;
+                    else if (data.reason === 4002)
+                        this.state = LoginStatus.TokenError;
+                    else
+                        this.state = LoginStatus.NoStatus;
+                }
             }
         });
     }

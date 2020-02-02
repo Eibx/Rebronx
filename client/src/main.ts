@@ -45,8 +45,8 @@ window.addEventListener('keyup', function (evt: KeyboardEvent) {
     }
 
     let event = null;
-    if (evt.which == 73) { event = 'inventory-toggle'; }
-    else if (evt.which == 13) { event = 'chat-toggle'; }
+    if (evt.key == "i") { event = 'inventory-toggle'; }
+    else if (evt.code == "Enter") { event = 'chat-toggle'; }
 
     if (event !== null) {
         window.dispatchEvent(new Event(event));

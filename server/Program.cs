@@ -62,6 +62,7 @@ public class Program
         container.RegisterSingleton<ICombatRepository, CombatRepository>();
         container.RegisterSingleton<IInventoryRepository, InventoryRepository>();
         container.RegisterSingleton<IItemRepository, ItemRepository>();
+        container.RegisterSingleton<IMovementRepository, MovementRepository>();
 
         var app = container.GetInstance<Application>();
         app.Run();

@@ -97,9 +97,9 @@ class MapService {
         return output.reverse();
     }
 
-    public setActivePath(paths: number[], moveTime: number) {
-        this.startTravelTime = new Date().getTime();
-        this.endTravelTime = this.startTravelTime + moveTime;
+    public setActivePath(paths: number[], startTime: number, moveTime: number) {
+        this.startTravelTime = startTime;
+        this.endTravelTime = startTime + moveTime;
 
         this.activePath = [];
         this.totalCost = 0;
@@ -108,6 +108,7 @@ class MapService {
 
         for (let i = 1; i < paths.length; i++) {
             const previous = this.getNode(paths[i-1]);
+
             if (previous === null)
                 continue;
 

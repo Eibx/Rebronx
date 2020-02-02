@@ -154,6 +154,12 @@ namespace Rebronx.Server.Systems.Login
 
         private void SendPlayerInformation(Player player, ClientConnection connection, string token)
         {
+            var currentConnection = _socketRepository.GetConnection(player.Id);
+            if (currentConnection != null)
+            {
+                _loginSender.Logout(currentConnection);
+            }
+
             _socketRepository.AddConnection(player.Id, connection);
             //_positionRepository.SetPlayerPosition(player, player.Node);
 

@@ -57,6 +57,10 @@ class PathRenderService {
         let currentStep = mapService.getActiveStep();
         if (currentStep != null) {
             const i = currentStep.index;
+
+            if (!this.activePath[i])
+                return;
+
             const diffX = (this.activePath[i].x - this.activePath[i-1].x);
             const diffY = (this.activePath[i].y - this.activePath[i-1].y);
 

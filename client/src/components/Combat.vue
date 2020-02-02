@@ -5,43 +5,8 @@
         title="Combat"
     >
         <div class="flex h-full py-2">
-            <div class="flex-1 px-4">
-                <div class="text-xs text-gray-400 mb-1">Select where to attack</div>
-                <ol class="flex flex-row w-full">
-                    <li class="flex-1 mr-2">
-                        <div class="shadow-inner bg-gray-900 aspect-ratio-square cursor-pointer relative" @click="selectAttack(0)" :class="[attackPattern[0] ? 'bg-red-900' : 'bg-gray-900', opponentAtPosition(0) ? 'opponent-position' : '']"></div>
-                    </li>
-                    <li class="flex-1 mx-2">
-                        <div class="shadow-inner bg-gray-900 aspect-ratio-square cursor-pointer relative" @click="selectAttack(1)" :class="[attackPattern[1] ? 'bg-red-900' : 'bg-gray-900', opponentAtPosition(1) ? 'opponent-position' : '']"></div>
-                    </li>
-                    <li class="flex-1 mx-2">
-                        <div class="shadow-inner bg-gray-900 aspect-ratio-square cursor-pointer relative" @click="selectAttack(2)" :class="[attackPattern[2] ? 'bg-red-900' : 'bg-gray-900', opponentAtPosition(2) ? 'opponent-position' : '']"></div>
-                    </li>
-                    <li class="flex-1 ml-2">
-                        <div class="shadow-inner bg-gray-900 aspect-ratio-square cursor-pointer relative" @click="selectAttack(3)" :class="[attackPattern[3] ? 'bg-red-900' : 'bg-gray-900', opponentAtPosition(3) ? 'opponent-position' : '']"></div>
-                    </li>
-                </ol>
-
-                <div class="py-6 text-center">
-                    <div class="text-xs leading-none">next round</div>
-                    <div class="text-xl leading-none">{{nextRoundTimer.toFixed(1)}}s</div>
-                </div>
-
-                <div class="text-xs text-gray-400 mb-1">Select your position</div>
-                <div class="flex flex-row w-full mb-4">
-                    <combat-position class="flex-1 mr-2" :position="0" :current-position="position" />
-                    <combat-position class="flex-1 mx-2" :position="1" :current-position="position" />
-                    <combat-position class="flex-1 mx-2" :position="2" :current-position="position" />
-                    <combat-position class="flex-1 ml-2" :position="3" :current-position="position" />
-                </div>
-
-                <ol class="flex flex-row w-full border-t-2 border-gray-900 pt-4">
-                    <li class="w-8 h-8 shadow-inner bg-gray-900 mr-4">1</li>
-                    <li class="w-8 h-8 shadow-inner bg-gray-900 mr-4">2</li>
-                    <li class="w-8 h-8 shadow-inner bg-gray-900 mr-4">3</li>
-                    <li class="w-8 h-8 shadow-inner bg-gray-900 mr-4">4</li>
-                </ol>
-
+            <div class="flex-1 px-4 py-2">
+                <canvas ref="cv" width="400" height="400"></canvas>
             </div>
             <div class="flex-1 border-l-2 border-gray-900 px-4">
                 <div class="text-xs text-gray-400 mb-1">Gamelog</div>
@@ -62,6 +27,7 @@
     import {dataService} from '@/services/data.service'
     import {SystemTypes} from "@/typegen";
     import CombatPosition from "@/components/child/CombatPosition.vue";
+    import CanvasHelper from "@/other/canvas-helper";
 
     @Component({
         name: 'combat',
@@ -71,6 +37,10 @@
         },
     })
     export default class Combat extends Vue {
+        $refs!: {
+            cv: HTMLCanvasElement;
+        };
+
         public showWindow: boolean = true;
 
         public attackPattern: boolean[] = [];
@@ -82,7 +52,16 @@
 
         public combatLog: string[] = [];
 
-        created() {
+        private canvasHelper: CanvasHelper = new CanvasHelper();
+
+        mounted() {
+            //DEBUG
+            this.$nextTick(() => {
+                this.canvasHelper.setup(this.$refs.cv);
+                this.renderCombat();
+            });
+            //DEBUG
+
             this.attackPattern = [false,false,false,false];
 
             dataService.subscribe(SystemTypes.Combat, (type:number, data:any) => {
@@ -100,11 +79,13 @@
 
                         for (let a = 0; a < attacks.length; a++) {
                             let attack = attacks[a];
-
-
                         }
-
                     }
+
+                    this.$nextTick(() => {
+                        this.canvasHelper.setup(this.$refs.cv);
+                        this.renderCombat();
+                    })
                 }
 
                 if (type === SystemTypes.CombatTypes.EndFight) {
@@ -126,16 +107,75 @@
                     this.position = data.position;
                 }
             });
+        }
 
-            setInterval(() => {
-                const d = new Date();
-                let timeLeft = (this.nextRound - d.getTime()) / 1000;
-                if (timeLeft <= 0) {
-                    this.nextRoundTimer = 0;
-                } else {
-                    this.nextRoundTimer = timeLeft;
+        beforeDestroy() {
+            this.canvasHelper.destroy();
+        }
+
+        private renderCombat() {
+            let ch = this.canvasHelper;
+            let ct = this.canvasHelper.context;
+
+            ch.update();
+
+            let w = 400;
+            let h = 400;
+
+            ct.clearRect(0, 0, w, h);
+
+            let boxes = 4;
+            let space = 20;
+            let containerSize = (w+space)/boxes;
+            let boxSize = containerSize-space;
+            let distance = containerSize;
+
+            for (let i = 0; i < boxes; i++) {
+                let x = distance*i;
+                let y = 0;
+
+                let hover = ch.isHover(x, y, boxSize, boxSize);
+
+                if (hover) {
+                    this.$refs.cv.style.cursor = "pointer";
                 }
-            }, 100);
+
+                if (hover && ch.isMousePressed()) {
+                    this.selectAttack(i);
+                }
+
+                ct.fillStyle = this.attackPattern[i] ? "#933" : "#999";
+                ct.fillRect(x, y, boxSize, boxSize);
+            }
+
+            for (let i = 0; i < boxes; i++) {
+                ct.fillStyle = "#999";
+                ct.fillRect(distance*i, boxSize*2, boxSize, boxSize);
+            }
+
+
+            for (let i = 0; i < this.fighters.length; i++) {
+                let fighter = this.fighters[i];
+
+                let y = fighter.side == 0 ? 10 : 50;
+
+                ct.fillStyle = "#333";
+                ct.fillRect(distance+fighter.position, y, 10, 10);
+            }
+
+            ct.fillStyle = "#fff";
+            ct.font = "12px monospace";
+            let nextRoundWidth = ct.measureText("next round").width;
+            ct.fillText("next round", (w-nextRoundWidth)/2, 115);
+
+            ct.font = "20px monospace";
+            let timeLeft = (this.nextRound - new Date().getTime()) / 1000;
+            let timerWidth = ct.measureText(timeLeft.toFixed(1)).width;
+            ct.fillText(timeLeft.toFixed(1), (w-timerWidth)/2, 140);
+            ct.fillText(ch.globalMouseX + " " + ch.mouseX, 100, 160);
+
+            if (this.showWindow)
+                window.requestAnimationFrame(this.renderCombat);
         }
 
         public getFighterName(id: number): string {
@@ -147,19 +187,16 @@
             return fighter.name;
         }
 
-        public opponentAtPosition(position: number): boolean {
-            for (let i = 0; i < this.opponents.length; i++) {
-                if (this.opponents[i].position == position)
-                    return true;
-            }
-
-            return false;
-        }
-
-        public selectAttack(slot: number) {
+        public selectAttack(slot: number): void {
             dataService.send(SystemTypes.Combat, SystemTypes.CombatTypes.ChangeAttack, {
                 slot: slot,
                 active: !this.attackPattern[slot]
+            });
+        }
+
+        public selectPosition(slot: number): void {
+            dataService.send(SystemTypes.Combat, SystemTypes.CombatTypes.ChangePosition, {
+                slot: slot
             });
         }
     }

@@ -38,7 +38,15 @@ openssl pkcs12 -export -inkey key.pem -in cert.pem -out rebronx.p12 -password pa
 *Note that browsers will still not trust these certificates.*
 *So after we get the server and site running - make exceptions for https://localhost:8080 and https://localhost:21220.*
 
-Go to `server/` and run:
+Go to `server/`
+
+Create config file based on sample
+
+```shell
+cp app.config.sample app.config
+```
+
+Build server project
 
 ```shell
 dotnet build

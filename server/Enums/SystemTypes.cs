@@ -52,6 +52,7 @@ namespace Rebronx.Server.Enums
         {
             public const byte Login = 1;
             public const byte Signup = 2;
+            public static byte Logout = 3;
         }
 
         public class MovementTypes
@@ -59,6 +60,7 @@ namespace Rebronx.Server.Enums
             public const byte Move = 1;
             public const byte StartMove = 2;
             public const byte MoveDone = 3;
+            public const byte ContinueMove = 4;
         }
     }
 }

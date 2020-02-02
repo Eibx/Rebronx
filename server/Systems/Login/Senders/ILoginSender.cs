@@ -10,5 +10,7 @@ namespace Rebronx.Server.Systems.Login.Senders
 
          void SignupSuccess(ClientConnection connection, string token);
          void SignupFail(ClientConnection connection, int reason);
+
+         void Logout(ClientConnection connection);
     }
 }

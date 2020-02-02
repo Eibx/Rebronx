@@ -39,6 +39,7 @@ class SystemTypesEnum {
     public LoginTypes = new class {
         Login: number = 1;
         Signup: number = 2;
+        Logout: number = 3;
     };
 
     public MovementTypes = new class {

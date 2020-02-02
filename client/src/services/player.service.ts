@@ -1,8 +1,7 @@
 import {dataService} from './data.service'
 import {mapService} from './map.service'
-import {renderService} from './render.service'
-import {playerStore} from '../stores/player.store'
-import {worldStore} from '../stores/world.store'
+import {playerStore} from '@/stores/player.store'
+import {worldStore} from '@/stores/world.store'
 import {pathRenderService} from "@/services/path-render.service";
 import {SystemTypes} from "@/typegen";
 
@@ -15,13 +14,19 @@ class PlayerService {
             worldStore.currentNode = data.node;
         });
 
+        dataService.subscribe(SystemTypes.Login, (type: number, data: any) => {
+            if (type == SystemTypes.LoginTypes.Logout) {
+                playerStore.isAuthenticated = false;
+            }
+        });
+
         dataService.subscribe(SystemTypes.Movement, (type: number, data: any) => {
             if (type === SystemTypes.MovementTypes.MoveDone) {
                 worldStore.currentNode = data.node;
             }
 
             if (type === SystemTypes.MovementTypes.StartMove) {
-                mapService.setActivePath(data.nodes, data.moveTime);
+                mapService.setActivePath(data.nodes, data.startTime, data.moveTime);
                 pathRenderService.setActivePath(data.nodes);
             }
         });

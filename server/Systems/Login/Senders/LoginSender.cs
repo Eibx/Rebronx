@@ -63,6 +63,19 @@ namespace Rebronx.Server.Systems.Login.Senders
 
             _messageService.Send(connection, SystemTypes.Login, SystemTypes.LoginTypes.Signup, signupMessage);
         }
+
+        public void Logout(ClientConnection connection)
+        {
+            var logoutMessage = new LogoutResponse();
+            logoutMessage.Reason = "Disconnected";
+
+            _messageService.Send(connection, SystemTypes.Login, SystemTypes.LoginTypes.Logout, logoutMessage);
+        }
+    }
+
+    public class LogoutResponse
+    {
+        public string Reason { get; set; }
     }
 
     public class LoginResponse

@@ -5,6 +5,7 @@ using Rebronx.Server.Enums;
 using Rebronx.Server.Services;
 using Rebronx.Server.Systems.Inventory.Senders;
 using Rebronx.Server.Systems.Location.Senders;
+using Rebronx.Server.Systems.Movement.Senders;
 
 namespace Rebronx.Server.Systems.Join.Senders
 {
@@ -13,14 +14,20 @@ namespace Rebronx.Server.Systems.Join.Senders
         private readonly IMessageService _messageService;
         private readonly ILocationSender _locationSender;
         private readonly IInventorySender _inventorySender;
+        private readonly IMovementSender _movementSender;
 
         private readonly HashSet<Player> _playersToUpdate = new HashSet<Player>();
 
-        public JoinSender(IMessageService messageService, ILocationSender locationSender, IInventorySender inventorySender)
+        public JoinSender(
+            IMessageService messageService,
+            ILocationSender locationSender,
+            IInventorySender inventorySender,
+            IMovementSender movementSender)
         {
             _messageService = messageService;
             _locationSender = locationSender;
             _inventorySender = inventorySender;
+            _movementSender = movementSender;
         }
 
         public void Join(Player player)
@@ -42,6 +49,8 @@ namespace Rebronx.Server.Systems.Join.Senders
                 };
 
                 _messageService.Send(player, SystemTypes.Join, SystemTypes.JoinTypes.Join, joinMessage);
+
+                _movementSender.StartMove(player);
             }
 
             _playersToUpdate.Clear();
