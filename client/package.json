@@ -11,7 +11,7 @@
     "ngraph.graph": "^18.0.1",
     "ngraph.path": "^1.2.0",
     "tailwindcss": "^1.1.2",
-    "three": "^0.108.0",
+    "three": "^0.137.0",
     "three-gltf-loader": "^1.108.0",
     "v-click-outside": "^3.0.0",
     "vue": "^2.6.10",
